@@ -1,26 +1,26 @@
-function App() {
+import React, { useEffect } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
+import * as actions from './store/sm';
+
+const App = ({ initScene }) => {
+  useEffect(() => {
+    initScene();
+  });
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit
-          {' '}
-          <code>src/App.js</code>
-          {' '}
-          and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="container">
+      app
     </div>
   );
-}
+};
 
-export default App;
+App.propTypes = {
+  initScene: PropTypes.func.isRequired,
+};
+
+const mapDispatchToProps = (dispatch) => ({
+  initScene: () => dispatch(actions.createScene()),
+});
+
+export default connect(null, mapDispatchToProps)(App);
