@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
+import { syllable } from 'syllable';
 
 const Captions = ({ speechState, lastPersonaUtterance, className }) => {
   const [showCaptions, setShowCaptions] = useState(false);
@@ -18,13 +19,24 @@ const Captions = ({ speechState, lastPersonaUtterance, className }) => {
       // show captions
       setShowCaptions(true);
       const sentences = lastPersonaUtterance.split('. ');
+      // estimate how long each caption should be displayed based on # of syllables and punctuation
       const sentencesWithDurationEstimate = sentences.map((s) => {
-        const letterCount = s.split('').length;
-        const millisPerLetter = 100;
-        const durationEstimate = letterCount * millisPerLetter;
+        const millisPerSyllable = 210;
+        const millisPerPunct = 330;
+
+        const syllableCount = syllable(s);
+
+        const regex = /[^\w ]/gm;
+        const punctCount = [...s.matchAll(regex)].length;
+
+        const durationEstimate = (syllableCount * millisPerSyllable)
+          + (punctCount * millisPerPunct)
+          // add one punct delay for the period that gets stripped when splitting the sentences
+          + millisPerPunct;
         return { text: s, durationEstimate };
       });
 
+      // recursively cycle through sentences on very long captions
       const displayCaption = (i) => {
         const { text, durationEstimate } = sentencesWithDurationEstimate[i];
         setCaptionText(text);
@@ -55,7 +67,7 @@ const Captions = ({ speechState, lastPersonaUtterance, className }) => {
   }, [speechState]);
 
   return (
-    <div className={`${className} ${showCaptions ? '' : 'd-none '}`}>
+    <div className={`${className} ${showCaptions ? '' : 'd-none '} text-center`}>
       { captionText }
     </div>
   );
