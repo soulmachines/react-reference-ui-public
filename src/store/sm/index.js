@@ -12,6 +12,33 @@ const initialState = {
   videoHeight: window.innerHeight,
   videoWidth: window.innerWidth,
   transcript: [],
+  speechState: 'idle',
+  user: {
+    activity: {
+      isAttentive: 0,
+      isTalking: 0,
+      diffSum: 0,
+    },
+    emotion: {
+      confusion: 0,
+      negativity: 0,
+      positivity: 0,
+      confidence: 0,
+      diffSum: 0,
+    },
+  },
+  callQuality: {
+    audio: {
+      bitrate: null,
+      packetsLost: null,
+      roundTripTime: null,
+    },
+    video: {
+      bitrate: null,
+      packetsLost: null,
+      roundTripTime: null,
+    },
+  },
 };
 
 // we need to define an object for actions here, since we need the types to be avaliable for
@@ -47,6 +74,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
         });
         return thunk.dispatch(action);
       }
+
       // handles output from NLP (what DP is saying)
       case ('conversationResult'): {
         const { text } = message.body.output;
@@ -56,15 +84,72 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
         });
         return thunk.dispatch(action);
       }
+
       case ('personaResponse'): {
         break;
       }
+
+      // state messages contain a lot of things, including user emotions,
+      // call stats, and persona state
       case ('state'): {
+        const { body } = message;
+        if ('persona' in body) {
+          const personaState = body.persona[1];
+          // handle changes to persona speech state ie idle, animating, speaking
+          if ('speechState' in personaState) {
+            const { speechState } = personaState;
+            const action = actions.setSpeechState({ speechState });
+            thunk.dispatch(action);
+          }
+          if ('users' in personaState) {
+            const userState = personaState.users[0];
+            // we get emotional data from webcam feed
+            if ('emotion' in userState) {
+              const { emotion } = userState;
+              const roundedEmotion = {};
+              // add all of the emotional values, only dispatch action if sum is different
+              let emotionDiffSum = 0;
+              Object.keys(emotion).forEach((k) => {
+                roundedEmotion[k] = Math.floor(emotion[k] * 10) / 10;
+                emotionDiffSum += roundedEmotion[k];
+              });
+              // it's ok to assign this before dispatching the event since this doesn't
+              // change the value in the store until after dispatch
+              roundedEmotion.diffSum = emotionDiffSum;
+              // get the old diff sum and compare
+              const { diffSum } = thunk.getState().sm.user.emotion;
+              if (diffSum !== emotionDiffSum) {
+                const action = actions.setEmotionState({ emotion: roundedEmotion });
+                thunk.dispatch(action);
+              }
+            } else if ('activity' in userState) {
+              const { activity } = userState;
+              const roundedActivity = {};
+              let activityDiffSum = 0;
+              Object.keys(activity).forEach((k) => {
+                roundedActivity[k] = Math.floor(activity[k] * 10) / 10;
+                activityDiffSum += roundedActivity[k];
+              });
+              roundedActivity.diffSum = activityDiffSum;
+              // add all activity values, only dispatch action if sum is different
+              const { diffSum } = thunk.getState().sm.user.activity;
+              if (diffSum !== activityDiffSum) {
+                const action = actions.setActivityState({ activity: roundedActivity });
+                thunk.dispatch(action);
+              }
+            } else { console.log(userState); }
+          }
+        } else if ('statistics' in body) {
+          const { callQuality } = body.statistics;
+          thunk.dispatch(actions.setCallQuality({ callQuality }));
+        }
         break;
       }
+
       case ('activation'): {
         break;
       }
+
       default: {
         console.warn(`unknown message type ${message.name}`, message);
       }
@@ -123,10 +208,32 @@ const smSlice = createSlice({
     addConversationResult: (state, { payload }) => ({
       ...state,
       transcript: [...state.transcript, {
-        user: payload.user,
+        source: payload.source,
         text: payload.text,
         timestamp: new Date().toISOString(),
       }],
+    }),
+    setSpeechState: (state, { payload }) => ({
+      ...state,
+      speechState: payload.speechState,
+    }),
+    setEmotionState: (state, { payload }) => ({
+      ...state,
+      user: {
+        ...state.user,
+        emotion: payload.emotion,
+      },
+    }),
+    setActivityState: (state, { payload }) => ({
+      ...state,
+      user: {
+        ...state.user,
+        activity: payload.activity,
+      },
+    }),
+    setCallQuality: (state, { payload }) => ({
+      ...state,
+      callQuality: payload.callQuality,
     }),
     setVideoDimensions: (state, { payload }) => {
       const { videoWidth, videoHeight } = payload;
