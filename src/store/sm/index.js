@@ -187,7 +187,9 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
         break;
       }
 
+      // activation events i think are some kind of emotional metadata
       case ('activation'): {
+        // console.warn('activation handler not yet implemented', message);
         break;
       }
 
