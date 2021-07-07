@@ -13,6 +13,8 @@ const initialState = {
   videoWidth: window.innerWidth,
   transcript: [],
   speechState: 'idle',
+  lastUserUtterance: '',
+  lastPersonaUtterance: '',
   user: {
     activity: {
       isAttentive: 0,
@@ -108,7 +110,10 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
         return thunk.dispatch(action);
       }
 
+      // personaResponse doesn't contain much data that isn't in recognizeResults or
+      // conversationResult, so i've chosen to leave this unimplemented for now
       case ('personaResponse'): {
+        // console.warn('personaResponse handler not yet implemented', message.body);
         break;
       }
 
@@ -147,9 +152,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
             if ('conversation' in userState) {
               const { conversation } = userState;
               const { context } = conversation;
-
               const roundedContext = roundObject(context);
-
               const action = actions.setConversationState({
                 conversation: {
                   ...conversation,
@@ -234,6 +237,7 @@ const smSlice = createSlice({
         text: payload.text,
         timestamp: new Date().toISOString(),
       }],
+      [payload.source === 'user' ? 'lastUserUtterance' : 'lastPersonaUtterance']: payload.text,
     }),
     setSpeechState: (state, { payload }) => ({
       ...state,
