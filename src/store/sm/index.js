@@ -17,14 +17,12 @@ const initialState = {
     activity: {
       isAttentive: 0,
       isTalking: 0,
-      diffSum: 0,
     },
     emotion: {
       confusion: 0,
       negativity: 0,
       positivity: 0,
       confidence: 0,
-      diffSum: 0,
     },
     conversation: {
       turn: '',
@@ -40,7 +38,6 @@ const initialState = {
         User_Turn_Confusion: null,
         User_Turn_Negativity: null,
         User_Turn_Positivity: null,
-        diffSum: 0,
       },
     },
   },
@@ -64,17 +61,13 @@ let actions;
 let persona = null;
 let scene = null;
 
-// stuff like emotional data has way more decimal places than is useful
-// this function rounds the values and provides a sum to diff w/ existing state
-const roundAndSumObject = (o) => {
-  let diffSum = 0;
+// stuff like emotional data has way more decimal places than is useful, round values
+const roundObject = (o) => {
   const output = {};
   Object.keys(o).forEach((k) => {
     output[k] = Math.floor(o[k] * 10) / 10;
-    // don't add diffSum to itself, since it's stored in the object
-    if (k !== 'diffSum') diffSum += output[k];
   });
-  return [output, diffSum];
+  return output;
 };
 
 export const createScene = createAsyncThunk('sm/createScene', async (audioOnly = false, thunk) => {
@@ -139,45 +132,31 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
             // we get emotional data from webcam feed
             if ('emotion' in userState) {
               const { emotion } = userState;
-              const [roundedEmotion, emotionDiffSum] = roundAndSumObject(emotion);
-              // it's ok to assign this before dispatching the event since this doesn't
-              // change the value in the store until after dispatch
-              roundedEmotion.diffSum = emotionDiffSum;
-              // get the old diff sum and compare
-              const { diffSum } = thunk.getState().sm.user.emotion;
-              if (diffSum !== emotionDiffSum) {
-                const action = actions.setEmotionState({ emotion: roundedEmotion });
-                thunk.dispatch(action);
-              }
+              const roundedEmotion = roundObject(emotion);
+              const action = actions.setEmotionState({ emotion: roundedEmotion });
+              thunk.dispatch(action);
             }
 
             if ('activity' in userState) {
               const { activity } = userState;
-              const [roundedActivity, activityDiffSum] = roundAndSumObject(activity);
-              roundedActivity.diffSum = activityDiffSum;
-              // add all activity values, only dispatch action if sum is different
-              const { diffSum } = thunk.getState().sm.user.activity;
-              if (diffSum !== activityDiffSum) {
-                const action = actions.setActivityState({ activity: roundedActivity });
-                thunk.dispatch(action);
-              }
+              const roundedActivity = roundObject(activity);
+              const action = actions.setEmotionState({ activity: roundedActivity });
+              thunk.dispatch(action);
             }
 
             if ('conversation' in userState) {
               const { conversation } = userState;
-              // console.log('balls', conversation);
               const { context } = conversation;
-              const [roundedContext, contextDiffSum] = roundAndSumObject(context);
-              const { diffSum } = thunk.getState().sm.user.conversation.context;
-              if (diffSum !== contextDiffSum) {
-                const action = actions.setConversationState({
-                  conversation: {
-                    ...conversation,
-                    context: roundedContext,
-                  },
-                });
-                thunk.dispatch(action);
-              }
+
+              const roundedContext = roundObject(context);
+
+              const action = actions.setConversationState({
+                conversation: {
+                  ...conversation,
+                  context: roundedContext,
+                },
+              });
+              thunk.dispatch(action);
             }
           }
         } else if ('statistics' in body) {
