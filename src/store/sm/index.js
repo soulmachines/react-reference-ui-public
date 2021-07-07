@@ -26,6 +26,23 @@ const initialState = {
       confidence: 0,
       diffSum: 0,
     },
+    conversation: {
+      turn: '',
+      context: {
+        FacePresent: 0,
+        PersonaTurn_IsAttentive: 0,
+        PersonaTurn_IsTalking: null,
+        Persona_Turn_Confusion: null,
+        Persona_Turn_Negativity: null,
+        Persona_Turn_Positivity: null,
+        UserTurn_IsAttentive: 0,
+        UserTurn_IsTalking: null,
+        User_Turn_Confusion: null,
+        User_Turn_Negativity: null,
+        User_Turn_Positivity: null,
+        diffSum: 0,
+      },
+    },
   },
   callQuality: {
     audio: {
@@ -46,6 +63,19 @@ const initialState = {
 let actions;
 let persona = null;
 let scene = null;
+
+// stuff like emotional data has way more decimal places than is useful
+// this function rounds the values and provides a sum to diff w/ existing state
+const roundAndSumObject = (o) => {
+  let diffSum = 0;
+  const output = {};
+  Object.keys(o).forEach((k) => {
+    output[k] = Math.floor(o[k] * 10) / 10;
+    // don't add diffSum to itself, since it's stored in the object
+    if (k !== 'diffSum') diffSum += output[k];
+  });
+  return [output, diffSum];
+};
 
 export const createScene = createAsyncThunk('sm/createScene', async (audioOnly = false, thunk) => {
   /* CREATE SCENE */
@@ -95,24 +125,21 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
         const { body } = message;
         if ('persona' in body) {
           const personaState = body.persona[1];
+
           // handle changes to persona speech state ie idle, animating, speaking
           if ('speechState' in personaState) {
             const { speechState } = personaState;
             const action = actions.setSpeechState({ speechState });
             thunk.dispatch(action);
           }
+
           if ('users' in personaState) {
             const userState = personaState.users[0];
+
             // we get emotional data from webcam feed
             if ('emotion' in userState) {
               const { emotion } = userState;
-              const roundedEmotion = {};
-              // add all of the emotional values, only dispatch action if sum is different
-              let emotionDiffSum = 0;
-              Object.keys(emotion).forEach((k) => {
-                roundedEmotion[k] = Math.floor(emotion[k] * 10) / 10;
-                emotionDiffSum += roundedEmotion[k];
-              });
+              const [roundedEmotion, emotionDiffSum] = roundAndSumObject(emotion);
               // it's ok to assign this before dispatching the event since this doesn't
               // change the value in the store until after dispatch
               roundedEmotion.diffSum = emotionDiffSum;
@@ -122,14 +149,11 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
                 const action = actions.setEmotionState({ emotion: roundedEmotion });
                 thunk.dispatch(action);
               }
-            } else if ('activity' in userState) {
+            }
+
+            if ('activity' in userState) {
               const { activity } = userState;
-              const roundedActivity = {};
-              let activityDiffSum = 0;
-              Object.keys(activity).forEach((k) => {
-                roundedActivity[k] = Math.floor(activity[k] * 10) / 10;
-                activityDiffSum += roundedActivity[k];
-              });
+              const [roundedActivity, activityDiffSum] = roundAndSumObject(activity);
               roundedActivity.diffSum = activityDiffSum;
               // add all activity values, only dispatch action if sum is different
               const { diffSum } = thunk.getState().sm.user.activity;
@@ -137,7 +161,24 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
                 const action = actions.setActivityState({ activity: roundedActivity });
                 thunk.dispatch(action);
               }
-            } else { console.log(userState); }
+            }
+
+            if ('conversation' in userState) {
+              const { conversation } = userState;
+              // console.log('balls', conversation);
+              const { context } = conversation;
+              const [roundedContext, contextDiffSum] = roundAndSumObject(context);
+              const { diffSum } = thunk.getState().sm.user.conversation.context;
+              if (diffSum !== contextDiffSum) {
+                const action = actions.setConversationState({
+                  conversation: {
+                    ...conversation,
+                    context: roundedContext,
+                  },
+                });
+                thunk.dispatch(action);
+              }
+            }
           }
         } else if ('statistics' in body) {
           const { callQuality } = body.statistics;
@@ -151,7 +192,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
       }
 
       default: {
-        console.warn(`unknown message type ${message.name}`, message);
+        console.warn(`unknown message type: ${message.name}`, message);
       }
     }
   };
@@ -222,6 +263,13 @@ const smSlice = createSlice({
       user: {
         ...state.user,
         emotion: payload.emotion,
+      },
+    }),
+    setConversationState: (state, { payload }) => ({
+      ...state,
+      user: {
+        ...state.user,
+        conversation: payload.conversation,
       },
     }),
     setActivityState: (state, { payload }) => ({
