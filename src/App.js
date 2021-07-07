@@ -53,7 +53,13 @@ const App = ({
           : null
       }
       {
-        loading ? 'loading' : null
+        loading
+          ? (
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          )
+          : null
       }
 
     </div>
@@ -80,6 +86,9 @@ const StyledApp = styled(App)`
   /* if you need the persona video to be different than the window dimensions, change these values */
   width: 100vw;
   height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   video {
     /* the video element will conform to the container dimensions, so keep this as it is */
     width: 100%;
