@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { smwebsdk } from '@soulmachines/smwebsdk';
-import proxyVideo from '../proxyVideo';
+import proxyVideo from '../../proxyVideo';
 
 const ORCHESTRATION_MODE = false;
 const TOKEN_ISSUER = 'https://localhost:5000/auth/authorize';
@@ -77,7 +77,12 @@ const smSlice = createSlice({
   name: 'sm',
   initialState,
   reducers: {
-    setVideoDimensions: (state, { videoWidth, videoHeight }) => ({ videoWidth, videoHeight }),
+    setVideoDimensions: (state, { payload }) => {
+      const { videoWidth, videoHeight } = payload;
+      // update video dimensions in persona
+      scene.sendVideoBounds(videoWidth, videoHeight);
+      return { ...state, videoWidth, videoHeight };
+    },
   },
   extraReducers: {
     [createScene.pending]: (state) => ({
@@ -97,5 +102,7 @@ const smSlice = createSlice({
     }),
   },
 });
+
+export const { setVideoDimensions } = smSlice.actions;
 
 export default smSlice.reducer;
