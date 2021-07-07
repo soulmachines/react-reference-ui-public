@@ -1,7 +1,7 @@
-/* eslint-disable jsx-a11y/media-has-caption */
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import styled from 'styled-components';
+import PropTypes from 'prop-types';
 import PersonaVideo from './components/PersonaVideo';
 import Captions from './components/Captions';
 
@@ -13,6 +13,10 @@ const App = ({ className }) => (
     <PersonaVideo />
   </div>
 );
+
+App.propTypes = {
+  className: PropTypes.string.isRequired,
+};
 
 export default styled(App)`
   .video-overlay {
