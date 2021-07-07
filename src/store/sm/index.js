@@ -35,6 +35,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
   /* BIND HANDLERS */
   scene.onMessage = (message) => {
     switch (message.name) {
+      // handles output from TTS (what user said)
       case ('recognizeResults'): {
         const output = message.body.results[0];
         // we get multiple recognizeResults messages, so only add the final one to transcript
@@ -46,6 +47,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
         });
         return thunk.dispatch(action);
       }
+      // handles output from NLP (what DP is saying)
       case ('conversationResult'): {
         const { text } = message.body.output;
         const action = actions.addConversationResult({
@@ -121,7 +123,8 @@ const smSlice = createSlice({
     addConversationResult: (state, { payload }) => ({
       ...state,
       transcript: [...state.transcript, {
-        ...payload,
+        user: payload.user,
+        text: payload.text,
         timestamp: new Date().toISOString(),
       }],
     }),
@@ -151,6 +154,7 @@ const smSlice = createSlice({
   },
 });
 
+// hoist actions to top of file so thunks can access
 actions = smSlice.actions;
 
 export const { setVideoDimensions } = smSlice.actions;
