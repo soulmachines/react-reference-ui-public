@@ -11,8 +11,12 @@ const initialState = {
   error: null,
   videoHeight: window.innerHeight,
   videoWidth: window.innerWidth,
+  transcript: [],
 };
 
+// we need to define an object for actions here, since we need the types to be avaliable for
+// async calls later, e.g. handling messages from persona
+let actions;
 let persona = null;
 let scene = null;
 
@@ -28,6 +32,43 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
     requestedUserMedia,
     microphone,
   );
+  /* BIND HANDLERS */
+  scene.onMessage = (message) => {
+    switch (message.name) {
+      case ('recognizeResults'): {
+        const output = message.body.results[0];
+        // we get multiple recognizeResults messages, so only add the final one to transcript
+        if (output.final === false) break;
+        const { transcript: text } = output.alternatives[0];
+        const action = actions.addConversationResult({
+          source: 'user',
+          text,
+        });
+        return thunk.dispatch(action);
+      }
+      case ('conversationResult'): {
+        const { text } = message.body.output;
+        const action = actions.addConversationResult({
+          source: 'persona',
+          text,
+        });
+        return thunk.dispatch(action);
+      }
+      case ('personaResponse'): {
+        break;
+      }
+      case ('state'): {
+        break;
+      }
+      case ('activation'): {
+        break;
+      }
+      default: {
+        console.warn(`unknown message type ${message.name}`, message);
+      }
+    }
+  };
+
   // copied from old template, not sure if there are other possible values for this?
   const PERSONA_ID = '1';
   // create instance of Persona class w/ scene instance
@@ -59,7 +100,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
     return thunk.fulfillWithValue();
   } catch (err) {
     // TODO: try to handle blocked permissions a la https://github.com/soulmachines/cs-gem-poc-ui/blob/9c4ce7f475e0ec1b34a80d8271dd5bf81134cfb9/src/contexts/SoulMachines.js#L436
-    thunk.rejectWithValue(err);
+    return thunk.rejectWithValue(err);
   }
 });
 
@@ -77,6 +118,13 @@ const smSlice = createSlice({
   name: 'sm',
   initialState,
   reducers: {
+    addConversationResult: (state, { payload }) => ({
+      ...state,
+      transcript: [...state.transcript, {
+        ...payload,
+        timestamp: new Date().toISOString(),
+      }],
+    }),
     setVideoDimensions: (state, { payload }) => {
       const { videoWidth, videoHeight } = payload;
       // update video dimensions in persona
@@ -102,6 +150,8 @@ const smSlice = createSlice({
     }),
   },
 });
+
+actions = smSlice.actions;
 
 export const { setVideoDimensions } = smSlice.actions;
 
