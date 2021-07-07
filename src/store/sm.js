@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { smwebsdk } from '@soulmachines/smwebsdk';
+import proxyVideo from '../proxyVideo';
 
 const ORCHESTRATION_MODE = false;
 const TOKEN_ISSUER = 'https://localhost:5000/auth/authorize';
@@ -14,7 +15,6 @@ const initialState = {
 
 let persona = null;
 let scene = null;
-const proxyVideo = document.createElement('video');
 
 export const createScene = createAsyncThunk('sm/createScene', async (audioOnly = false, thunk) => {
   /* CREATE SCENE */
@@ -55,7 +55,8 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
     const { videoWidth, videoHeight } = thunk.getState();
     scene.sendVideoBounds(videoWidth, videoHeight);
 
-    thunk.fulfillWithValue();
+    // fulfill promise, reducer sets state to indiate loading and connection are complete
+    return thunk.fulfillWithValue();
   } catch (err) {
     // TODO: try to handle blocked permissions a la https://github.com/soulmachines/cs-gem-poc-ui/blob/9c4ce7f475e0ec1b34a80d8271dd5bf81134cfb9/src/contexts/SoulMachines.js#L436
     thunk.rejectWithValue(err);
@@ -76,6 +77,7 @@ const smSlice = createSlice({
   name: 'sm',
   initialState,
   reducers: {
+    setVideoDimensions: (state, { videoWidth, videoHeight }) => ({ videoWidth, videoHeight }),
   },
   extraReducers: {
     [createScene.pending]: (state) => ({
