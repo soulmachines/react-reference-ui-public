@@ -7,7 +7,7 @@ import * as actions from './store/sm';
 import proxyVideo from './proxyVideo';
 
 const App = ({
-  initScene, loading, connected, width, height, setVideoDimensions, className,
+  initScene, loading, connected, setVideoDimensions, className,
 }) => {
   // video elem ref used to link proxy video element to displayed video
   const videoRef = React.createRef();
@@ -72,14 +72,6 @@ App.propTypes = {
   loading: PropTypes.bool.isRequired,
   connected: PropTypes.bool.isRequired,
   className: PropTypes.string.isRequired,
-  width: PropTypes.number,
-  height: PropTypes.number,
-};
-
-App.defaultProps = {
-  // chosen pretty arbitrarily, since the values should get overwritten immediately
-  width: 1366,
-  height: 768,
 };
 
 const StyledApp = styled(App)`
