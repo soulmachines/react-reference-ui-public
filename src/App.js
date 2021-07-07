@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/media-has-caption */
 import React, { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { connect } from 'react-redux';
@@ -48,8 +49,11 @@ const App = ({
     <div ref={containerRef} className={className}>
       {
         connected
-          // eslint-disable-next-line jsx-a11y/media-has-caption
-          ? <video ref={videoRef} autoPlay playsInline className="personavideo" id="personavideo" />
+          ? (
+            // we display captions as an overlay. this functionality is critical and
+            // should not be removed in derrivative custom UI's!!
+            <video ref={videoRef} autoPlay playsInline className="fill-parent" id="personavideo" />
+          )
           : null
       }
       {
@@ -81,7 +85,7 @@ const StyledApp = styled(App)`
   display: flex;
   align-items: center;
   justify-content: center;
-  video {
+  .fill-parent {
     /* the video element will conform to the container dimensions, so keep this as it is */
     width: 100%;
     height: 100%;
