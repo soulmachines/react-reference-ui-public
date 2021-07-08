@@ -25,10 +25,12 @@ const Diagnostic = ({
           {
             loading
               ? (
+                // loading spinner
                 <div className="spinner-border text-primary" role="status">
                   <span className="visually-hidden">Loading...</span>
                 </div>
               )
+              // connect button
               : <button type="button" className={`btn btn-outline-success ${!connected && !loading ? '' : 'd-none'}`} onClick={dispatchCreateScene} data-tip="Connect">Connect</button>
           }
         </div>
