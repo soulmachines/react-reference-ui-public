@@ -7,15 +7,19 @@ import Captions from '../components/Captions';
 import Controls from '../components/Controls';
 import {
   disconnect,
+  createScene,
 } from '../store/sm/index';
 
-const Diagnostic = ({ className, dispatchDisconnect }) => (
+const Diagnostic = ({
+  className, dispatchDisconnect, connected, loading, dispatchCreateScene,
+}) => (
   <div className={className}>
     <div className="video-overlay">
       <div className="container d-flex flex-column justify-content-between">
         {/* top row */}
         <div className="d-flex justify-content-end mt-3">
-          <button type="button" className="btn btn-outline-danger" onClick={dispatchDisconnect} data-tip="Disconnect">Disconnect</button>
+          <button type="button" disabled={!connected} className={`btn btn-outline-danger ${connected && !loading ? '' : 'd-none'}`} onClick={dispatchDisconnect} data-tip="Disconnect">Disconnect</button>
+          <button type="button" className={`btn btn-outline-success ${!connected && !loading ? '' : 'd-none'}`} onClick={dispatchCreateScene} data-tip="Connect">Connect</button>
         </div>
         {/* middle row */}
         <div />
@@ -40,6 +44,10 @@ const Diagnostic = ({ className, dispatchDisconnect }) => (
 
 Diagnostic.propTypes = {
   className: PropTypes.string.isRequired,
+  dispatchDisconnect: PropTypes.func.isRequired,
+  dispatchCreateScene: PropTypes.func.isRequired,
+  connected: PropTypes.bool.isRequired,
+  loading: PropTypes.bool.isRequired,
 };
 
 const StyledDiagnostic = styled(Diagnostic)`
@@ -59,12 +67,14 @@ const StyledDiagnostic = styled(Diagnostic)`
   }
 `;
 
-const mapStateToProps = (state) => ({
-
+const mapStateToProps = ({ sm }) => ({
+  connected: sm.connected,
+  loading: sm.loading,
 });
 
 const mapDispatchToProps = (dispatch) => ({
   dispatchDisconnect: () => dispatch(disconnect()),
+  dispatchCreateScene: () => dispatch(createScene()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(StyledDiagnostic);
