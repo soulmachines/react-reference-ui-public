@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
-import { sendTextMessage } from '../store/sm/index';
+import ReactTooltip from 'react-tooltip';
+import { sendTextMessage, disconnect } from '../store/sm/index';
 
 const Controls = ({
-  className, intermediateUserUtterance, lastUserUtterance, userSpeaking, dispatchText,
+  className, intermediateUserUtterance, lastUserUtterance, userSpeaking, dispatchText, dispatchDisconnect,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
@@ -26,11 +27,15 @@ const Controls = ({
 
   return (
     <div className={className}>
-      <div className="row">
+      <div className="row mb-3">
         <div className="col">
-          <form className="input-group mb-3" onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
             <input type="text" className="form-control" placeholder={intermediateUserUtterance} value={inputValue} onChange={handleInput} onFocus={handleFocus} onBlur={handleBlur} aria-label="User input" />
           </form>
+        </div>
+        <div className="col-2">
+          <button type="button" className="btn btn-primary" onClick={dispatchDisconnect} data-tip="Disconnect">Disconnect</button>
+          <ReactTooltip />
         </div>
       </div>
     </div>
@@ -39,10 +44,12 @@ const Controls = ({
 
 const StyledControls = styled(Controls)`
   display: ${(props) => (props.connected ? '' : 'none')};
-  .form-control {
-    max-width: 30rem;
+  .row {
+    max-width:  30rem;
     margin: 0px auto;
+  }
 
+  .form-control {
     opacity: 0.5;
     &:focus {
       opacity: 1;
@@ -59,6 +66,7 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   dispatchText: (text) => dispatch(sendTextMessage({ text })),
+  dispatchDisconnect: () => dispatch(disconnect()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(StyledControls);

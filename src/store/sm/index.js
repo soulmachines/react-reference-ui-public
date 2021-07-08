@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { smwebsdk } from '@soulmachines/smwebsdk';
+import { resetWarningCache } from 'prop-types';
 import proxyVideo from '../../proxyVideo';
 
 const ORCHESTRATION_MODE = false;
@@ -75,6 +76,16 @@ const roundObject = (o, multiplier = 10) => {
   return output;
 };
 
+// handles both manual disconnect or automatic timeout due to innactivity
+export const disconnect = createAsyncThunk('sm/disconnect', async (args, thunk) => {
+  thunk.dispatch(actions.disconnect());
+  setTimeout(() => {
+    if (scene) scene.disconnect();
+    scene = null;
+    persona = null;
+  }, 500);
+});
+
 export const createScene = createAsyncThunk('sm/createScene', async (audioOnly = false, thunk) => {
   /* CREATE SCENE */
   // request permissions from user
@@ -88,6 +99,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
     microphone,
   );
   /* BIND HANDLERS */
+  scene.onDisconnected = () => disconnect();
   scene.onMessage = (message) => {
     switch (message.name) {
       // handles output from TTS (what user said)
@@ -291,6 +303,11 @@ const smSlice = createSlice({
       scene.sendVideoBounds(videoWidth, videoHeight);
       return { ...state, videoWidth, videoHeight };
     },
+    disconnect: (state) => ({
+      ...state,
+      connected: false,
+      error: null,
+    }),
   },
   extraReducers: {
     [createScene.pending]: (state) => ({
