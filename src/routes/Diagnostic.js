@@ -19,10 +19,19 @@ const Diagnostic = ({
         {/* top row */}
         <div className="d-flex justify-content-end mt-3">
           <button type="button" disabled={!connected} className={`btn btn-outline-danger ${connected && !loading ? '' : 'd-none'}`} onClick={dispatchDisconnect} data-tip="Disconnect">Disconnect</button>
-          <button type="button" className={`btn btn-outline-success ${!connected && !loading ? '' : 'd-none'}`} onClick={dispatchCreateScene} data-tip="Connect">Connect</button>
         </div>
         {/* middle row */}
-        <div />
+        <div className="text-center">
+          {
+            loading
+              ? (
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              )
+              : <button type="button" className={`btn btn-outline-success ${!connected && !loading ? '' : 'd-none'}`} onClick={dispatchCreateScene} data-tip="Connect">Connect</button>
+          }
+        </div>
         {/* bottom row */}
         <div>
           <div className="row">
@@ -38,7 +47,9 @@ const Diagnostic = ({
         </div>
       </div>
     </div>
-    <PersonaVideo />
+    {
+      connected ? <PersonaVideo /> : null
+    }
   </div>
 );
 

@@ -27,10 +27,6 @@ const App = ({
     }
   };
 
-  // when the component mounts, establish connection w/ Persona server, display video etc etc
-  useEffect(() => {
-    initScene();
-  }, []);
   // persona video feed is routed through a proxy <video> tag,
   // we need to get the src data from that element to use here
   useEffect(() => {
@@ -42,6 +38,8 @@ const App = ({
       handleResize();
       window.addEventListener('resize', handleResize);
     }
+    // when component dismounts, remove resize listener
+    return window.removeEventListener('resize', handleResize);
   });
 
   return (
@@ -105,7 +103,6 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  initScene: () => dispatch(actions.createScene()),
   setVideoDimensions: (videoWidth, videoHeight) => dispatch(
     actions.setVideoDimensions({ videoWidth, videoHeight }),
   ),
