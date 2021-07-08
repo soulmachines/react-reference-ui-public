@@ -64,7 +64,9 @@ const App = ({
           )
           : null
       }
-
+      {
+        connected === false && loading === false ? 'disconnected' : ''
+      }
     </div>
   );
 };
