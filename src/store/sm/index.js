@@ -13,6 +13,9 @@ const initialState = {
   videoWidth: window.innerWidth,
   transcript: [],
   speechState: 'idle',
+  // NLP gives us results as it processes final user utterance
+  intermediateUserUtterance: '',
+  userSpeaking: false,
   lastUserUtterance: '',
   lastPersonaUtterance: '',
   user: {
@@ -64,10 +67,10 @@ let persona = null;
 let scene = null;
 
 // stuff like emotional data has way more decimal places than is useful, round values
-const roundObject = (o) => {
+const roundObject = (o, multiplier = 10) => {
   const output = {};
   Object.keys(o).forEach((k) => {
-    output[k] = Math.floor(o[k] * 10) / 10;
+    output[k] = Math.floor(o[k] * multiplier) / multiplier;
   });
   return output;
 };
@@ -90,14 +93,18 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
       // handles output from TTS (what user said)
       case ('recognizeResults'): {
         const output = message.body.results[0];
-        // we get multiple recognizeResults messages, so only add the final one to transcript
-        if (output.final === false) break;
         const { transcript: text } = output.alternatives[0];
-        const action = actions.addConversationResult({
+        // we get multiple recognizeResults messages, so only add the final one to transcript
+        // but keep track of intermediate one to show the user what they're saying
+        if (output.final === false) {
+          return thunk.dispatch(actions.setIntermediateUserUtterance({
+            text,
+          }));
+        }
+        return thunk.dispatch(actions.addConversationResult({
           source: 'user',
           text,
-        });
-        return thunk.dispatch(action);
+        }));
       }
 
       // handles output from NLP (what DP is saying)
@@ -144,7 +151,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
 
             if ('activity' in userState) {
               const { activity } = userState;
-              const roundedActivity = roundObject(activity);
+              const roundedActivity = roundObject(activity, 1000);
               const action = actions.setEmotionState({ activity: roundedActivity });
               thunk.dispatch(action);
             }
@@ -218,11 +225,14 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
 
 // send plain text to the persona.
 // usually used for typed input or UI elems that trigger a certain phrase
-export const sendTextMessage = createAsyncThunk('sm/sendTextMessage', async (text, thunk) => {
+export const sendTextMessage = createAsyncThunk('sm/sendTextMessage', async ({ text }, thunk) => {
   if (scene && persona) {
     if (ORCHESTRATION_MODE) scene.sendUserText(text);
     else persona.conversationSend(text);
-    thunk.fulfillWithValue(`sent: ${text}!`);
+    thunk.dispatch(actions.addConversationResult({
+      source: 'user',
+      text,
+    }));
   } else thunk.rejectWithValue('not connected to persona!');
 });
 
@@ -230,6 +240,11 @@ const smSlice = createSlice({
   name: 'sm',
   initialState,
   reducers: {
+    setIntermediateUserUtterance: (state, { payload }) => ({
+      ...state,
+      intermediateUserUtterance: payload.text,
+      userSpeaking: true,
+    }),
     addConversationResult: (state, { payload }) => ({
       ...state,
       transcript: [...state.transcript, {
@@ -238,6 +253,8 @@ const smSlice = createSlice({
         timestamp: new Date().toISOString(),
       }],
       [payload.source === 'user' ? 'lastUserUtterance' : 'lastPersonaUtterance']: payload.text,
+      intermediateUserUtterance: '',
+      userSpeaking: false,
     }),
     setSpeechState: (state, { payload }) => ({
       ...state,

@@ -4,11 +4,23 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import PersonaVideo from './components/PersonaVideo';
 import Captions from './components/Captions';
+import Controls from './components/Controls';
 
 const App = ({ className }) => (
   <div className={className}>
-    <div className="video-overlay container">
-      <Captions />
+    <div className="video-overlay">
+      <div className="container">
+        <div className="row">
+          <div className="col text-center">
+            <Captions />
+          </div>
+        </div>
+        <div className="row">
+          <div className="col">
+            <Controls />
+          </div>
+        </div>
+      </div>
     </div>
     <PersonaVideo />
   </div>

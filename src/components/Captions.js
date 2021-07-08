@@ -67,7 +67,7 @@ const Captions = ({ speechState, lastPersonaUtterance, className }) => {
   }, [speechState]);
 
   return (
-    <div className={`${className} ${showCaptions ? '' : 'd-none '} text-center`}>
+    <div className={`${className} ${showCaptions ? 'd-inline-block' : 'd-none'} text-center`}>
       { captionText }
     </div>
   );
@@ -80,7 +80,7 @@ Captions.propTypes = {
 };
 
 const StyledCaptions = styled(Captions)`
-  margin-bottom: 1rem;
+  margin-bottom: .3rem;
 
   padding-top: 0.2rem;
   padding-bottom: 0.2rem;
