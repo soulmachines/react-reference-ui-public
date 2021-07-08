@@ -10,6 +10,7 @@ const initialState = {
   connected: false,
   loading: false,
   error: null,
+  isMuted: false,
   videoHeight: window.innerHeight,
   videoWidth: window.innerWidth,
   transcript: [],
@@ -75,6 +76,18 @@ const roundObject = (o, multiplier = 10) => {
   });
   return output;
 };
+
+// tells persona to stop listening to mic input
+export const mute = createAsyncThunk('sm/mute', async (args, thunk) => {
+  const { isMuted } = thunk.getState().sm;
+  if (scene) {
+    const muteState = !isMuted;
+    console.log(muteState);
+    const command = `${muteState ? 'stop' : 'start'}Recognize`;
+    scene.sendRequest(command, {});
+    thunk.dispatch(actions.setMute({ isMuted: muteState }));
+  } else { console.warn('muting not possible, no active scene!'); }
+});
 
 // handles both manual disconnect or automatic timeout due to innactivity
 export const disconnect = createAsyncThunk('sm/disconnect', async (args, thunk) => {
@@ -224,7 +237,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
     scene.session().setLogging(false);
 
     // set video dimensions
-    const { videoWidth, videoHeight } = thunk.getState();
+    const { videoWidth, videoHeight } = thunk.getState().sm;
     scene.sendVideoBounds(videoWidth, videoHeight);
 
     // fulfill promise, reducer sets state to indiate loading and connection are complete
@@ -252,6 +265,14 @@ const smSlice = createSlice({
   name: 'sm',
   initialState,
   reducers: {
+    stopSpeaking: (state) => {
+      if (persona) persona.stopSpeaking();
+      return { ...state };
+    },
+    setMute: (state, { payload }) => ({
+      ...state,
+      isMuted: payload.isMuted,
+    }),
     setIntermediateUserUtterance: (state, { payload }) => ({
       ...state,
       intermediateUserUtterance: payload.text,
@@ -331,6 +352,6 @@ const smSlice = createSlice({
 // hoist actions to top of file so thunks can access
 actions = smSlice.actions;
 
-export const { setVideoDimensions } = smSlice.actions;
+export const { setVideoDimensions, stopSpeaking } = smSlice.actions;
 
 export default smSlice.reducer;
