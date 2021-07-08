@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import ReactTooltip from 'react-tooltip';
 import PropTypes from 'prop-types';
 import {
-  sendTextMessage, disconnect, mute, stopSpeaking,
+  sendTextMessage, mute, stopSpeaking,
 } from '../store/sm/index';
 
 const Controls = ({
@@ -13,7 +13,6 @@ const Controls = ({
   lastUserUtterance,
   userSpeaking,
   dispatchText,
-  dispatchDisconnect,
   dispatchMute,
   isMuted,
   speechState,
@@ -45,10 +44,9 @@ const Controls = ({
             <input type="text" className="form-control" placeholder={intermediateUserUtterance} value={inputValue} onChange={handleInput} onFocus={handleFocus} onBlur={handleBlur} aria-label="User input" />
           </form>
         </div>
-        <div className="col">
+        <div className="col-auto">
           <button type="button" className="btn btn-secondary" disabled={speechState !== 'speaking'} onClick={dispatchStopSpeaking} data-tip="Stop Speaking">Stop Speaking</button>
           <button type="button" className={`btn btn-${isMuted ? 'secondary' : 'danger '}`} onClick={dispatchMute} data-tip="Toggle Microphone Input">{ isMuted ? 'Unmute' : 'Mute' }</button>
-          <button type="button" className="btn btn-primary" onClick={dispatchDisconnect} data-tip="Disconnect">Disconnect</button>
         </div>
       </div>
       <ReactTooltip />
@@ -62,7 +60,6 @@ Controls.propTypes = {
   lastUserUtterance: PropTypes.string.isRequired,
   userSpeaking: PropTypes.bool.isRequired,
   dispatchText: PropTypes.func.isRequired,
-  dispatchDisconnect: PropTypes.func.isRequired,
   dispatchMute: PropTypes.func.isRequired,
   isMuted: PropTypes.bool.isRequired,
   speechState: PropTypes.string.isRequired,
@@ -70,7 +67,7 @@ Controls.propTypes = {
 };
 
 const StyledControls = styled(Controls)`
-  display: ${(props) => (props.connected ? '' : 'none')};
+  /* display: ${(props) => (props.connected ? '' : 'none')}; */
   .row {
     max-width: 50rem;
     margin: 0px auto;
@@ -98,7 +95,6 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   dispatchText: (text) => dispatch(sendTextMessage({ text })),
-  dispatchDisconnect: () => dispatch(disconnect()),
   dispatchMute: () => dispatch(mute()),
   dispatchStopSpeaking: () => dispatch(stopSpeaking()),
 });
