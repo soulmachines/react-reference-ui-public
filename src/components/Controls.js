@@ -67,7 +67,7 @@ Controls.propTypes = {
 };
 
 const StyledControls = styled(Controls)`
-  /* display: ${(props) => (props.connected ? '' : 'none')}; */
+  display: ${(props) => (props.connected ? '' : 'none')};
   .row {
     max-width: 50rem;
     margin: 0px auto;
