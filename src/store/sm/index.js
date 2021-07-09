@@ -93,9 +93,9 @@ export const mute = createAsyncThunk('sm/mute', async (args, thunk) => {
 
 // handles both manual disconnect or automatic timeout due to innactivity
 export const disconnect = createAsyncThunk('sm/disconnect', async (args, thunk) => {
-  thunk.dispatch(actions.disconnect());
+  if (scene) scene.disconnect();
   setTimeout(() => {
-    if (scene) scene.disconnect();
+    thunk.dispatch(actions.disconnect());
     scene = null;
     persona = null;
   }, 500);
@@ -114,7 +114,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
     microphone,
   );
   /* BIND HANDLERS */
-  scene.onDisconnected = () => disconnect();
+  scene.onDisconnected = () => thunk.dispatch(disconnect());
   scene.onMessage = (message) => {
     switch (message.name) {
       // handles output from TTS (what user said)
@@ -381,6 +381,8 @@ const smSlice = createSlice({
       return { ...state, videoWidth, videoHeight };
     },
     disconnect: () => {
+      scene.onMessage = null;
+      scene.onDisconnected = null;
       scene = null;
       persona = null;
       return {
