@@ -56,7 +56,7 @@ const Controls = ({
         <div className="col">
           <form onSubmit={handleSubmit}>
             <div className="input-group">
-              <button type="button" className={`speaking-status btn btn-${isMuted ? 'secondary' : 'danger '}`} onClick={dispatchMute} data-tip="Toggle Microphone Input">
+              <button type="button" className={`speaking-status btn btn-${isMuted ? 'outline-secondary' : 'danger '}`} onClick={dispatchMute} data-tip="Toggle Microphone Input">
                 <div className={userSpeaking ? 'd-none' : ''}>
                   { isMuted ? <MicMuteFill size={21} /> : <MicFill size={21} /> }
                 </div>
@@ -102,7 +102,7 @@ const StyledControls = styled(Controls)`
   }
 
   .form-control {
-    opacity: 0.5;
+    opacity: 0.7;
     &:focus {
       opacity: 1;
     }
