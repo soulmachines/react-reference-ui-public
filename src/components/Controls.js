@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import styled from 'styled-components';
 import ReactTooltip from 'react-tooltip';
 import PropTypes from 'prop-types';
+import { MicFill, MicMuteFill, XOctagonFill } from 'react-bootstrap-icons';
 import {
   sendTextMessage, mute, stopSpeaking,
 } from '../store/sm/index';
@@ -39,7 +40,7 @@ const Controls = ({
   else if (userSpeaking === true && inputValue !== '' && inputFocused === false) setInputValue('');
 
   const spinner = '▖▘▝▗';
-  const spinnerInterval = 200;
+  const spinnerInterval = 100;
   useEffect(() => {
     setTimeout(() => {
       const nextDisplay = spinner[spinnerIndex];
@@ -54,12 +55,21 @@ const Controls = ({
       <div className="row mb-3">
         <div className="col">
           <form onSubmit={handleSubmit}>
-            <input type="text" className="form-control" placeholder={`${userSpeaking ? spinnerDisplay : ''} ${intermediateUserUtterance}`} value={inputValue} onChange={handleInput} onFocus={handleFocus} onBlur={handleBlur} aria-label="User input" />
+            <div className="input-group">
+              <button type="button" className={`speaking-status btn btn-${isMuted ? 'secondary' : 'danger '}`} onClick={dispatchMute} data-tip="Toggle Microphone Input">
+                <div className={userSpeaking ? 'd-none' : ''}>
+                  { isMuted ? <MicMuteFill size={21} /> : <MicFill size={21} /> }
+                </div>
+                { userSpeaking ? spinnerDisplay : null }
+              </button>
+              <input type="text" className="form-control" placeholder={`${intermediateUserUtterance}`} value={inputValue} onChange={handleInput} onFocus={handleFocus} onBlur={handleBlur} aria-label="User input" />
+            </div>
           </form>
         </div>
         <div className="col-auto">
-          <button type="button" className="btn btn-secondary" disabled={speechState !== 'speaking'} onClick={dispatchStopSpeaking} data-tip="Stop Speaking">Stop Speaking</button>
-          <button type="button" className={`btn btn-${isMuted ? 'secondary' : 'danger '}`} onClick={dispatchMute} data-tip="Toggle Microphone Input">{ isMuted ? 'Unmute' : 'Mute' }</button>
+          <button type="button" className="btn btn-outline-secondary" disabled={speechState !== 'speaking'} onClick={dispatchStopSpeaking} data-tip="Stop Speaking">
+            <XOctagonFill size={21} />
+          </button>
         </div>
       </div>
       <ReactTooltip />
@@ -86,14 +96,20 @@ const StyledControls = styled(Controls)`
     margin: 0px auto;
   }
 
+  svg {
+    /* make bootstrap icons vertically centered in buttons */
+    margin-bottom: 0.1rem;
+  }
+
   .form-control {
     opacity: 0.5;
     &:focus {
       opacity: 1;
     }
   }
-  .btn {
-    margin-right: 0.4rem;
+
+  .speaking-status {
+    width: 47px;
   }
 `;
 
