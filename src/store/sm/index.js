@@ -157,6 +157,10 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
             thunk.dispatch(actions.setActiveCards({ activeCards: newActiveCards }));
             break;
           }
+          case ('hidecards'): {
+            thunk.dispatch(actions.setActiveCards({}));
+            break;
+          }
           default: {
             console.warn(`unregonized speech marker: ${speechMarkerName}`);
           }
@@ -308,7 +312,7 @@ const smSlice = createSlice({
   reducers: {
     setActiveCards: (state, { payload }) => ({
       ...state,
-      activeCards: payload.activeCards,
+      activeCards: payload.activeCards || [],
       cardsAreStale: payload.cardsAreStale || false,
     }),
     // content cards with the same key may get overwritten, so when the card is called
