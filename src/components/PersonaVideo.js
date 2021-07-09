@@ -6,8 +6,8 @@ import styled from 'styled-components';
 import * as actions from '../store/sm';
 import proxyVideo from '../proxyVideo';
 
-const App = ({
-  initScene, loading, connected, setVideoDimensions, className,
+const PersonaVideo = ({
+  loading, connected, setVideoDimensions, className,
 }) => {
   // video elem ref used to link proxy video element to displayed video
   const videoRef = React.createRef();
@@ -27,10 +27,6 @@ const App = ({
     }
   };
 
-  // when the component mounts, establish connection w/ Persona server, display video etc etc
-  useEffect(() => {
-    initScene();
-  }, []);
   // persona video feed is routed through a proxy <video> tag,
   // we need to get the src data from that element to use here
   useEffect(() => {
@@ -42,6 +38,8 @@ const App = ({
       handleResize();
       window.addEventListener('resize', handleResize);
     }
+    // when component dismounts, remove resize listener
+    return () => window.removeEventListener('resize', handleResize);
   });
 
   return (
@@ -71,15 +69,14 @@ const App = ({
   );
 };
 
-App.propTypes = {
-  initScene: PropTypes.func.isRequired,
+PersonaVideo.propTypes = {
   setVideoDimensions: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
   connected: PropTypes.bool.isRequired,
   className: PropTypes.string.isRequired,
 };
 
-const StyledApp = styled(App)`
+const StyledPersonaVideo = styled(PersonaVideo)`
   /* if you need the persona video to be different than the window dimensions, change these values */
   width: 100vw;
   height: 100vh;
@@ -105,10 +102,9 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  initScene: () => dispatch(actions.createScene()),
   setVideoDimensions: (videoWidth, videoHeight) => dispatch(
     actions.setVideoDimensions({ videoWidth, videoHeight }),
   ),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(StyledApp);
+export default connect(mapStateToProps, mapDispatchToProps)(StyledPersonaVideo);

@@ -4,7 +4,9 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { syllable } from 'syllable';
 
-const Captions = ({ speechState, lastPersonaUtterance, className }) => {
+const Captions = ({
+  speechState, lastPersonaUtterance, className, connected,
+}) => {
   const [showCaptions, setShowCaptions] = useState(false);
   // if we have a very long response, we need to cycle the displayed content
   const [captionText, setCaptionText] = useState('');
@@ -14,6 +16,7 @@ const Captions = ({ speechState, lastPersonaUtterance, className }) => {
   const minCaptionDuration = 1500;
 
   useEffect(() => {
+    if (connected === false) return setShowCaptions(false);
     if (speechState === 'speaking') {
       // when a new utterance starts:
       // show captions
@@ -64,7 +67,7 @@ const Captions = ({ speechState, lastPersonaUtterance, className }) => {
         setCaptionsTimeout(newCaptionTimeout);
       }
     }
-  }, [speechState]);
+  }, [speechState, connected]);
 
   return (
     <div className={`${className} ${showCaptions ? 'd-inline-block' : 'd-none'} text-center`}>
@@ -77,9 +80,11 @@ Captions.propTypes = {
   speechState: PropTypes.string.isRequired,
   lastPersonaUtterance: PropTypes.string.isRequired,
   className: PropTypes.string.isRequired,
+  connected: PropTypes.bool.isRequired,
 };
 
 const StyledCaptions = styled(Captions)`
+
   margin-bottom: .3rem;
 
   padding-top: 0.2rem;
@@ -96,6 +101,7 @@ const StyledCaptions = styled(Captions)`
 const mapStateToProps = (state) => ({
   speechState: state.sm.speechState,
   lastPersonaUtterance: state.sm.lastPersonaUtterance,
+  connected: state.sm.connected,
 });
 
 export default connect(mapStateToProps)(StyledCaptions);

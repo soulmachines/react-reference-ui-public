@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import ReactTooltip from 'react-tooltip';
 import PropTypes from 'prop-types';
 import {
-  sendTextMessage, disconnect, mute, stopSpeaking,
+  sendTextMessage, mute, stopSpeaking,
 } from '../store/sm/index';
 
 const Controls = ({
@@ -13,7 +13,6 @@ const Controls = ({
   lastUserUtterance,
   userSpeaking,
   dispatchText,
-  dispatchDisconnect,
   dispatchMute,
   isMuted,
   speechState,
@@ -21,6 +20,8 @@ const Controls = ({
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
+  const [spinnerDisplay, setSpinnerDisplay] = useState('');
+  const [spinnerIndex, setSpinnerIndex] = useState(0);
 
   const handleInput = (e) => setInputValue(e.target.value);
   const handleFocus = () => {
@@ -37,18 +38,28 @@ const Controls = ({
   if (userSpeaking === false && lastUserUtterance !== '' && inputValue !== lastUserUtterance && inputFocused === false) setInputValue(lastUserUtterance);
   else if (userSpeaking === true && inputValue !== '' && inputFocused === false) setInputValue('');
 
+  const spinner = '▖▘▝▗';
+  const spinnerInterval = 200;
+  useEffect(() => {
+    setTimeout(() => {
+      const nextDisplay = spinner[spinnerIndex];
+      setSpinnerDisplay(nextDisplay);
+      const nextIndex = (spinnerIndex === spinner.length - 1) ? 0 : spinnerIndex + 1;
+      setSpinnerIndex(nextIndex);
+    }, spinnerInterval);
+  }, [spinnerIndex]);
+
   return (
     <div className={className}>
       <div className="row mb-3">
         <div className="col">
           <form onSubmit={handleSubmit}>
-            <input type="text" className="form-control" placeholder={intermediateUserUtterance} value={inputValue} onChange={handleInput} onFocus={handleFocus} onBlur={handleBlur} aria-label="User input" />
+            <input type="text" className="form-control" placeholder={`${userSpeaking ? spinnerDisplay : ''} ${intermediateUserUtterance}`} value={inputValue} onChange={handleInput} onFocus={handleFocus} onBlur={handleBlur} aria-label="User input" />
           </form>
         </div>
-        <div className="col">
+        <div className="col-auto">
           <button type="button" className="btn btn-secondary" disabled={speechState !== 'speaking'} onClick={dispatchStopSpeaking} data-tip="Stop Speaking">Stop Speaking</button>
           <button type="button" className={`btn btn-${isMuted ? 'secondary' : 'danger '}`} onClick={dispatchMute} data-tip="Toggle Microphone Input">{ isMuted ? 'Unmute' : 'Mute' }</button>
-          <button type="button" className="btn btn-primary" onClick={dispatchDisconnect} data-tip="Disconnect">Disconnect</button>
         </div>
       </div>
       <ReactTooltip />
@@ -62,7 +73,6 @@ Controls.propTypes = {
   lastUserUtterance: PropTypes.string.isRequired,
   userSpeaking: PropTypes.bool.isRequired,
   dispatchText: PropTypes.func.isRequired,
-  dispatchDisconnect: PropTypes.func.isRequired,
   dispatchMute: PropTypes.func.isRequired,
   isMuted: PropTypes.bool.isRequired,
   speechState: PropTypes.string.isRequired,
@@ -98,7 +108,6 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   dispatchText: (text) => dispatch(sendTextMessage({ text })),
-  dispatchDisconnect: () => dispatch(disconnect()),
   dispatchMute: () => dispatch(mute()),
   dispatchStopSpeaking: () => dispatch(stopSpeaking()),
 });
