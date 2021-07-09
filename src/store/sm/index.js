@@ -1,6 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { smwebsdk } from '@soulmachines/smwebsdk';
-import { resetWarningCache } from 'prop-types';
 import proxyVideo from '../../proxyVideo';
 
 const ORCHESTRATION_MODE = false;
@@ -14,6 +13,9 @@ const initialState = {
   videoHeight: window.innerHeight,
   videoWidth: window.innerWidth,
   transcript: [],
+  activeCards: [],
+  // lets us keep track of whether the content cards were added in this turn
+  cardsAreStale: false,
   contentCards: {},
   speechState: 'idle',
   // NLP gives us results as it processes final user utterance
@@ -142,13 +144,26 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
         break;
       }
 
+      // activate content cards when called for
       case ('speechMarker'): {
-        console.log('speechMarker', message.body);
+        const { name: speechMarkerName, arguments: args } = message.body;
+        switch (speechMarkerName) {
+          case ('showcards'): {
+            const { activeCards, contentCards, cardsAreStale } = thunk.getState().sm;
+            // if desired, multiple content cards can be displayed in one turn
+            const oldCards = cardsAreStale ? [] : activeCards;
+            const newActiveCards = [...oldCards, ...args.map((a) => contentCards[a])];
+            thunk.dispatch(actions.setActiveCards({ activeCards: newActiveCards }));
+            break;
+          }
+          default: {
+            console.warn(`unregonized speech marker: ${speechMarkerName}`);
+          }
+        }
         break;
       }
 
-      // conversationResult doesn't contain much data that isn't in recognizeResults or
-      // personaResponse, so i've chosen to leave this unimplemented for now
+      // pull out content card data from contexts
       case ('conversationResult'): {
         // get content cards from context
         const { context } = message.body.output;
@@ -180,6 +195,11 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
           if ('speechState' in personaState) {
             const { speechState } = personaState;
             const action = actions.setSpeechState({ speechState });
+            // when DP starts idling ie its turn ends, set contentCardsStale to true
+            if (speechState === 'idle') {
+              const { activeCards } = thunk.getState().sm;
+              thunk.dispatch(actions.setActiveCards({ activeCards, cardsAreStale: true }));
+            }
             thunk.dispatch(action);
           }
 
@@ -285,6 +305,11 @@ const smSlice = createSlice({
   name: 'sm',
   initialState,
   reducers: {
+    setActiveCards: (state, { payload }) => ({
+      ...state,
+      activeCards: payload.activeCards,
+      cardsAreStale: payload.cardsAreStale || false,
+    }),
     // content cards with the same key may get overwritten, so when the card is called
     // in @showCards(), we copy to transcript: [] and activeCards: []
     addContentCards: (state, { payload }) => ({
