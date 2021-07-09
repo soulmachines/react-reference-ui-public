@@ -14,6 +14,7 @@ const initialState = {
   videoHeight: window.innerHeight,
   videoWidth: window.innerWidth,
   transcript: [],
+  contentCards: {},
   speechState: 'idle',
   // NLP gives us results as it processes final user utterance
   intermediateUserUtterance: '',
@@ -82,7 +83,6 @@ export const mute = createAsyncThunk('sm/mute', async (args, thunk) => {
   const { isMuted } = thunk.getState().sm;
   if (scene) {
     const muteState = !isMuted;
-    console.log(muteState);
     const command = `${muteState ? 'stop' : 'start'}Recognize`;
     scene.sendRequest(command, {});
     thunk.dispatch(actions.setMute({ isMuted: muteState }));
@@ -133,19 +133,39 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
       }
 
       // handles output from NLP (what DP is saying)
-      case ('conversationResult'): {
-        const { text } = message.body.output;
-        const action = actions.addConversationResult({
+      case ('personaResponse'): {
+        const { currentSpeech } = message.body;
+        thunk.dispatch(actions.addConversationResult({
           source: 'persona',
-          text,
-        });
-        return thunk.dispatch(action);
+          text: currentSpeech,
+        }));
+        break;
       }
 
-      // personaResponse doesn't contain much data that isn't in recognizeResults or
-      // conversationResult, so i've chosen to leave this unimplemented for now
-      case ('personaResponse'): {
-        // console.warn('personaResponse handler not yet implemented', message.body);
+      case ('speechMarker'): {
+        console.log('speechMarker', message.body);
+        break;
+      }
+
+      // conversationResult doesn't contain much data that isn't in recognizeResults or
+      // personaResponse, so i've chosen to leave this unimplemented for now
+      case ('conversationResult'): {
+        // get content cards from context
+        const { context } = message.body.output;
+        // filter out $cardName.orignal, we just want values for $cardName
+        const relevantKeys = Object.keys(context).filter((k) => /\.original/gm.test(k) === false);
+        const contentCards = {};
+        // eslint-disable-next-line array-callback-return
+        relevantKeys.map((k) => {
+          // remove public- prefix from key
+          const cardKey = k.match(/(?<=public-)(.*)/gm)[0];
+          try {
+            contentCards[cardKey] = JSON.parse(context[k]);
+          } catch {
+            console.error(`invalid JSON in content card payload for ${k}!`);
+          }
+        });
+        thunk.dispatch(actions.addContentCards({ contentCards }));
         break;
       }
 
@@ -265,6 +285,12 @@ const smSlice = createSlice({
   name: 'sm',
   initialState,
   reducers: {
+    // content cards with the same key may get overwritten, so when the card is called
+    // in @showCards(), we copy to transcript: [] and activeCards: []
+    addContentCards: (state, { payload }) => ({
+      ...state,
+      contentCards: { ...state.contentCards, ...payload.contentCards },
+    }),
     stopSpeaking: (state) => {
       if (persona) persona.stopSpeaking();
       return { ...state };
@@ -278,17 +304,21 @@ const smSlice = createSlice({
       intermediateUserUtterance: payload.text,
       userSpeaking: true,
     }),
-    addConversationResult: (state, { payload }) => ({
-      ...state,
-      transcript: [...state.transcript, {
-        source: payload.source,
-        text: payload.text,
-        timestamp: new Date().toISOString(),
-      }],
-      [payload.source === 'user' ? 'lastUserUtterance' : 'lastPersonaUtterance']: payload.text,
-      intermediateUserUtterance: '',
-      userSpeaking: false,
-    }),
+    addConversationResult: (state, { payload }) => {
+      if (payload.text !== '') {
+        return ({
+          ...state,
+          transcript: [...state.transcript, {
+            source: payload.source,
+            text: payload.text,
+            timestamp: new Date().toISOString(),
+          }],
+          [payload.source === 'user' ? 'lastUserUtterance' : 'lastPersonaUtterance']: payload.text,
+          intermediateUserUtterance: '',
+          userSpeaking: false,
+        });
+      } console.warn('addConversationResult: ignoring empty string');
+    },
     setSpeechState: (state, { payload }) => ({
       ...state,
       speechState: payload.speechState,
