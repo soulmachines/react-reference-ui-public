@@ -98,7 +98,7 @@ const StyledControls = styled(Controls)`
 
   svg {
     /* make bootstrap icons vertically centered in buttons */
-    margin-bottom: 0.1rem;
+    margin-top: -0.1rem;
   }
 
   .form-control {
