@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import ReactTooltip from 'react-tooltip';
@@ -20,6 +20,8 @@ const Controls = ({
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
+  const [spinnerDisplay, setSpinnerDisplay] = useState('');
+  const [spinnerIndex, setSpinnerIndex] = useState(0);
 
   const handleInput = (e) => setInputValue(e.target.value);
   const handleFocus = () => {
@@ -36,12 +38,23 @@ const Controls = ({
   if (userSpeaking === false && lastUserUtterance !== '' && inputValue !== lastUserUtterance && inputFocused === false) setInputValue(lastUserUtterance);
   else if (userSpeaking === true && inputValue !== '' && inputFocused === false) setInputValue('');
 
+  const spinner = '▖▘▝▗';
+  const spinnerInterval = 200;
+  useEffect(() => {
+    setTimeout(() => {
+      const nextDisplay = spinner[spinnerIndex];
+      setSpinnerDisplay(nextDisplay);
+      const nextIndex = (spinnerIndex === spinner.length - 1) ? 0 : spinnerIndex + 1;
+      setSpinnerIndex(nextIndex);
+    }, spinnerInterval);
+  }, [spinnerIndex]);
+
   return (
     <div className={className}>
       <div className="row mb-3">
         <div className="col">
           <form onSubmit={handleSubmit}>
-            <input type="text" className="form-control" placeholder={intermediateUserUtterance} value={inputValue} onChange={handleInput} onFocus={handleFocus} onBlur={handleBlur} aria-label="User input" />
+            <input type="text" className="form-control" placeholder={`${userSpeaking ? spinnerDisplay : ''} ${intermediateUserUtterance}`} value={inputValue} onChange={handleInput} onFocus={handleFocus} onBlur={handleBlur} aria-label="User input" />
           </form>
         </div>
         <div className="col-auto">

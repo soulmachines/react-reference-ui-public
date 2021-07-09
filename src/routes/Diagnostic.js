@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -12,17 +12,19 @@ import {
 
 const Diagnostic = ({
   className, dispatchDisconnect, connected, loading, dispatchCreateScene,
-}) => (
-  <div className={className}>
-    <div className="video-overlay">
-      <div className="container d-flex flex-column justify-content-between">
-        {/* top row */}
-        <div className="d-flex justify-content-end mt-3">
-          <button type="button" disabled={!connected} className={`btn btn-outline-danger ${connected && !loading ? '' : 'd-none'}`} onClick={dispatchDisconnect} data-tip="Disconnect">Disconnect</button>
-        </div>
-        {/* middle row */}
-        <div className="text-center">
-          {
+}) => {
+  useEffect(() => dispatchCreateScene(), []);
+  return (
+    <div className={className}>
+      <div className="video-overlay">
+        <div className="container d-flex flex-column justify-content-between">
+          {/* top row */}
+          <div className="d-flex justify-content-end mt-3">
+            <button type="button" disabled={!connected} className={`btn btn-outline-danger ${connected && !loading ? '' : 'd-none'}`} onClick={dispatchDisconnect} data-tip="Disconnect">Disconnect</button>
+          </div>
+          {/* middle row */}
+          <div className="text-center">
+            {
             loading
               ? (
                 // loading spinner
@@ -33,27 +35,28 @@ const Diagnostic = ({
               // connect button
               : <button type="button" className={`btn btn-outline-success ${!connected && !loading ? '' : 'd-none'}`} onClick={dispatchCreateScene} data-tip="Connect">Connect</button>
           }
-        </div>
-        {/* bottom row */}
-        <div>
-          <div className="row">
-            <div className="col text-center">
-              <Captions />
-            </div>
           </div>
-          <div className="row">
-            <div className="col">
-              <Controls />
+          {/* bottom row */}
+          <div>
+            <div className="row">
+              <div className="col text-center">
+                <Captions />
+              </div>
+            </div>
+            <div className="row">
+              <div className="col">
+                <Controls />
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    {
+      {
       connected ? <PersonaVideo /> : null
     }
-  </div>
-);
+    </div>
+  );
+};
 
 Diagnostic.propTypes = {
   className: PropTypes.string.isRequired,
