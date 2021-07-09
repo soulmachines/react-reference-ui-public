@@ -324,11 +324,14 @@ const smSlice = createSlice({
       scene.sendVideoBounds(videoWidth, videoHeight);
       return { ...state, videoWidth, videoHeight };
     },
-    disconnect: (state) => ({
-      ...state,
-      connected: false,
-      error: null,
-    }),
+    disconnect: () => {
+      scene = null;
+      persona = null;
+      return {
+      // completely reset SM state on disconnect
+        ...initialState,
+      };
+    },
   },
   extraReducers: {
     [createScene.pending]: (state) => ({

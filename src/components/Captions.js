@@ -66,6 +66,8 @@ const Captions = ({
         }, minCaptionDuration - captionsDisplayedFor);
         setCaptionsTimeout(newCaptionTimeout);
       }
+      // sometimes we get blank input, hide that when it happens
+      if (captionText === '') setShowCaptions(false);
     }
   }, [speechState, connected]);
 
