@@ -417,6 +417,6 @@ const smSlice = createSlice({
 // hoist actions to top of file so thunks can access
 actions = smSlice.actions;
 
-export const { setVideoDimensions, stopSpeaking } = smSlice.actions;
+export const { setVideoDimensions, stopSpeaking, setActiveCards } = smSlice.actions;
 
 export default smSlice.reducer;

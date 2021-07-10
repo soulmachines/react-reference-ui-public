@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import PersonaVideo from '../components/PersonaVideo';
 import Captions from '../components/Captions';
 import Controls from '../components/Controls';
+import ContentCardDisplay from '../components/ContentCardDisplay';
 import {
   disconnect,
   createScene,
@@ -23,7 +24,7 @@ const Diagnostic = ({
             <button type="button" disabled={!connected} className={`btn btn-outline-danger ${connected && !loading ? '' : 'd-none'}`} onClick={dispatchDisconnect} data-tip="Disconnect">Disconnect</button>
           </div>
           {/* middle row */}
-          <div className="text-center">
+          <div className={loading || connected === false ? 'text-center' : ''}>
             {
             loading
               ? (
@@ -34,7 +35,8 @@ const Diagnostic = ({
               )
               // connect button
               : <button type="button" className={`btn btn-outline-success ${!connected && !loading ? '' : 'd-none'}`} onClick={dispatchCreateScene} data-tip="Connect">Connect</button>
-          }
+            }
+            { connected ? <ContentCardDisplay /> : null}
           </div>
           {/* bottom row */}
           <div>
