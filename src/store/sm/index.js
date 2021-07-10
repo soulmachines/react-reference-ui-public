@@ -1,9 +1,13 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { smwebsdk } from '@soulmachines/smwebsdk';
 import proxyVideo from '../../proxyVideo';
+import roundObject from '../../utils/roundObject';
 
 const ORCHESTRATION_MODE = false;
 const TOKEN_ISSUER = 'https://localhost:5000/auth/authorize';
+// copied from old template, not sure if there are other possible values for this?
+const PERSONA_ID = '1';
+const CAMERA_ID = 'CloseUp';
 
 const initialState = {
   connected: false,
@@ -71,14 +75,27 @@ let actions;
 let persona = null;
 let scene = null;
 
-// stuff like emotional data has way more decimal places than is useful, round values
-const roundObject = (o, multiplier = 10) => {
-  const output = {};
-  Object.keys(o).forEach((k) => {
-    output[k] = Math.floor(o[k] * multiplier) / multiplier;
+/**
+ * Animate the camera to the desired settings.
+ * See utils/camera.js for help with calculating these.
+ *
+ * options {
+ *   tiltDeg: 0,
+ *   orbitDegX: 0,
+ *   orbitDegY: 0,
+ *   panDeg: 0,
+ * }
+ */
+export const animateCamera = createAsyncThunk('sm/animateCamera', ({options, duration}) => {
+  if (!scene) console.error('cannot animate camera, scene not initiated!');
+
+  scene.sendRequest('animateToNamedCamera', {
+    cameraName: CAMERA_ID,
+    personaId: PERSONA_ID,
+    time: duration || 1,
+    ...options,
   });
-  return output;
-};
+});
 
 // tells persona to stop listening to mic input
 export const mute = createAsyncThunk('sm/mute', async (args, thunk) => {
@@ -258,8 +275,6 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
     }
   };
 
-  // copied from old template, not sure if there are other possible values for this?
-  const PERSONA_ID = '1';
   // create instance of Persona class w/ scene instance
   persona = new smwebsdk.Persona(scene, PERSONA_ID);
 

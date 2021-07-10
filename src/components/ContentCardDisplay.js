@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import Options from './ContentCards/Options';
-import { setActiveCards } from '../store/sm/index';
+import { setActiveCards, animateCamera } from '../store/sm/index';
+import { calculateCameraPosition } from '../utils/camera';
 
-const ContentCardDisplay = ({ activeCards, dispatchActiveCards }) => {
+const ContentCardDisplay = ({
+  activeCards, dispatchActiveCards, dispatchAnimateCamera, videoWidth, videoHeight,
+}) => {
   const componentMap = {
     options: {
       element: Options,
@@ -42,6 +45,11 @@ const ContentCardDisplay = ({ activeCards, dispatchActiveCards }) => {
     );
     return elem;
   });
+
+  if (activeCards.length > 0) {
+    dispatchAnimateCamera(calculateCameraPosition(videoWidth, videoHeight, 0.7));
+  } else dispatchAnimateCamera(calculateCameraPosition(videoWidth, videoHeight, 0.5));
+
   return (
     <div className="col-5">
       {CardDisplay}
@@ -51,12 +59,15 @@ const ContentCardDisplay = ({ activeCards, dispatchActiveCards }) => {
 
 const mapStateToProps = ({ sm }) => ({
   activeCards: sm.activeCards,
+  videoWidth: sm.videoWidth,
+  videoHeight: sm.videoHeight,
 });
 
 const mapDispatchToProps = (dispatch) => ({
   dispatchActiveCards: (activeCards) => dispatch(
     setActiveCards({ activeCards, cardsAreStale: true }),
   ),
+  dispatchAnimateCamera: (options, duration = 1) => dispatch(animateCamera({ options, duration })),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ContentCardDisplay);
