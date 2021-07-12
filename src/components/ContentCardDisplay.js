@@ -6,6 +6,7 @@ import { calculateCameraPosition } from '../utils/camera';
 import Options from './ContentCards/Options';
 import Markdown from './ContentCards/Markdown';
 import Link from './ContentCards/Link';
+import Image from './ContentCards/Image';
 
 const ContentCardDisplay = ({
   activeCards, dispatchActiveCards, dispatchAnimateCamera, videoWidth, videoHeight,
@@ -21,6 +22,10 @@ const ContentCardDisplay = ({
     },
     externalLink: {
       element: Link,
+      removeOnClick: false,
+    },
+    image: {
+      element: Image,
       removeOnClick: false,
     },
   };
