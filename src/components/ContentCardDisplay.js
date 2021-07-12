@@ -5,6 +5,7 @@ import { setActiveCards, animateCamera } from '../store/sm/index';
 import { calculateCameraPosition } from '../utils/camera';
 import Options from './ContentCards/Options';
 import Markdown from './ContentCards/Markdown';
+import Link from './ContentCards/Link';
 
 const ContentCardDisplay = ({
   activeCards, dispatchActiveCards, dispatchAnimateCamera, videoWidth, videoHeight,
@@ -16,6 +17,10 @@ const ContentCardDisplay = ({
     },
     markdown: {
       element: Markdown,
+      removeOnClick: false,
+    },
+    externalLink: {
+      element: Link,
       removeOnClick: false,
     },
   };
