@@ -1,8 +1,10 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
-import Options from './ContentCards/Options';
+import PropTypes from 'prop-types';
 import { setActiveCards, animateCamera } from '../store/sm/index';
 import { calculateCameraPosition } from '../utils/camera';
+import Options from './ContentCards/Options';
+import Markdown from './ContentCards/Markdown';
 
 const ContentCardDisplay = ({
   activeCards, dispatchActiveCards, dispatchAnimateCamera, videoWidth, videoHeight,
@@ -11,6 +13,10 @@ const ContentCardDisplay = ({
     options: {
       element: Options,
       removeOnClick: true,
+    },
+    markdown: {
+      element: Markdown,
+      removeOnClick: false,
     },
   };
   const CardDisplay = activeCards.map((c, index) => {
@@ -37,6 +43,7 @@ const ContentCardDisplay = ({
       <div
         onClick={removeOnClick ? removeElem : null}
         onKeyPress={removeOnClick ? removeElem : null}
+        key={JSON.stringify(data)}
       >
         {/* elements that are interactive but shouldn't be removed immediately
          can use triggerRemoval to have the card removed */}
@@ -55,6 +62,17 @@ const ContentCardDisplay = ({
       {CardDisplay}
     </div>
   );
+};
+
+ContentCardDisplay.propTypes = {
+  activeCards: PropTypes.arrayOf({
+    component: PropTypes.string.isRequired,
+    data: PropTypes.object.isRequired,
+  }).isRequired,
+  dispatchActiveCards: PropTypes.func.isRequired,
+  dispatchAnimateCamera: PropTypes.func.isRequired,
+  videoWidth: PropTypes.number.isRequired,
+  videoHeight: PropTypes.number.isRequired,
 };
 
 const mapStateToProps = ({ sm }) => ({
