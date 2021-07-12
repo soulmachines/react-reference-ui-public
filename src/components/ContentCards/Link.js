@@ -4,7 +4,6 @@ import styled from 'styled-components';
 import { ArrowUpRightSquare } from 'react-bootstrap-icons';
 
 const Link = ({ data, className }) => {
-  console.log(data);
   const {
     title, url, imageUrl, description, imageAltText,
   } = data;
