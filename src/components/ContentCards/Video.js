@@ -9,6 +9,7 @@ const Video = ({ data, className }) => {
   const [embedOpts, setOpts] = useState({ mounted: false });
 
   useEffect(() => {
+    // use containerRef to size video embed to elem dimensions
     const { clientWidth: width, clientHeight: height } = containerRef.current;
     setOpts({
       mounted: true,
@@ -28,7 +29,7 @@ const Video = ({ data, className }) => {
 };
 
 Video.propTypes = {
-  data: PropTypes.objectOf({
+  data: PropTypes.shape({
     videoId: PropTypes.string.isRequired,
     autoplay: PropTypes.bool,
   }).isRequired,

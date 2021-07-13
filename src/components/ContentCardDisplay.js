@@ -80,10 +80,7 @@ const ContentCardDisplay = ({
 };
 
 ContentCardDisplay.propTypes = {
-  activeCards: PropTypes.arrayOf({
-    component: PropTypes.string.isRequired,
-    data: PropTypes.object.isRequired,
-  }).isRequired,
+  activeCards: PropTypes.arrayOf(PropTypes.object).isRequired,
   dispatchActiveCards: PropTypes.func.isRequired,
   dispatchAnimateCamera: PropTypes.func.isRequired,
   videoWidth: PropTypes.number.isRequired,
