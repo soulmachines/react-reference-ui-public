@@ -7,6 +7,7 @@ import Options from './ContentCards/Options';
 import Markdown from './ContentCards/Markdown';
 import Link from './ContentCards/Link';
 import Image from './ContentCards/Image';
+import Video from './ContentCards/Video';
 
 const ContentCardDisplay = ({
   activeCards, dispatchActiveCards, dispatchAnimateCamera, videoWidth, videoHeight,
@@ -26,6 +27,10 @@ const ContentCardDisplay = ({
     },
     image: {
       element: Image,
+      removeOnClick: false,
+    },
+    video: {
+      element: Video,
       removeOnClick: false,
     },
   };
