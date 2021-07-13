@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { logo, logoAltText, transparentHeader } from '../config';
+import { logo, logoAltText, transparentHeader, headerHeight } from '../config';
 
 const Header = ({ className }) => (
   <div className={className}>
@@ -18,7 +18,7 @@ const Header = ({ className }) => (
 );
 
 export default styled(Header)`
-  height: 3rem;
+  height: ${headerHeight};
   padding-left: 2rem;
   padding-right: 2rem;
 
@@ -33,7 +33,7 @@ export default styled(Header)`
 
   .logo {
     /* height constrain logo image */
-    height: 38px;
+    height: calc(0.8 * ${headerHeight});
     width: auto;
   }
 `;

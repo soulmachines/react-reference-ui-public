@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import * as actions from '../store/sm';
 import proxyVideo from '../proxyVideo';
-import { transparentHeader } from '../config';
+import { transparentHeader, headerHeight } from '../config';
 
 const PersonaVideo = ({
   loading, connected, setVideoDimensions, className,
@@ -80,7 +80,7 @@ PersonaVideo.propTypes = {
 const StyledPersonaVideo = styled(PersonaVideo)`
   /* if you need the persona video to be different than the window dimensions, change these values */
   width: 100vw;
-  height: ${transparentHeader ? '100vh' : 'calc(100vh - 3rem)'};
+  height: ${transparentHeader ? '100vh' : `calc(100vh - ${headerHeight})`};
 
   position: relative;
   z-index: 0;

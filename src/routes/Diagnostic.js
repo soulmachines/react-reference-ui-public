@@ -11,7 +11,7 @@ import {
   createScene,
 } from '../store/sm/index';
 import Header from '../components/Header';
-import { transparentHeader } from '../config';
+import { transparentHeader, headerHeight } from '../config';
 
 const Diagnostic = ({
   className, dispatchDisconnect, connected, loading, dispatchCreateScene,
@@ -80,8 +80,8 @@ const StyledDiagnostic = styled(Diagnostic)`
     z-index: 10;
 
     width: 100%;
-    height: ${transparentHeader ? '100%' : 'calc(100vh - 3rem)'};
-    margin-top: ${transparentHeader ? 'none' : '3rem'};
+    height: ${transparentHeader ? '100%' : `calc(100vh - ${headerHeight})`};
+    margin-top: ${transparentHeader ? 'none' : headerHeight};
 
     .container {
       height: 100%;
