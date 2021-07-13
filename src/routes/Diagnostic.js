@@ -10,6 +10,8 @@ import {
   disconnect,
   createScene,
 } from '../store/sm/index';
+import Header from '../components/Header';
+import { transparentHeader } from '../config';
 
 const Diagnostic = ({
   className, dispatchDisconnect, connected, loading, dispatchCreateScene,
@@ -17,16 +19,17 @@ const Diagnostic = ({
   useEffect(() => dispatchCreateScene(), []);
   return (
     <div className={className}>
+      <Header />
       <div className="video-overlay">
         <div className="container d-flex flex-column justify-content-between">
           {/* top row */}
           <div className="d-flex justify-content-end mt-3">
-            <button type="button" disabled={!connected} className={`btn btn-outline-danger ${connected && !loading ? '' : 'd-none'}`} onClick={dispatchDisconnect} data-tip="Disconnect">Disconnect</button>
+            <button type="button" disabled={!connected} className={`btn btn-outline-danger ${connected && !loading ? '' : 'd-none'}`} onClick={dispatchDisconnect} data-tip="Disconnect" data-place="bottom">Disconnect</button>
           </div>
           {/* middle row */}
           <div className={loading || connected === false ? 'text-center' : ''}>
             {
-            loading
+            loading && connected === false
               ? (
                 // loading spinner
                 <div className="spinner-border text-primary" role="status">
@@ -77,7 +80,8 @@ const StyledDiagnostic = styled(Diagnostic)`
     z-index: 10;
 
     width: 100%;
-    height: 100%;
+    height: ${transparentHeader ? '100%' : 'calc(100vh - 3rem)'};
+    margin-top: ${transparentHeader ? 'none' : '3rem'};
 
     .container {
       height: 100%;
