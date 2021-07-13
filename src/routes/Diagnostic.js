@@ -15,7 +15,7 @@ import { transparentHeader, headerHeight } from '../config';
 const Diagnostic = ({
   className, connected, loading, dispatchCreateScene,
 }) => {
-  useEffect(() => dispatchCreateScene(), []);
+  useEffect(() => { if (!connected) dispatchCreateScene(); }, []);
   return (
     <div className={className}>
       <Header />
