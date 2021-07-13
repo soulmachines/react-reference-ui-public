@@ -1,23 +1,35 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import styled from 'styled-components';
-import { logo, logoAltText, transparentHeader, headerHeight } from '../config';
+import {
+  logo, logoAltText, transparentHeader, headerHeight, logoLink,
+} from '../config';
+import {
+  disconnect,
+} from '../store/sm/index';
 
-const Header = ({ className }) => (
+const Header = ({
+  className, connected, loading, dispatchDisconnect,
+}) => (
   <div className={className}>
     <div>
       {/* left align */}
-      <img src={logo} className="logo" alt={logoAltText} />
+      <a href={logoLink}>
+        <img src={logo} className="logo" alt={logoAltText} />
+      </a>
     </div>
     <div>
       {/* middle align */}
     </div>
     <div>
       {/* right align */}
+
+      <button type="button" disabled={!connected} className={`btn btn-outline-danger ${connected && !loading ? '' : 'd-none'}`} onClick={dispatchDisconnect} data-tip="Disconnect" data-place="bottom">Disconnect</button>
     </div>
   </div>
 );
 
-export default styled(Header)`
+const StyledHeader = styled(Header)`
   height: ${headerHeight};
   padding-left: 2rem;
   padding-right: 2rem;
@@ -37,3 +49,14 @@ export default styled(Header)`
     width: auto;
   }
 `;
+
+const mapStateToProps = ({ sm }) => ({
+  connected: sm.connected,
+  loading: sm.loading,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  dispatchDisconnect: () => dispatch(disconnect()),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(StyledHeader);

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
-import ReactTooltip from 'react-tooltip';
 import PropTypes from 'prop-types';
 import { MicFill, MicMuteFill, XOctagonFill } from 'react-bootstrap-icons';
 import {
@@ -74,7 +73,6 @@ const Controls = ({
           </button>
         </div>
       </div>
-      <ReactTooltip />
     </div>
   );
 };
