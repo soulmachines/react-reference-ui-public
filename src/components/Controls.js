@@ -50,6 +50,8 @@ const Controls = ({
     }, spinnerInterval);
   }, [spinnerIndex]);
 
+  // clear placeholder text on reconnnect, sometimes the state updates won't propagate
+  const placeholder = intermediateUserUtterance === '' ? '' : intermediateUserUtterance;
   return (
     <div className={className}>
       <div className="row mb-3">
@@ -62,7 +64,7 @@ const Controls = ({
                 </div>
                 { userSpeaking ? spinnerDisplay : null }
               </button>
-              <input type="text" className="form-control" placeholder={`${intermediateUserUtterance}`} value={inputValue} onChange={handleInput} onFocus={handleFocus} onBlur={handleBlur} aria-label="User input" />
+              <input type="text" className="form-control" placeholder={placeholder} value={inputValue} onChange={handleInput} onFocus={handleFocus} onBlur={handleBlur} aria-label="User input" />
             </div>
           </form>
         </div>
