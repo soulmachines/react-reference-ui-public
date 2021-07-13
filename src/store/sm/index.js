@@ -1,10 +1,13 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { smwebsdk } from '@soulmachines/smwebsdk';
-import { resetWarningCache } from 'prop-types';
 import proxyVideo from '../../proxyVideo';
+import roundObject from '../../utils/roundObject';
 
 const ORCHESTRATION_MODE = false;
 const TOKEN_ISSUER = 'https://localhost:5000/auth/authorize';
+// copied from old template, not sure if there are other possible values for this?
+const PERSONA_ID = '1';
+const CAMERA_ID = 'CloseUp';
 
 const initialState = {
   connected: false,
@@ -14,6 +17,10 @@ const initialState = {
   videoHeight: window.innerHeight,
   videoWidth: window.innerWidth,
   transcript: [],
+  activeCards: [],
+  // lets us keep track of whether the content cards were added in this turn
+  cardsAreStale: false,
+  contentCards: {},
   speechState: 'idle',
   // NLP gives us results as it processes final user utterance
   intermediateUserUtterance: '',
@@ -68,21 +75,33 @@ let actions;
 let persona = null;
 let scene = null;
 
-// stuff like emotional data has way more decimal places than is useful, round values
-const roundObject = (o, multiplier = 10) => {
-  const output = {};
-  Object.keys(o).forEach((k) => {
-    output[k] = Math.floor(o[k] * multiplier) / multiplier;
+/**
+ * Animate the camera to the desired settings.
+ * See utils/camera.js for help with calculating these.
+ *
+ * options {
+ *   tiltDeg: 0,
+ *   orbitDegX: 0,
+ *   orbitDegY: 0,
+ *   panDeg: 0,
+ * }
+ */
+export const animateCamera = createAsyncThunk('sm/animateCamera', ({options, duration}) => {
+  if (!scene) console.error('cannot animate camera, scene not initiated!');
+
+  scene.sendRequest('animateToNamedCamera', {
+    cameraName: CAMERA_ID,
+    personaId: PERSONA_ID,
+    time: duration || 1,
+    ...options,
   });
-  return output;
-};
+});
 
 // tells persona to stop listening to mic input
 export const mute = createAsyncThunk('sm/mute', async (args, thunk) => {
   const { isMuted } = thunk.getState().sm;
   if (scene) {
     const muteState = !isMuted;
-    console.log(muteState);
     const command = `${muteState ? 'stop' : 'start'}Recognize`;
     scene.sendRequest(command, {});
     thunk.dispatch(actions.setMute({ isMuted: muteState }));
@@ -91,9 +110,9 @@ export const mute = createAsyncThunk('sm/mute', async (args, thunk) => {
 
 // handles both manual disconnect or automatic timeout due to innactivity
 export const disconnect = createAsyncThunk('sm/disconnect', async (args, thunk) => {
-  thunk.dispatch(actions.disconnect());
+  if (scene) scene.disconnect();
   setTimeout(() => {
-    if (scene) scene.disconnect();
+    thunk.dispatch(actions.disconnect());
     scene = null;
     persona = null;
   }, 500);
@@ -112,7 +131,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
     microphone,
   );
   /* BIND HANDLERS */
-  scene.onDisconnected = () => disconnect();
+  scene.onDisconnected = () => thunk.dispatch(disconnect());
   scene.onMessage = (message) => {
     switch (message.name) {
       // handles output from TTS (what user said)
@@ -133,19 +152,57 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
       }
 
       // handles output from NLP (what DP is saying)
-      case ('conversationResult'): {
-        const { text } = message.body.output;
-        const action = actions.addConversationResult({
+      case ('personaResponse'): {
+        const { currentSpeech } = message.body;
+        thunk.dispatch(actions.addConversationResult({
           source: 'persona',
-          text,
-        });
-        return thunk.dispatch(action);
+          text: currentSpeech,
+        }));
+        break;
       }
 
-      // personaResponse doesn't contain much data that isn't in recognizeResults or
-      // conversationResult, so i've chosen to leave this unimplemented for now
-      case ('personaResponse'): {
-        // console.warn('personaResponse handler not yet implemented', message.body);
+      // activate content cards when called for
+      case ('speechMarker'): {
+        const { name: speechMarkerName, arguments: args } = message.body;
+        switch (speechMarkerName) {
+          case ('showcards'): {
+            const { activeCards, contentCards, cardsAreStale } = thunk.getState().sm;
+            // if desired, multiple content cards can be displayed in one turn
+            const oldCards = cardsAreStale ? [] : activeCards;
+            const newCards = args.map((a) => contentCards[a]);
+            const newActiveCards = [...oldCards, ...newCards];
+            thunk.dispatch(actions.setActiveCards({ activeCards: newActiveCards }));
+            break;
+          }
+          case ('hidecards'): {
+            thunk.dispatch(actions.setActiveCards({}));
+            break;
+          }
+          default: {
+            console.warn(`unregonized speech marker: ${speechMarkerName}`);
+          }
+        }
+        break;
+      }
+
+      // pull out content card data from contexts
+      case ('conversationResult'): {
+        // get content cards from context
+        const { context } = message.body.output;
+        // filter out $cardName.orignal, we just want values for $cardName
+        const relevantKeys = Object.keys(context).filter((k) => /\.original/gm.test(k) === false);
+        const contentCards = {};
+        // eslint-disable-next-line array-callback-return
+        relevantKeys.map((k) => {
+          // remove public- prefix from key
+          const cardKey = k.match(/(?<=public-)(.*)/gm)[0];
+          try {
+            contentCards[cardKey] = JSON.parse(context[k]);
+          } catch {
+            console.error(`invalid JSON in content card payload for ${k}!`);
+          }
+        });
+        thunk.dispatch(actions.addContentCards({ contentCards }));
         break;
       }
 
@@ -160,6 +217,11 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
           if ('speechState' in personaState) {
             const { speechState } = personaState;
             const action = actions.setSpeechState({ speechState });
+            // when DP starts idling ie its turn ends, set contentCardsStale to true
+            if (speechState === 'idle') {
+              const { activeCards } = thunk.getState().sm;
+              thunk.dispatch(actions.setActiveCards({ activeCards, cardsAreStale: true }));
+            }
             thunk.dispatch(action);
           }
 
@@ -213,8 +275,6 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
     }
   };
 
-  // copied from old template, not sure if there are other possible values for this?
-  const PERSONA_ID = '1';
   // create instance of Persona class w/ scene instance
   persona = new smwebsdk.Persona(scene, PERSONA_ID);
 
@@ -265,6 +325,17 @@ const smSlice = createSlice({
   name: 'sm',
   initialState,
   reducers: {
+    setActiveCards: (state, { payload }) => ({
+      ...state,
+      activeCards: payload.activeCards || [],
+      cardsAreStale: payload.cardsAreStale || false,
+    }),
+    // content cards with the same key may get overwritten, so when the card is called
+    // in @showCards(), we copy to transcript: [] and activeCards: []
+    addContentCards: (state, { payload }) => ({
+      ...state,
+      contentCards: { ...state.contentCards, ...payload.contentCards },
+    }),
     stopSpeaking: (state) => {
       if (persona) persona.stopSpeaking();
       return { ...state };
@@ -278,17 +349,21 @@ const smSlice = createSlice({
       intermediateUserUtterance: payload.text,
       userSpeaking: true,
     }),
-    addConversationResult: (state, { payload }) => ({
-      ...state,
-      transcript: [...state.transcript, {
-        source: payload.source,
-        text: payload.text,
-        timestamp: new Date().toISOString(),
-      }],
-      [payload.source === 'user' ? 'lastUserUtterance' : 'lastPersonaUtterance']: payload.text,
-      intermediateUserUtterance: '',
-      userSpeaking: false,
-    }),
+    addConversationResult: (state, { payload }) => {
+      if (payload.text !== '') {
+        return ({
+          ...state,
+          transcript: [...state.transcript, {
+            source: payload.source,
+            text: payload.text,
+            timestamp: new Date().toISOString(),
+          }],
+          [payload.source === 'user' ? 'lastUserUtterance' : 'lastPersonaUtterance']: payload.text,
+          intermediateUserUtterance: '',
+          userSpeaking: false,
+        });
+      } console.warn('addConversationResult: ignoring empty string');
+    },
     setSpeechState: (state, { payload }) => ({
       ...state,
       speechState: payload.speechState,
@@ -325,6 +400,8 @@ const smSlice = createSlice({
       return { ...state, videoWidth, videoHeight };
     },
     disconnect: () => {
+      scene.onMessage = null;
+      scene.onDisconnected = null;
       scene = null;
       persona = null;
       return {
@@ -355,6 +432,6 @@ const smSlice = createSlice({
 // hoist actions to top of file so thunks can access
 actions = smSlice.actions;
 
-export const { setVideoDimensions, stopSpeaking } = smSlice.actions;
+export const { setVideoDimensions, stopSpeaking, setActiveCards } = smSlice.actions;
 
 export default smSlice.reducer;

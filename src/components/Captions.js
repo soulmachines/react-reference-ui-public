@@ -72,8 +72,10 @@ const Captions = ({
   }, [speechState, connected]);
 
   return (
-    <div className={`${className} ${showCaptions ? 'd-inline-block' : 'd-none'} text-center`}>
-      { captionText }
+    <div className={className}>
+      <div className={`captions ${showCaptions ? '' : 'hide-captions'} text-center`}>
+        { captionText }
+      </div>
     </div>
   );
 };
@@ -86,18 +88,29 @@ Captions.propTypes = {
 };
 
 const StyledCaptions = styled(Captions)`
+  display: inline-block;
+  .captions {
+    margin-bottom: .3rem;
 
-  margin-bottom: .3rem;
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
 
-  padding-top: 0.2rem;
-  padding-bottom: 0.2rem;
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #FFF;
 
-  background-color: rgba(0, 0, 0, 0.5);
-  color: #FFF;
+    border-radius: 2px;
 
-  border-radius: 2px;
+    display: flex;
+    align-items: center;
+
+    min-height: 35px;
+  }
+
+  .hide-captions {
+    opacity: 0;
+  }
 `;
 
 const mapStateToProps = (state) => ({
