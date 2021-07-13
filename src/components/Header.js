@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import {
@@ -28,6 +29,13 @@ const Header = ({
     </div>
   </div>
 );
+
+Header.propTypes = {
+  className: PropTypes.string.isRequired,
+  connected: PropTypes.bool.isRequired,
+  loading: PropTypes.bool.isRequired,
+  dispatchDisconnect: PropTypes.func.isRequired,
+};
 
 const StyledHeader = styled(Header)`
   height: ${headerHeight};
