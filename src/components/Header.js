@@ -39,6 +39,7 @@ Header.propTypes = {
 
 const StyledHeader = styled(Header)`
   height: ${headerHeight};
+  width: 100vw;
   padding-left: 2rem;
   padding-right: 2rem;
 
