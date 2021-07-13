@@ -11,6 +11,7 @@ import {
 } from '../store/sm/index';
 import Header from '../components/Header';
 import { transparentHeader, headerHeight } from '../config';
+import CameraPreview from '../components/CameraPreview';
 
 const Diagnostic = ({
   className, connected, loading, dispatchCreateScene,
@@ -49,6 +50,11 @@ const Diagnostic = ({
               <div className="col">
                 <Controls />
               </div>
+              <div className="col-auto">
+                <div className="camera-preview-zeroheight-wrapper">
+                  <CameraPreview />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -81,6 +87,11 @@ const StyledDiagnostic = styled(Diagnostic)`
 
     .container {
       height: 100%;
+    }
+    .camera-preview-zeroheight-wrapper {
+      position: absolute;
+      bottom: .5rem;
+      right: 1rem;
     }
   }
 `;

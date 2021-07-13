@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { smwebsdk } from '@soulmachines/smwebsdk';
-import proxyVideo from '../../proxyVideo';
+import proxyVideo, { mediaStreamProxy } from '../../proxyVideo';
 import roundObject from '../../utils/roundObject';
 
 const ORCHESTRATION_MODE = false;
@@ -299,6 +299,11 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
     // set video dimensions
     const { videoWidth, videoHeight } = thunk.getState().sm;
     scene.sendVideoBounds(videoWidth, videoHeight);
+
+    // since we can't store the userMediaStream in the store since it's not serializable,
+    // we use an external proxy for video streams
+    const { userMediaStream: stream } = scene.session();
+    mediaStreamProxy.setUserMediaStream(stream);
 
     // fulfill promise, reducer sets state to indiate loading and connection are complete
     return thunk.fulfillWithValue();
