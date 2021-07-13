@@ -86,7 +86,7 @@ let scene = null;
  *   panDeg: 0,
  * }
  */
-export const animateCamera = createAsyncThunk('sm/animateCamera', ({options, duration}) => {
+export const animateCamera = createAsyncThunk('sm/animateCamera', ({ options, duration }) => {
   if (!scene) console.error('cannot animate camera, scene not initiated!');
 
   scene.sendRequest('animateToNamedCamera', {
@@ -319,6 +319,13 @@ export const sendTextMessage = createAsyncThunk('sm/sendTextMessage', async ({ t
       text,
     }));
   } else thunk.rejectWithValue('not connected to persona!');
+});
+
+export const sendEvent = createAsyncThunk('sm/sendEvent', async ({ payload, eventName }) => {
+  if (scene && persona) {
+    persona.conversationSend(eventName, payload || {}, { kind: 'event' });
+    console.log(`dispatched ${eventName}`);
+  }
 });
 
 const smSlice = createSlice({
