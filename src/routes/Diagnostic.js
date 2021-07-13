@@ -7,26 +7,26 @@ import Captions from '../components/Captions';
 import Controls from '../components/Controls';
 import ContentCardDisplay from '../components/ContentCardDisplay';
 import {
-  disconnect,
   createScene,
 } from '../store/sm/index';
+import Header from '../components/Header';
+import { transparentHeader, headerHeight } from '../config';
 
 const Diagnostic = ({
-  className, dispatchDisconnect, connected, loading, dispatchCreateScene,
+  className, connected, loading, dispatchCreateScene,
 }) => {
   useEffect(() => dispatchCreateScene(), []);
   return (
     <div className={className}>
+      <Header />
       <div className="video-overlay">
         <div className="container d-flex flex-column justify-content-between">
           {/* top row */}
-          <div className="d-flex justify-content-end mt-3">
-            <button type="button" disabled={!connected} className={`btn btn-outline-danger ${connected && !loading ? '' : 'd-none'}`} onClick={dispatchDisconnect} data-tip="Disconnect">Disconnect</button>
-          </div>
+          <div className="d-flex justify-content-end mt-3" />
           {/* middle row */}
           <div className={loading || connected === false ? 'text-center' : ''}>
             {
-            loading
+            loading && connected === false
               ? (
                 // loading spinner
                 <div className="spinner-border text-primary" role="status">
@@ -62,7 +62,6 @@ const Diagnostic = ({
 
 Diagnostic.propTypes = {
   className: PropTypes.string.isRequired,
-  dispatchDisconnect: PropTypes.func.isRequired,
   dispatchCreateScene: PropTypes.func.isRequired,
   connected: PropTypes.bool.isRequired,
   loading: PropTypes.bool.isRequired,
@@ -77,7 +76,8 @@ const StyledDiagnostic = styled(Diagnostic)`
     z-index: 10;
 
     width: 100%;
-    height: 100%;
+    height: ${transparentHeader ? '100%' : `calc(100vh - ${headerHeight})`};
+    margin-top: ${transparentHeader ? 'none' : headerHeight};
 
     .container {
       height: 100%;
@@ -91,7 +91,6 @@ const mapStateToProps = ({ sm }) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  dispatchDisconnect: () => dispatch(disconnect()),
   dispatchCreateScene: () => dispatch(createScene()),
 });
 

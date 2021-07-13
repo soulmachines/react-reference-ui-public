@@ -1,5 +1,6 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import ReactTooltip from 'react-tooltip';
 import {
   BrowserRouter as Router,
   Switch,
@@ -14,6 +15,7 @@ const App = () => (
         <Diagnostic />
       </Route>
     </Switch>
+    <ReactTooltip />
   </Router>
 );
 
