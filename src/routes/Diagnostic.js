@@ -8,15 +8,14 @@ import Controls from '../components/Controls';
 import ContentCardDisplay from '../components/ContentCardDisplay';
 import {
   createScene,
-  sendEvent,
 } from '../store/sm/index';
 import Header from '../components/Header';
 import { transparentHeader, headerHeight } from '../config';
 
 const Diagnostic = ({
-  className, connected, loading, dispatchCreateScene, dispatchEvent
+  className, connected, loading, dispatchCreateScene,
 }) => {
-  useEffect(() => dispatchCreateScene(), []);
+  useEffect(() => { if (!connected) dispatchCreateScene(); }, []);
   return (
     <div className={className}>
       <Header />
@@ -49,9 +48,6 @@ const Diagnostic = ({
             <div className="row">
               <div className="col">
                 <Controls />
-              </div>
-              <div className="col-auto">
-                <button className="btn btn-success" type="button" onClick={dispatchEvent}>Dispatch</button>
               </div>
             </div>
           </div>
@@ -96,7 +92,6 @@ const mapStateToProps = ({ sm }) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   dispatchCreateScene: () => dispatch(createScene()),
-  dispatchEvent: () => dispatch(sendEvent({ eventName: 'SM_WELCOME' })),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(StyledDiagnostic);

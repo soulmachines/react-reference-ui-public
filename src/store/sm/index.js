@@ -324,7 +324,7 @@ export const sendTextMessage = createAsyncThunk('sm/sendTextMessage', async ({ t
 export const sendEvent = createAsyncThunk('sm/sendEvent', async ({ payload, eventName }) => {
   if (scene && persona) {
     persona.conversationSend(eventName, payload || {}, { kind: 'event' });
-    console.log(`dispatched ${eventName}`);
+    console.log(`dispatched ${eventName}`, payload);
   }
 });
 
