@@ -2,30 +2,32 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
+import { CameraVideoOff } from 'react-bootstrap-icons';
 import { mediaStreamProxy } from '../proxyVideo';
 
-const CameraPreview = ({ connected, className }) => {
+const CameraPreview = ({ connected, className, cameraOn }) => {
   const videoRef = React.createRef();
   const stream = mediaStreamProxy.getUserMediaStream();
-  const [aspectRatio, setAspectRatio] = useState(1);
+
   useEffect(() => {
-    if (stream !== null) {
+    if (stream !== null && mediaStreamProxy.videoOff === false) {
+      // display webcam preview in video elem
       videoRef.current.srcObject = stream;
-      // compute aspect ratio of video, constrain elem size to value
-      const { width, height } = stream.getVideoTracks()[0].getSettings();
-      setAspectRatio(width / height);
     }
   }, [connected]);
 
   return (
     <div className={className}>
-      <video
-        ref={videoRef}
-        muted
-        autoPlay
-        playsInline
-        style={{ aspectRatio }}
-      />
+      <button onClick={mediaStreamProxy.toggleVideo} type="button" className="video-button">
+        <video
+          ref={videoRef}
+          muted
+          autoPlay
+          playsInline
+          className={cameraOn ? null : 'd-none'}
+        />
+        { cameraOn ? null : <CameraVideoOff /> }
+      </button>
     </div>
   );
 };
@@ -33,18 +35,43 @@ const CameraPreview = ({ connected, className }) => {
 CameraPreview.propTypes = {
   connected: PropTypes.bool.isRequired,
   className: PropTypes.string.isRequired,
+  cameraOn: PropTypes.bool.isRequired,
 };
 
 const StyledCameraPreview = styled(CameraPreview)`
+  display: ${({ connected }) => (connected ? '' : 'none')};
+  align-items: center;
+  height: ${({ size }) => size || 4}rem;
+
+  .video-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 0;
+    height: ${({ size }) => size || 4}rem;
+    aspect-ratio: ${({ cameraWidth, cameraHeight }) => cameraWidth / cameraHeight};
+
+    border-radius: 3px;
+    background: rgba(0,0,0,0.2);
+    border: ${({ cameraOn }) => (cameraOn ? 'none' : '1px solid gray')};
+  }
+
   video {
-    /* accepts numeric value for size that dictates height of video elem */
+    position: absolute;
     height: ${({ size }) => size || 4}rem;
     transform: rotateY(180deg);
+    aspect-ratio: ${({ cameraWidth, cameraHeight }) => cameraWidth / cameraHeight};
+    border-radius: 3px;
+    z-index: 20;
   }
 `;
 
 const mapStateToProps = ({ sm }) => ({
   connected: sm.connected,
+  cameraOn: sm.cameraOn,
+  cameraWidth: sm.cameraWidth,
+  cameraHeight: sm.cameraHeight,
 });
 
 export default connect(mapStateToProps)(StyledCameraPreview);
