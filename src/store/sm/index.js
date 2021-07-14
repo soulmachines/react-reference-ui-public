@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { smwebsdk } from '@soulmachines/smwebsdk';
-import proxyVideo from '../../proxyVideo';
+import proxyVideo, { mediaStreamProxy } from '../../proxyVideo';
 import roundObject from '../../utils/roundObject';
 
 const ORCHESTRATION_MODE = false;
@@ -67,6 +67,11 @@ const initialState = {
       roundTripTime: null,
     },
   },
+  cameraOn: true,
+  // default to 1 because these values are used to compute an aspect ratio,
+  // so if for some reason the camera is disabled, it will default to a square (1:1)
+  cameraWidth: 1,
+  cameraHeight: 1,
 };
 
 // we need to define an object for actions here, since we need the types to be avaliable for
@@ -300,6 +305,14 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
     const { videoWidth, videoHeight } = thunk.getState().sm;
     scene.sendVideoBounds(videoWidth, videoHeight);
 
+    // since we can't store the userMediaStream in the store since it's not serializable,
+    // we use an external proxy for video streams
+    const { userMediaStream: stream } = scene.session();
+    // pass dispatch before calling setUserMediaStream so proxy can send dimensions to store
+    mediaStreamProxy.passDispatch(thunk.dispatch);
+    mediaStreamProxy.setUserMediaStream(stream);
+    mediaStreamProxy.enableToggle(scene);
+
     // fulfill promise, reducer sets state to indiate loading and connection are complete
     return thunk.fulfillWithValue();
   } catch (err) {
@@ -332,6 +345,12 @@ const smSlice = createSlice({
   name: 'sm',
   initialState,
   reducers: {
+    setCameraState: (state, { payload }) => ({
+      ...state,
+      cameraOn: payload.cameraOn,
+      cameraWidth: payload.cameraWidth || state.cameraWidth,
+      cameraHeight: payload.cameraHeight || state.cameraHeight,
+    }),
     setActiveCards: (state, { payload }) => ({
       ...state,
       activeCards: payload.activeCards || [],
@@ -439,6 +458,8 @@ const smSlice = createSlice({
 // hoist actions to top of file so thunks can access
 actions = smSlice.actions;
 
-export const { setVideoDimensions, stopSpeaking, setActiveCards } = smSlice.actions;
+export const {
+  setVideoDimensions, stopSpeaking, setActiveCards, setCameraState,
+} = smSlice.actions;
 
 export default smSlice.reducer;
