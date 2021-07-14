@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
+import { Link } from 'react-router-dom';
 import {
   logo, logoAltText, transparentHeader, headerHeight, logoLink,
 } from '../config';
@@ -15,9 +16,9 @@ const Header = ({
   <div className={className}>
     <div>
       {/* left align */}
-      <a href={logoLink}>
+      <Link to={logoLink}>
         <img src={logo} className="logo" alt={logoAltText} />
-      </a>
+      </Link>
     </div>
     <div>
       {/* middle align */}

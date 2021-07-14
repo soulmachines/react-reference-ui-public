@@ -1,15 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import App from './App';
+import ReactTooltip from 'react-tooltip';
+import Router from './Router';
 import store from './store';
 import reportWebVitals from './reportWebVitals';
 
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>
-      <App />
+      <Router />
     </Provider>
+    {/* globally enable react tooltips */}
+    <ReactTooltip />
   </React.StrictMode>,
   document.getElementById('root'),
 );
