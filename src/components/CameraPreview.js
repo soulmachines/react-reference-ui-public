@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import { CameraVideoOff } from 'react-bootstrap-icons';
+// import { CameraVideoOff } from 'react-bootstrap-icons';
 import { mediaStreamProxy } from '../proxyVideo';
 
 const CameraPreview = ({ connected, className, cameraOn }) => {
@@ -18,7 +18,9 @@ const CameraPreview = ({ connected, className, cameraOn }) => {
 
   return (
     <div className={className}>
-      <button onClick={mediaStreamProxy.toggleVideo} type="button" className="video-button">
+      {/* NOTE: toggleVideo behavior is not supported by smwebsdk so it's not reccomended */}
+      {/* <button onClick={mediaStreamProxy.toggleVideo} type="button" className="video-button"> */}
+      <div className="video-button">
         <video
           ref={videoRef}
           muted
@@ -26,8 +28,9 @@ const CameraPreview = ({ connected, className, cameraOn }) => {
           playsInline
           className={cameraOn ? null : 'd-none'}
         />
-        { cameraOn ? null : <CameraVideoOff /> }
-      </button>
+        {/* { cameraOn ? null : <CameraVideoOff /> } */}
+        {/* </button> */}
+      </div>
     </div>
   );
 };
