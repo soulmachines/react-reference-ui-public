@@ -37,31 +37,36 @@ class UserMediaStream {
 
   getUserMediaStream = () => this.userMediaStream;
 
+  // NOTE: renders emotional recognition nonfunctional, not reccomended for use as of 7/14/21
   // if we toggle video, we need to provide scene w/ the new feed
   enableToggle = (scene) => {
     this.scene = scene;
   }
 
+  // NOTE: renders emotional recognition nonfunctional, not reccomended for use as of 7/14/21
   toggleVideo = async () => {
-    const { videoOff, userMediaStream } = this;
-    const track = userMediaStream.getVideoTracks()[0];
+    if (this.scene !== null) {
+      const { videoOff, userMediaStream } = this;
+      const track = userMediaStream.getVideoTracks()[0];
 
-    if (videoOff === false) {
-      track.stop();
-      this.videoOff = true;
-      this.dispatch(setCameraState({ cameraOn: false }));
-    } else {
+      if (videoOff === false) {
+        track.stop();
+        this.videoOff = true;
+        this.dispatch(setCameraState({ cameraOn: false }));
+      } else {
       // we need to re-request the stream from the webcam after it's been stopped
-      const newVideoStreamGrab = await navigator.mediaDevices.getUserMedia({
-        video: true,
-      });
-      // delete old track
-      this.userMediaStream.removeTrack(track);
-      // add new track to media stream
-      this.userMediaStream.addTrack(newVideoStreamGrab.getVideoTracks()[0]);
-      this.scene.session().userMediaStream = this.userMediaStream;
-      this.videoOff = false;
-      this.dispatch(setCameraState({ cameraOn: true }));
+        const newVideoStreamGrab = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
+        // delete old track
+        this.userMediaStream.removeTrack(track);
+        // add new track to media stream
+        this.userMediaStream.addTrack(newVideoStreamGrab.getVideoTracks()[0]);
+        // ### THIS IS WHERE WE WOULD PROVIDE SCENE W/ THE NEW STREAM ###
+        // this.scene.session().userMediaStream = this.userMediaStream;
+        this.videoOff = false;
+        this.dispatch(setCameraState({ cameraOn: true }));
+      }
     }
   }
 }
