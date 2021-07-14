@@ -7,16 +7,20 @@ import Captions from '../components/Captions';
 import Controls from '../components/Controls';
 import ContentCardDisplay from '../components/ContentCardDisplay';
 import {
-  createScene,
+  createScene, disconnect,
 } from '../store/sm/index';
 import Header from '../components/Header';
 import { transparentHeader, headerHeight } from '../config';
 import CameraPreview from '../components/CameraPreview';
 
 const Diagnostic = ({
-  className, connected, loading, dispatchCreateScene,
+  className, connected, loading, dispatchCreateScene, dispatchDisconnect,
 }) => {
-  useEffect(() => { if (!connected) dispatchCreateScene(); }, []);
+  useEffect(() => {
+    if (!connected) dispatchCreateScene();
+    // cleanup function, disconnects on component dismount
+    return () => dispatchDisconnect();
+  }, []);
   return (
     <div className={className}>
       <Header />
@@ -69,6 +73,7 @@ const Diagnostic = ({
 Diagnostic.propTypes = {
   className: PropTypes.string.isRequired,
   dispatchCreateScene: PropTypes.func.isRequired,
+  dispatchDisconnect: PropTypes.func.isRequired,
   connected: PropTypes.bool.isRequired,
   loading: PropTypes.bool.isRequired,
 };
@@ -103,6 +108,7 @@ const mapStateToProps = ({ sm }) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   dispatchCreateScene: () => dispatch(createScene()),
+  dispatchDisconnect: () => dispatch(disconnect()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(StyledDiagnostic);
