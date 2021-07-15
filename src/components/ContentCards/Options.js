@@ -6,7 +6,7 @@ import { sendTextMessage } from '../../store/sm/index';
 const Options = ({ data, dispatchTextFromData }) => {
   const { options } = data;
   const optionsDisplay = options.map(({ label, value }) => (
-    <button type="button" className="list-group-item list-group-item-action" data-trigger-text={value} onClick={dispatchTextFromData}>
+    <button type="button" className="list-group-item list-group-item-action" data-trigger-text={value} onClick={dispatchTextFromData} key={JSON.stringify({ label, value })}>
       {label}
     </button>
   ));
@@ -19,11 +19,7 @@ const Options = ({ data, dispatchTextFromData }) => {
 
 Options.propTypes = {
   data: PropTypes.shape({
-    options: PropTypes.shape([
-      PropTypes.shape({
-        label: PropTypes.string,
-      }),
-    ]),
+    options: PropTypes.arrayOf([PropTypes.object]),
   }).isRequired,
   dispatchTextFromData: PropTypes.func.isRequired,
 };

@@ -1,13 +1,14 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import styled from 'styled-components';
 import { setActiveCards, animateCamera } from '../store/sm/index';
 import { calculateCameraPosition } from '../utils/camera';
 import Transcript from './ContentCards/Transcript';
 import ContentCardSwitch from './ContentCardSwitch';
 
 const ContentCardDisplay = ({
-  activeCards, dispatchAnimateCamera, videoWidth, videoHeight, showTranscript,
+  activeCards, dispatchAnimateCamera, videoWidth, videoHeight, showTranscript, className,
 }) => {
   if (!activeCards) return null;
   const CardDisplay = activeCards.map((c, index) => (
@@ -21,7 +22,7 @@ const ContentCardDisplay = ({
   } else dispatchAnimateCamera(calculateCameraPosition(videoWidth, videoHeight, 0.5));
 
   return (
-    <div className="col-5" style={{ maxHeight: '30rem', overflowY: 'scroll' }}>
+    <div className={className}>
       { showTranscript ? <Transcript /> : CardDisplay }
     </div>
   );
@@ -34,6 +35,10 @@ ContentCardDisplay.propTypes = {
   videoHeight: PropTypes.number.isRequired,
   showTranscript: PropTypes.bool.isRequired,
 };
+
+const StyledContentCardDisplay = styled(ContentCardDisplay)`
+  max-height: 100%;
+`;
 
 const mapStateToProps = ({ sm }) => ({
   activeCards: sm.activeCards,
@@ -49,4 +54,4 @@ const mapDispatchToProps = (dispatch) => ({
   dispatchAnimateCamera: (options, duration = 1) => dispatch(animateCamera({ options, duration })),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(ContentCardDisplay);
+export default connect(mapStateToProps, mapDispatchToProps)(StyledContentCardDisplay);

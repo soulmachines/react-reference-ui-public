@@ -26,6 +26,7 @@ const Controls = ({
   const [inputFocused, setInputFocused] = useState(false);
   const [spinnerDisplay, setSpinnerDisplay] = useState('');
   const [spinnerIndex, setSpinnerIndex] = useState(0);
+  const [spinnerTimeout, setSpinnerTimeout] = useState(null);
 
   const handleInput = (e) => setInputValue(e.target.value);
   const handleFocus = () => {
@@ -45,13 +46,17 @@ const Controls = ({
   const spinner = '▖▘▝▗';
   const spinnerInterval = 100;
   useEffect(() => {
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       const nextDisplay = spinner[spinnerIndex];
       setSpinnerDisplay(nextDisplay);
       const nextIndex = (spinnerIndex === spinner.length - 1) ? 0 : spinnerIndex + 1;
       setSpinnerIndex(nextIndex);
     }, spinnerInterval);
+    setSpinnerTimeout(timeout);
   }, [spinnerIndex]);
+
+  // cleanup function, two functions bc 2nd one is called on unmount
+  useEffect(() => () => clearTimeout(spinnerTimeout), []);
 
   // clear placeholder text on reconnnect, sometimes the state updates won't propagate
   const placeholder = intermediateUserUtterance === '' ? '' : intermediateUserUtterance;

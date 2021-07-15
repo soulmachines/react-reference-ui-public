@@ -21,11 +21,7 @@ const Transcript = ({ className, transcript }) => {
       <ul className="list-group transcript-list-group">
         {transcriptDisplay.length > 0 ? transcriptDisplay : (
           <li className="list-group-item">
-            No items to show,
-            {' '}
-            <i>
-              say something!
-            </i>
+            No items to show, say something!
           </li>
         ) }
       </ul>
@@ -44,8 +40,11 @@ Transcript.propTypes = {
 
 const StyledTranscript = styled(Transcript)`
   .transcript-list-group {
-    max-height: 100%;
+    flex-shrink: 1;
     overflow-y: scroll;
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
   .source{
     text-transform: capitalize;

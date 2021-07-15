@@ -68,12 +68,6 @@ const ContentCardSwitch = ({
     </div>
   );
   return elem;
-
-  // return (
-  //   <div>
-  //     <Element data={data} />
-  //   </div>
-  // );
 };
 
 ContentCardSwitch.propTypes = {

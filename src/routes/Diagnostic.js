@@ -18,18 +18,17 @@ const Diagnostic = ({
 }) => {
   useEffect(() => {
     if (!connected) dispatchCreateScene();
-    // cleanup function, disconnects on component dismount
-    return () => dispatchDisconnect();
+    // cleanup function, disconnects on component dismount, TODO: fix router behavior
+    // return () => dispatchDisconnect();
   }, []);
+
   return (
     <div className={className}>
       <Header />
       <div className="video-overlay">
-        <div className="container d-flex flex-column justify-content-between">
-          {/* top row */}
-          <div className="d-flex justify-content-end mt-3" />
+        <div className="container d-flex flex-column">
           {/* middle row */}
-          <div className={loading || connected === false ? 'text-center' : ''}>
+          <div className={loading || connected === false ? 'text-center' : 'vertical-fit-container col-5'}>
             {
             loading && connected === false
               ? (
@@ -44,20 +43,18 @@ const Diagnostic = ({
             { connected ? <ContentCardDisplay /> : null}
           </div>
           {/* bottom row */}
-          <div>
-            <div className="row">
-              <div className="col text-center">
-                <Captions />
-              </div>
+          <div className="row">
+            <div className="col text-center">
+              <Captions />
             </div>
-            <div className="row">
-              <div className="col">
-                <Controls />
-              </div>
-              <div className="col-auto">
-                <div className="camera-preview-zeroheight-wrapper">
-                  <CameraPreview />
-                </div>
+          </div>
+          <div className="row">
+            <div className="col">
+              <Controls />
+            </div>
+            <div className="col-auto">
+              <div className="camera-preview-zeroheight-wrapper">
+                <CameraPreview />
               </div>
             </div>
           </div>
@@ -87,12 +84,25 @@ const StyledDiagnostic = styled(Diagnostic)`
     z-index: 10;
 
     width: 100%;
-    height: ${transparentHeader ? '100%' : `calc(100vh - ${headerHeight})`};
-    margin-top: ${transparentHeader ? 'none' : headerHeight};
+    height: ${transparentHeader ? '100vh' : `calc(100vh - ${headerHeight})`};
+    ${transparentHeader ? 'padding' : 'margin'}-top: ${headerHeight};
+    /* overflow: hidden; */
 
     .container {
-      height: 100%;
+      height: calc(100vh - ${headerHeight});
     }
+
+    .vertical-fit-container {
+      flex: 1 1 auto;
+      overflow-y: scroll;
+
+      display: flex;
+      align-items: center;
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
     .camera-preview-zeroheight-wrapper {
       position: absolute;
       bottom: .5rem;
