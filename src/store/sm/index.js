@@ -387,9 +387,11 @@ const smSlice = createSlice({
       userSpeaking: true,
     }),
     addConversationResult: (state, { payload }) => {
+      // we record both text and content cards in the transcript
       if (payload.text !== '' || 'card' in payload !== false) {
         const { source } = payload;
         const newEntry = { source, timestamp: new Date().toISOString() };
+        // handle entering either text or card into transcript array
         if ('text' in payload) newEntry.text = payload.text;
         if ('card' in payload) newEntry.card = payload.card;
         const out = {
@@ -398,6 +400,7 @@ const smSlice = createSlice({
           intermediateUserUtterance: '',
           userSpeaking: false,
         };
+        // copy any text to lastXXXUtterance, used for captions and user confirmation of STT
         if ('text' in payload) {
           out[
             payload.source === 'user' ? 'lastUserUtterance' : 'lastPersonaUtterance'
