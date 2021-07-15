@@ -37,7 +37,7 @@ const Landing = ({ className }) => {
                 <div className="mx-4">
                   <FileEarmarkMedical />
                   {' '}
-                  <a href="#" target="_blank">EULA</a>
+                  <a href="https://www.soulmachines.com/privacy-policy/" target="_blank" rel="noreferrer">EULA</a>
                 </div>
                 <div className="mx-4">
                   <i className="bi bi-camera-video" />

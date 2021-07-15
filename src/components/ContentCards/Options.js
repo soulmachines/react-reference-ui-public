@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 import { sendTextMessage } from '../../store/sm/index';
 
 const Options = ({ data, dispatchTextFromData }) => {
@@ -10,10 +11,21 @@ const Options = ({ data, dispatchTextFromData }) => {
     </button>
   ));
   return (
-    <div className="list-group m-2">
+    <div className="list-group">
       {optionsDisplay}
     </div>
   );
+};
+
+Options.propTypes = {
+  data: PropTypes.shape({
+    options: PropTypes.shape([
+      PropTypes.shape({
+        label: PropTypes.string,
+      }),
+    ]),
+  }).isRequired,
+  dispatchTextFromData: PropTypes.func.isRequired,
 };
 
 const mapDispatchToProps = (dispatch) => ({

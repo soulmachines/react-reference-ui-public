@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import { MicFill, MicMuteFill, XOctagonFill } from 'react-bootstrap-icons';
 import {
-  sendTextMessage, mute, stopSpeaking,
+  ChatSquareDotsFill, MicFill, MicMuteFill, XOctagonFill,
+} from 'react-bootstrap-icons';
+import {
+  sendTextMessage, mute, stopSpeaking, toggleShowTranscript,
 } from '../store/sm/index';
 
 const Controls = ({
@@ -17,6 +19,8 @@ const Controls = ({
   isMuted,
   speechState,
   dispatchStopSpeaking,
+  dispatchToggleShowTranscript,
+  showTranscript,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
@@ -54,6 +58,9 @@ const Controls = ({
   return (
     <div className={className}>
       <div className="row mb-3">
+        <div className="col-auto">
+          <button type="button" className={`btn btn-${showTranscript ? '' : 'outline-'}secondary`} aria-label="Toggle Transcript" data-tip="Toggle Transcript" onClick={dispatchToggleShowTranscript}><ChatSquareDotsFill /></button>
+        </div>
         <div className="col">
           <form onSubmit={handleSubmit}>
             <div className="input-group">
@@ -87,6 +94,8 @@ Controls.propTypes = {
   isMuted: PropTypes.bool.isRequired,
   speechState: PropTypes.string.isRequired,
   dispatchStopSpeaking: PropTypes.func.isRequired,
+  showTranscript: PropTypes.bool.isRequired,
+  dispatchToggleShowTranscript: PropTypes.func.isRequired,
 };
 
 const StyledControls = styled(Controls)`
@@ -120,12 +129,14 @@ const mapStateToProps = (state) => ({
   connected: state.sm.connected,
   isMuted: state.sm.isMuted,
   speechState: state.sm.speechState,
+  showTranscript: state.sm.showTranscript,
 });
 
 const mapDispatchToProps = (dispatch) => ({
   dispatchText: (text) => dispatch(sendTextMessage({ text })),
   dispatchMute: () => dispatch(mute()),
   dispatchStopSpeaking: () => dispatch(stopSpeaking()),
+  dispatchToggleShowTranscript: () => dispatch(toggleShowTranscript()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(StyledControls);

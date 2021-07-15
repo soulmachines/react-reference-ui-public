@@ -95,11 +95,11 @@ const Loading = ({
                 <h5 className="card-title text-center">Find a quiet environment</h5>
                 <ul>
                   <li>
-                    I can find it hard to hear you when you're in a noisy room or
+                    I can find it hard to hear you when you&apos;re in a noisy room or
                     there is a lot of noise in the background
                   </li>
                   <li className="mt-2">
-                    Find a quiet place and let's keep this one-on-one for now
+                    Find a quiet place and let&apos;s keep this one-on-one for now
                   </li>
                   <li className="mt-2">
                     If that sounds ok, please turn on access to your microphone and

@@ -16,8 +16,8 @@ const Captions = ({
   const minCaptionDuration = 1500;
 
   useEffect(() => {
-    if (connected === false) return setShowCaptions(false);
-    if (speechState === 'speaking') {
+    if (connected === false) setShowCaptions(false);
+    else if (speechState === 'speaking') {
       // when a new utterance starts:
       // show captions
       setShowCaptions(true);

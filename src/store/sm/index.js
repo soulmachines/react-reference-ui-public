@@ -72,9 +72,10 @@ const initialState = {
   // so if for some reason the camera is disabled, it will default to a square (1:1)
   cameraWidth: 1,
   cameraHeight: 1,
+  showTranscript: false,
 };
 
-// we need to define an object for actions here, since we need the types to be avaliable for
+// host actions object since we need the types to be avaliable for
 // async calls later, e.g. handling messages from persona
 let actions;
 let persona = null;
@@ -174,9 +175,15 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
             const { activeCards, contentCards, cardsAreStale } = thunk.getState().sm;
             // if desired, multiple content cards can be displayed in one turn
             const oldCards = cardsAreStale ? [] : activeCards;
+            // this will only ever be one card
             const newCards = args.map((a) => contentCards[a]);
             const newActiveCards = [...oldCards, ...newCards];
             thunk.dispatch(actions.setActiveCards({ activeCards: newActiveCards }));
+            // send card to transcript as well
+            thunk.dispatch(actions.addConversationResult({
+              source: 'persona',
+              card: newCards[0],
+            }));
             break;
           }
           case ('hidecards'): {
@@ -345,6 +352,10 @@ const smSlice = createSlice({
   name: 'sm',
   initialState,
   reducers: {
+    toggleShowTranscript: (state) => ({
+      ...state,
+      showTranscript: !state.showTranscript,
+    }),
     setCameraState: (state, { payload }) => ({
       ...state,
       cameraOn: payload.cameraOn,
@@ -376,19 +387,24 @@ const smSlice = createSlice({
       userSpeaking: true,
     }),
     addConversationResult: (state, { payload }) => {
-      if (payload.text !== '') {
-        return ({
+      if (payload.text !== '' || 'card' in payload !== false) {
+        const { source } = payload;
+        const newEntry = { source, timestamp: new Date().toISOString() };
+        if ('text' in payload) newEntry.text = payload.text;
+        if ('card' in payload) newEntry.card = payload.card;
+        const out = {
           ...state,
-          transcript: [...state.transcript, {
-            source: payload.source,
-            text: payload.text,
-            timestamp: new Date().toISOString(),
-          }],
-          [payload.source === 'user' ? 'lastUserUtterance' : 'lastPersonaUtterance']: payload.text,
+          transcript: [...state.transcript, { ...newEntry }],
           intermediateUserUtterance: '',
           userSpeaking: false,
-        });
-      } console.warn('addConversationResult: ignoring empty string');
+        };
+        if ('text' in payload) {
+          out[
+            payload.source === 'user' ? 'lastUserUtterance' : 'lastPersonaUtterance'
+          ] = payload.text;
+        }
+        return out;
+      } return console.warn('addConversationResult: ignoring empty string');
     },
     setSpeechState: (state, { payload }) => ({
       ...state,
@@ -459,7 +475,7 @@ const smSlice = createSlice({
 actions = smSlice.actions;
 
 export const {
-  setVideoDimensions, stopSpeaking, setActiveCards, setCameraState,
+  setVideoDimensions, stopSpeaking, setActiveCards, setCameraState, toggleShowTranscript,
 } = smSlice.actions;
 
 export default smSlice.reducer;
