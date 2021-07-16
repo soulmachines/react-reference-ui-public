@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 const Markdown = ({ data }) => {
   const { text } = data;
   return (
-    <div className="card" style={{ maxWidth: '20rem' }}>
+    <div className="card">
       <div className="card-body">
         <ReactMarkdown>{text}</ReactMarkdown>
       </div>
@@ -14,7 +14,7 @@ const Markdown = ({ data }) => {
 };
 
 Markdown.propTypes = {
-  data: PropTypes.objectOf({
+  data: PropTypes.shape({
     text: PropTypes.string.isRequired,
   }).isRequired,
 };
