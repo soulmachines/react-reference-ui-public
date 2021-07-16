@@ -7,19 +7,16 @@ import ContentCardSwitch from '../ContentCardSwitch';
 const Transcript = ({ className, transcript }) => {
   const transcriptDisplay = transcript.map(({
     source, text, card, timestamp,
-  }) => (
-    <div key={timestamp} className={`transcript-entry ${source === 'user' ? 'transcript-entry-user' : ''}`}>
-      <div>
-        <div className={`source ${source === 'user' ? 'source-user' : ''}`}>{source[0]}</div>
+  }) => {
+    if (card) return <ContentCardSwitch card={card} index={null} key={timestamp} />;
+    return (
+      <div key={timestamp} className={`transcript-entry ${source === 'user' ? 'transcript-entry-user' : ''}`}>
+        <div className="transcript-entry-content">
+          {text || null}
+        </div>
       </div>
-      <div className="transcript-entry-content">
-        {text || null}
-        {card
-          ? <ContentCardSwitch card={card} index={null} />
-          : null}
-      </div>
-    </div>
-  ));
+    );
+  });
   return (
     <div className={className}>
       <div className="transcript-list-group">
@@ -62,10 +59,10 @@ const StyledTranscript = styled(Transcript)`
   }
 
   .transcript-entry-content {
-    padding: 0.3rem 0.5rem 0.3rem 0.5rem;
+    padding: 0.5rem 0.8rem 0.5rem 0.8rem;
     width: fit-content;
     background: #FFFFFF;
-    border-radius: 3px;
+    border-radius: 1.1rem;
   }
 
   .transcript-entry-user {
@@ -75,23 +72,6 @@ const StyledTranscript = styled(Transcript)`
       background: #0d6efd;
       color: #FFFFFF;
     }
-  }
-
-  .source{
-    text-transform: capitalize;
-    background: #343a40;
-    color: #FFFFFF;
-    aspect-ratio: 1;
-    width: 3rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 1.5rem;
-    margin-right: 0.6rem;
-  }
-  .source-user {
-    margin-right: 0;
-    margin-left: 0.6rem;
   }
 `;
 

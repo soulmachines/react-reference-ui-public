@@ -143,6 +143,11 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
       // handles output from TTS (what user said)
       case ('recognizeResults'): {
         const output = message.body.results[0];
+        // sometimes we get an empty message, catch and log
+        if (!output) {
+          console.warn('undefined output!', message.body);
+          return false;
+        }
         const { transcript: text } = output.alternatives[0];
         // we get multiple recognizeResults messages, so only add the final one to transcript
         // but keep track of intermediate one to show the user what they're saying
