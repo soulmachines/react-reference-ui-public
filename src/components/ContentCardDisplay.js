@@ -38,6 +38,7 @@ ContentCardDisplay.propTypes = {
 
 const StyledContentCardDisplay = styled(ContentCardDisplay)`
   max-height: 100%;
+  width: 100%;
 `;
 
 const mapStateToProps = ({ sm }) => ({
