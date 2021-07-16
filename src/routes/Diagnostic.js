@@ -28,9 +28,9 @@ const Diagnostic = ({
       <div className="video-overlay">
         <div className="container d-flex flex-column">
           {/* middle row */}
-          <div className={loading || connected === false ? 'text-center' : 'vertical-fit-container col-5'}>
+          <div className={loading || connected === false || true ? 'loading-container' : 'vertical-fit-container col-5'}>
             {
-            loading && connected === false
+            loading && connected === false || true
               ? (
                 // loading spinner
                 <div className="spinner-border text-primary" role="status">
@@ -101,6 +101,10 @@ const StyledDiagnostic = styled(Diagnostic)`
       &::-webkit-scrollbar {
         display: none;
       }
+    }
+    .loading-container {
+      flex: 1 1 auto;
+      text-align: center;
     }
 
     .camera-preview-zeroheight-wrapper {
