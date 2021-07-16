@@ -19,7 +19,7 @@ const Diagnostic = ({
   useEffect(() => {
     if (!connected) dispatchCreateScene();
     // cleanup function, disconnects on component dismount, TODO: fix router behavior
-    // return () => dispatchDisconnect();
+    return () => dispatchDisconnect();
   }, []);
 
   return (
