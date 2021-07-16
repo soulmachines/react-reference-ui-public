@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
@@ -8,7 +8,9 @@ const Transcript = ({ className, transcript }) => {
   const transcriptDisplay = transcript.map(({
     source, text, card, timestamp,
   }) => {
+    // we dont want to wrap cards in a bubble, return as is w/ a key added
     if (card) return <ContentCardSwitch card={card} index={null} key={timestamp} />;
+    // make text look fancy :-)
     return (
       <div key={timestamp} className={`transcript-entry ${source === 'user' ? 'transcript-entry-user' : ''}`}>
         <div className="transcript-entry-content">
@@ -17,6 +19,11 @@ const Transcript = ({ className, transcript }) => {
       </div>
     );
   });
+
+  // scroll to bottom of transcript whenever it updates
+  let scrollRef;
+  useEffect(() => scrollRef.scrollIntoView({ behavior: 'smooth' }), [transcript]);
+
   return (
     <div className={className}>
       <div className="transcript-list-group">
@@ -27,6 +34,7 @@ const Transcript = ({ className, transcript }) => {
               No items to show, say something!
             </li>
           )}
+        <div ref={(el) => { scrollRef = el; }} />
       </div>
     </div>
   );
