@@ -28,9 +28,9 @@ const Diagnostic = ({
       <div className="video-overlay">
         <div className="container d-flex flex-column">
           {/* middle row */}
-          <div className={loading || connected === false || true ? 'loading-container' : 'vertical-fit-container col-5'}>
+          <div className={loading || connected === false ? 'loading-container' : 'vertical-fit-container col-5'}>
             {
-            loading && connected === false || true
+            loading && connected === false
               ? (
                 // loading spinner
                 <div className="spinner-border text-primary" role="status">
