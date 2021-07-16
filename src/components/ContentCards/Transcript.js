@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
@@ -22,7 +22,11 @@ const Transcript = ({ className, transcript }) => {
 
   // scroll to bottom of transcript whenever it updates
   let scrollRef;
-  useEffect(() => scrollRef.scrollIntoView({ behavior: 'smooth' }), [transcript]);
+  const [isMounting, setIsMounting] = useState(true);
+  useEffect(() => {
+    scrollRef.scrollIntoView({ behavior: isMounting ? 'instant' : 'smooth' });
+    setIsMounting(false);
+  }, [transcript]);
 
   return (
     <div className={className}>
