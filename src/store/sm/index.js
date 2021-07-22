@@ -290,6 +290,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
         console.warn(`unknown message type: ${message.name}`, message);
       }
     }
+    return true;
   };
 
   // create instance of Persona class w/ scene instance
