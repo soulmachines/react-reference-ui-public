@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { smwebsdk } from '@soulmachines/smwebsdk';
 import proxyVideo, { mediaStreamProxy } from '../../proxyVideo';
 import roundObject from '../../utils/roundObject';
+import { meatballString } from './meatball';
 
 const ORCHESTRATION_MODE = false;
 const TOKEN_ISSUER = 'https://localhost:5000/auth/authorize';
@@ -165,6 +166,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
       // handles output from NLP (what DP is saying)
       case ('personaResponse'): {
         const { currentSpeech } = message.body;
+        console.log('personaResponse', message.body);
         thunk.dispatch(actions.addConversationResult({
           source: 'persona',
           text: currentSpeech,
@@ -172,9 +174,10 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
         break;
       }
 
-      // activate content cards when called for
+      // handle speech markers
       case ('speechMarker'): {
         const { name: speechMarkerName, arguments: args } = message.body;
+        console.log('speechMarker', message.body);
         switch (speechMarkerName) {
           case ('showcards'): {
             const { activeCards, contentCards, cardsAreStale } = thunk.getState().sm;
@@ -193,6 +196,30 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
           }
           case ('hidecards'): {
             thunk.dispatch(actions.setActiveCards({}));
+            break;
+          }
+          case ('feature'): {
+            console.warn('@feature not implemented yet!');
+            break;
+          }
+          case ('close'): {
+            console.warn('@close not implemented yet!');
+            break;
+          }
+          case ('marker'): {
+            // custom speech marker handler
+            const { arguments: markerArgs } = message.body;
+            markerArgs.forEach((a) => {
+              switch (a) {
+                case ('triggerMeatball'): {
+                  console.log(meatballString);
+                  break;
+                }
+                default: {
+                  console.warn(`no handler for @marker(${a})!`);
+                }
+              }
+            });
             break;
           }
           default: {
@@ -283,6 +310,11 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
       // activation events i think are some kind of emotional metadata
       case ('activation'): {
         // console.warn('activation handler not yet implemented', message);
+        break;
+      }
+
+      case ('animateToNamedCamera'): {
+        // console.warn('animateToNamedCamera handler not yet implemented', message);
         break;
       }
 
