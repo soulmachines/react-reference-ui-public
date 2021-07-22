@@ -23,12 +23,13 @@ const Loading = ({
   const spinner = '▖▘▝▗';
   const spinnerInterval = 100;
   useEffect(() => {
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       const nextDisplay = spinner[spinnerIndex];
       setSpinnerDisplay(nextDisplay);
       const nextIndex = (spinnerIndex === spinner.length - 1) ? 0 : spinnerIndex + 1;
       setSpinnerIndex(nextIndex);
     }, spinnerInterval);
+    clearTimeout(timeout);
   }, [spinnerIndex]);
 
   return (
