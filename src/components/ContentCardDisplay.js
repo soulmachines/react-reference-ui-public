@@ -34,6 +34,7 @@ ContentCardDisplay.propTypes = {
   videoWidth: PropTypes.number.isRequired,
   videoHeight: PropTypes.number.isRequired,
   showTranscript: PropTypes.bool.isRequired,
+  className: PropTypes.string.isRequired,
 };
 
 const StyledContentCardDisplay = styled(ContentCardDisplay)`
