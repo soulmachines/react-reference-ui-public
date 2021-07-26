@@ -1,70 +1,26 @@
-# Getting Started with Create React App
+# Soul Machines React Reference UI
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This template succeeds the previous [react-template](https://github.com/soulmachines/react-template). This is a complete re-write based off of [create-react-app](https://github.com/facebook/create-react-app) and is designed mainly to provide a simpler and more familiar developer experience.
 
-## Available Scripts
+This template serves as "opinionated documentation," in that it contains most of the functionality that UIs should have and how to use it. As members of Soul Machines Customer Success engineering, we believe this is a good example of how the user flow and interaction with the Digital Person should work. This template is provided with the expectation that most, if not all, of the styling will be altered.
 
-In the project directory, you can run:
+## Setup
+
+You need a token server to authenticate the UI session with the Soul Machines Persona server. Either Soul Machines will provide an endpoint, or you will have to spin up a local instance of [express-token-server](https://github.com/soulmachines/express-token-server) with your credentials from DDNA Studio.
+
+### `npm install`
+Run to install the project's dependencies.
 
 ### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Starts the development server. Open [http://localhost:3000](http://localhost:3000) to view it in the browser. The page will automatically reload when you make changes.
 
 ### `npm run build`
+Builds the app for production to the `build` folder. The files will be bundled and minified for production.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Changes from `react-template`
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+The main objective of this re-write was a simplification of as much of the structure as possible. Secondly, with the knowledge that most consumers of this template are implementing an entirely custom design, I wanted to provide an opinionated reference for how the UI is meant to behave and its capabilities.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+The main change is the elimination of the Soul Machines context. Interaction with `smwebsdk` is done with events through the Redux store. Importantly, this allows us to use entirely function components with React hooks, massively reducing the number of lines of code when compared to class components.
 
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Additionally, routing has been added to the app with the use of `react-router-dom`. This allows us to build discrete pages into the experience. For example, rather than having a single parent component that shows the welcome and loading screens based on application state, each route can be its own component that redirects to the next route when a certain condition has been met. This makes it easier to modify and add to the user flow.
