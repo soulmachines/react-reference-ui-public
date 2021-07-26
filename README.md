@@ -17,10 +17,14 @@ Starts the development server. Open [http://localhost:3000](http://localhost:300
 ### `npm run build`
 Builds the app for production to the `build` folder. The files will be bundled and minified for production.
 
-## Changes from `react-template`
+## Changes From `react-template`
 
 The main objective of this re-write was a simplification of as much of the structure as possible. Secondly, with the knowledge that most consumers of this template are implementing an entirely custom design, I wanted to provide an opinionated reference for how the UI is meant to behave and its capabilities.
 
 The main change is the elimination of the Soul Machines context. Interaction with `smwebsdk` is done with events through the Redux store. Importantly, this allows us to use entirely function components with React hooks, massively reducing the number of lines of code when compared to class components.
 
 Additionally, routing has been added to the app with the use of `react-router-dom`. This allows us to build discrete pages into the experience. For example, rather than having a single parent component that shows the welcome and loading screens based on application state, each route can be its own component that redirects to the next route when a certain condition has been met. This makes it easier to modify and add to the user flow.
+
+## Linting & Code Style
+
+This project strictly follows [AirBnB's JavaScript style guide](https://github.com/airbnb/javascript). We recommend you install [ESLint](https://eslint.org/) in your editor and adhere to its recommendations.
