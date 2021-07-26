@@ -6,7 +6,7 @@ This template serves as "opinionated documentation," in that it contains most of
 
 ## Setup
 
-You need a token server to authenticate the UI session with the Soul Machines Persona server. Either Soul Machines will provide an endpoint, or you will have to spin up a local instance of [express-token-server](https://github.com/soulmachines/express-token-server) with your credentials from DDNA Studio.
+You need a token server to authenticate the UI session with the Soul Machines Persona server. Either Soul Machines will provide an endpoint, or you will have to spin up an instance of [express-token-server](https://github.com/soulmachines/express-token-server) with your credentials from DDNA Studio.
 
 ### `npm install`
 Run to install the project's dependencies.
