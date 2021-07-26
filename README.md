@@ -2,7 +2,7 @@
 
 This template succeeds the previous [react-template](https://github.com/soulmachines/react-template). This is a complete re-write based off of [create-react-app](https://github.com/facebook/create-react-app) and is designed mainly to provide a simpler and more familiar developer experience.
 
-This template serves as "opinionated documentation," in that it contains most of the functionality that UIs should have and how to use it. As members of Soul Machines Customer Success engineering, we believe this is a good example of how the user flow and interaction with the Digital Person should work. This template is provided with the expectation that most, if not all, of the styling will be altered.
+This template serves as "opinionated documentation," in that it contains most of the functionality that UI's should have and how to use it. As members of Soul Machines Customer Success engineering, we believe this is a good example of how the user flow and interaction with the Digital Person should work. This template is provided with the expectation that most, if not all, of the styling will be altered.
 
 ## Setup
 
