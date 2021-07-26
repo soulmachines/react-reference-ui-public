@@ -28,3 +28,5 @@ Additionally, routing has been added to the app with the use of `react-router-do
 ## Linting & Code Style
 
 This project strictly follows [AirBnB's JavaScript style guide](https://github.com/airbnb/javascript). We recommend you install [ESLint](https://eslint.org/) in your editor and adhere to its recommendations.
+
+We have also provided an `.editorconfig` file that you can use in your editor to match the indentation, whitespace, and other styling rules we used in creating this template.
