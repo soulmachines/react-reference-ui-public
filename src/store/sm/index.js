@@ -4,8 +4,8 @@ import proxyVideo, { mediaStreamProxy } from '../../proxyVideo';
 import roundObject from '../../utils/roundObject';
 import { meatballString } from './meatball';
 
-const ORCHESTRATION_MODE = false;
-const TOKEN_ISSUER = 'https://localhost:5000/auth/authorize';
+const ORCHESTRATION_MODE = process.env.REACT_APP_ORCHESTRATION_MODE || false;
+const TOKEN_ISSUER = process.env.REACT_APP_TOKEN_URL;
 // copied from old template, not sure if there are other possible values for this?
 const PERSONA_ID = '1';
 const CAMERA_ID = 'CloseUp';
@@ -330,6 +330,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
   try {
     // get signed JWT from token server so we can connect to Persona server
     const res = await fetch(TOKEN_ISSUER, { method: 'POST' });
+    console.log(process.env);
     const { url, jwt } = await res.json();
 
     // connect to Persona server
