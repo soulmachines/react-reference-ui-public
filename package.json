@@ -1,7 +1,14 @@
 {
-  "name": "project-martha",
-  "version": "0.1.0",
+  "name": "react-reference-ui",
+  "version": "1.0.0",
   "private": true,
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "deploy:gcp": "gcloud app deploy --project ui-test-persona-nhyv app.yaml --stop-previous-version --promote --version baseline --quiet"
+  },
   "dependencies": {
     "@reduxjs/toolkit": "^1.6.0",
     "@soulmachines/smwebsdk": "^12.1.1",
@@ -10,6 +17,7 @@
     "@testing-library/user-event": "^12.8.3",
     "await-to-js": "^3.0.0",
     "bootstrap": "^5.0.2",
+    "dotenv": "^8.2.0",
     "prop-types": "^15.7.2",
     "react": "^17.0.2",
     "react-bootstrap-icons": "^1.5.0",
@@ -25,12 +33,6 @@
     "styled-components": "^5.3.0",
     "syllable": "^5.0.0",
     "web-vitals": "^1.1.2"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
