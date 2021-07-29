@@ -76,7 +76,7 @@ const initialState = {
   showTranscript: false,
 };
 
-// host actions object since we need the types to be avaliable for
+// host actions object since we need the types to be available for
 // async calls later, e.g. handling messages from persona
 let actions;
 let persona = null;
@@ -115,7 +115,7 @@ export const mute = createAsyncThunk('sm/mute', async (args, thunk) => {
   } else { console.warn('muting not possible, no active scene!'); }
 });
 
-// handles both manual disconnect or automatic timeout due to innactivity
+// handles both manual disconnect or automatic timeout due to inactivity
 export const disconnect = createAsyncThunk('sm/disconnect', async (args, thunk) => {
   if (scene) scene.disconnect();
   setTimeout(() => {
@@ -231,7 +231,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
       case ('conversationResult'): {
         // get content cards from context
         const { context } = message.body.output;
-        // filter out $cardName.orignal, we just want values for $cardName
+        // filter out $cardName.original, we just want values for $cardName
         const relevantKeys = Object.keys(context).filter((k) => /\.original/gm.test(k) === false);
         const contentCards = {};
         // eslint-disable-next-line array-callback-return
@@ -328,7 +328,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
 
   /* CONNECT TO PERSONA */
   try {
-    // get signed JWT from token server so we can connect to Persona serverj
+    // get signed JWT from token server so we can connect to Persona server
     const res = await fetch(TOKEN_ISSUER, { method: 'POST' });
     const { url, jwt } = await res.json();
 
@@ -340,7 +340,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
     await scene.connect(url, '', jwt, retryOptions);
 
     // we can't disable logging until after the connection is established
-    // logging is pretty crowded, not reccommended to enable
+    // logging is pretty crowded, not recommended to enable
     // unless you need to debug emotional data from webcam
     scene.session().setLogging(false);
 
@@ -356,7 +356,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
     mediaStreamProxy.setUserMediaStream(stream);
     mediaStreamProxy.enableToggle(scene);
 
-    // fulfill promise, reducer sets state to indiate loading and connection are complete
+    // fulfill promise, reducer sets state to indicate loading and connection are complete
     return thunk.fulfillWithValue();
   } catch (err) {
     // TODO: try to handle blocked permissions a la https://github.com/soulmachines/cs-gem-poc-ui/blob/9c4ce7f475e0ec1b34a80d8271dd5bf81134cfb9/src/contexts/SoulMachines.js#L436
