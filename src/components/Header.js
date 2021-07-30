@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   logo, logoAltText, transparentHeader, headerHeight, logoLink,
 } from '../config';
@@ -12,25 +12,27 @@ import {
 
 const Header = ({
   className, connected, loading, dispatchDisconnect,
-}) => (
-  <div className={className}>
-    <div>
-      {/* left align */}
-      <Link to={logoLink}>
-        <img src={logo} className="logo" alt={logoAltText} />
-      </Link>
+}) => {
+  const { pathname } = useLocation();
+  console.log(pathname);
+  return (
+    <div className={className}>
+      <div>
+        {/* left align */}
+        <Link to={logoLink}>
+          <img src={logo} className="logo" alt={logoAltText} />
+        </Link>
+      </div>
+      <div>
+        {/* middle align */}
+      </div>
+      <div>
+        {/* right align */}
+        <button type="button" disabled={!connected} className={`btn btn-outline-danger ${connected && !loading && pathname === '/video' ? '' : 'd-none'}`} onClick={dispatchDisconnect} data-tip="Disconnect" data-place="bottom">Disconnect</button>
+      </div>
     </div>
-    <div>
-      {/* middle align */}
-    </div>
-    <div>
-      {/* right align */}
-
-      <button type="button" disabled={!connected} className={`btn btn-outline-danger ${connected && !loading ? '' : 'd-none'}`} onClick={dispatchDisconnect} data-tip="Disconnect" data-place="bottom">Disconnect</button>
-    </div>
-  </div>
-);
-
+  );
+};
 Header.propTypes = {
   className: PropTypes.string.isRequired,
   connected: PropTypes.bool.isRequired,
