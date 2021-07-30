@@ -8,9 +8,8 @@ const Transcript = ({ className, transcript }) => {
   const transcriptDisplay = transcript.map(({
     source, text, card, timestamp,
   }) => {
-    // we dont want to wrap cards in a bubble, return as is w/ a key added
+    // we don't want to wrap cards in a bubble, return as is w/ a key added
     if (card) return <ContentCardSwitch card={card} index={null} key={timestamp} />;
-    // make text look fancy :-)
     return (
       <div key={timestamp} className={`transcript-entry ${source === 'user' ? 'transcript-entry-user' : ''}`}>
         <div className="transcript-entry-content">

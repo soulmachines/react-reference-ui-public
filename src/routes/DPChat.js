@@ -13,12 +13,12 @@ import Header from '../components/Header';
 import { transparentHeader, headerHeight } from '../config';
 import CameraPreview from '../components/CameraPreview';
 
-const Diagnostic = ({
+const DPChat = ({
   className, connected, loading, dispatchCreateScene, dispatchDisconnect,
 }) => {
   useEffect(() => {
     if (!connected) dispatchCreateScene();
-    // cleanup function, disconnects on component dismount, TODO: fix router behavior
+    // cleanup function, disconnects on component dismount
     return () => dispatchDisconnect();
   }, []);
 
@@ -67,7 +67,7 @@ const Diagnostic = ({
   );
 };
 
-Diagnostic.propTypes = {
+DPChat.propTypes = {
   className: PropTypes.string.isRequired,
   dispatchCreateScene: PropTypes.func.isRequired,
   dispatchDisconnect: PropTypes.func.isRequired,
@@ -75,7 +75,7 @@ Diagnostic.propTypes = {
   loading: PropTypes.bool.isRequired,
 };
 
-const StyledDiagnostic = styled(Diagnostic)`
+const StyledDPChat = styled(DPChat)`
   .video-overlay {
     position: absolute;
     top: 0;
@@ -125,4 +125,4 @@ const mapDispatchToProps = (dispatch) => ({
   dispatchDisconnect: () => dispatch(disconnect()),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(StyledDiagnostic);
+export default connect(mapStateToProps, mapDispatchToProps)(StyledDPChat);

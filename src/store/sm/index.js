@@ -6,7 +6,6 @@ import { meatballString } from './meatball';
 
 const ORCHESTRATION_MODE = process.env.REACT_APP_ORCHESTRATION_MODE || false;
 const TOKEN_ISSUER = process.env.REACT_APP_TOKEN_URL;
-// copied from old template, not sure if there are other possible values for this?
 const PERSONA_ID = '1';
 const CAMERA_ID = 'CloseUp';
 
@@ -209,6 +208,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
             const { arguments: markerArgs } = message.body;
             markerArgs.forEach((a) => {
               switch (a) {
+                // "easter egg" speech marker, prints ASCII "summoned meatball" to console
                 case ('triggerMeatball'): {
                   console.log(meatballString);
                   break;
@@ -234,8 +234,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
         // filter out $cardName.original, we just want values for $cardName
         const relevantKeys = Object.keys(context).filter((k) => /\.original/gm.test(k) === false);
         const contentCards = {};
-        // eslint-disable-next-line array-callback-return
-        relevantKeys.map((k) => {
+        relevantKeys.forEach((k) => {
           // remove public- prefix from key
           const cardKey = k.match(/(?<=public-)(.*)/gm)[0];
           try {
@@ -268,9 +267,10 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
           }
 
           if ('users' in personaState) {
+            // handle various numeric values such as user emotion or
+            // probability that the user is talking
             const userState = personaState.users[0];
 
-            // we get emotional data from webcam feed
             if ('emotion' in userState) {
               const { emotion } = userState;
               const roundedEmotion = roundObject(emotion);
@@ -305,12 +305,14 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
         break;
       }
 
-      // activation events i think are some kind of emotional metadata
+      // activation events are some kind of emotional metadata
       case ('activation'): {
         // console.warn('activation handler not yet implemented', message);
         break;
       }
 
+      // animateToNamedCamera events are triggered whenever we change the camera angle.
+      // left unimplemented for now since there is only one named camera (closeUp)
       case ('animateToNamedCamera'): {
         // console.warn('animateToNamedCamera handler not yet implemented', message);
         break;
@@ -360,7 +362,6 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
     // fulfill promise, reducer sets state to indicate loading and connection are complete
     return thunk.fulfillWithValue();
   } catch (err) {
-    // TODO: try to handle blocked permissions a la https://github.com/soulmachines/cs-gem-poc-ui/blob/9c4ce7f475e0ec1b34a80d8271dd5bf81134cfb9/src/contexts/SoulMachines.js#L436
     return thunk.rejectWithValue(err);
   }
 });
@@ -437,7 +438,7 @@ const smSlice = createSlice({
           intermediateUserUtterance: '',
           userSpeaking: false,
         };
-        // copy any text to lastXXXUtterance, used for captions and user confirmation of STT
+        // copy any text to last___Utterance, used for captions and user confirmation of STT
         if ('text' in payload) {
           out[
             payload.source === 'user' ? 'lastUserUtterance' : 'lastPersonaUtterance'

@@ -18,8 +18,7 @@ const Captions = ({
   useEffect(() => {
     if (connected === false) setShowCaptions(false);
     else if (speechState === 'speaking') {
-      // when a new utterance starts:
-      // show captions
+      // when a new utterance starts, show captions
       setShowCaptions(true);
       const sentences = lastPersonaUtterance.split('. ');
       // estimate how long each caption should be displayed based on # of syllables and punctuation
@@ -52,7 +51,7 @@ const Captions = ({
       // record when we put captions on the screen
       setCaptionStartTimestamp(Date.now());
       // clear any previous timeout from previous captions.
-      // this won't make the captions dissapear, since we're overwriting the content
+      // this won't make the captions disappear, since we're overwriting the content
       clearTimeout(captionTimeout);
     } else {
       // when the utterance ends:
