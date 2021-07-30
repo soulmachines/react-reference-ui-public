@@ -5,7 +5,7 @@ import {
   Switch,
   Route,
 } from 'react-router-dom';
-import Diagnostic from './routes/Diagnostic';
+import DPChat from './routes/DPChat';
 import Landing from './routes/Landing';
 import Loading from './routes/Loading';
 
@@ -16,7 +16,7 @@ const App = () => (
         <Loading />
       </Route>
       <Route path="/video">
-        <Diagnostic />
+        <DPChat />
       </Route>
       {/* / goes at the bottom */}
       <Route path="/">

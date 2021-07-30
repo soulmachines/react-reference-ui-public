@@ -18,7 +18,7 @@ const CameraPreview = ({ connected, className, cameraOn }) => {
 
   return (
     <div className={className}>
-      {/* NOTE: toggleVideo behavior is not supported by smwebsdk so it's not reccomended */}
+      {/* NOTE: toggleVideo behavior is not supported by smwebsdk so it's not recommended */}
       {/* <button onClick={mediaStreamProxy.toggleVideo} type="button" className="video-button"> */}
       <div className="video-button">
         <video
