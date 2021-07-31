@@ -14,7 +14,6 @@ const Header = ({
   className, connected, loading, dispatchDisconnect,
 }) => {
   const { pathname } = useLocation();
-  console.log(pathname);
   return (
     <div className={className}>
       <div>
@@ -42,7 +41,7 @@ Header.propTypes = {
 
 const StyledHeader = styled(Header)`
   height: ${headerHeight};
-  width: 100vw;
+  width: 100%;
   padding-left: 2rem;
   padding-right: 2rem;
 
