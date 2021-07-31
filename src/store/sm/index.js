@@ -129,7 +129,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
   // request permissions from user
   const { microphone, microphoneAndCamera } = smwebsdk.userMedia;
   const requestedUserMedia = audioOnly ? microphone : microphoneAndCamera;
-  // create instance of Scene w/ granted permissions
+  // create instance of Scene and ask for webcam/mic permissions
   scene = new smwebsdk.Scene(
     proxyVideo,
     false,
@@ -332,7 +332,6 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
   try {
     // get signed JWT from token server so we can connect to Persona server
     const res = await fetch(TOKEN_ISSUER, { method: 'POST' });
-    console.log(process.env);
     const { url, jwt } = await res.json();
 
     // connect to Persona server
@@ -351,13 +350,20 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
     const { videoWidth, videoHeight } = thunk.getState().sm;
     scene.sendVideoBounds(videoWidth, videoHeight);
 
+    // create proxy of webcam video feed if user has granted us permission
+
     // since we can't store the userMediaStream in the store since it's not serializable,
     // we use an external proxy for video streams
     const { userMediaStream: stream } = scene.session();
-    // pass dispatch before calling setUserMediaStream so proxy can send dimensions to store
-    mediaStreamProxy.passDispatch(thunk.dispatch);
-    mediaStreamProxy.setUserMediaStream(stream);
-    mediaStreamProxy.enableToggle(scene);
+    // detect if we're running audio-only
+    const videoEnabled = stream.getVideoTracks().length > 0;
+    thunk.dispatch(actions.setCameraState({ cameraOn: false }));
+    if (videoEnabled) {
+      // pass dispatch before calling setUserMediaStream so proxy can send dimensions to store
+      mediaStreamProxy.passDispatch(thunk.dispatch);
+      mediaStreamProxy.setUserMediaStream(stream);
+      mediaStreamProxy.enableToggle(scene);
+    }
 
     // fulfill promise, reducer sets state to indicate loading and connection are complete
     return thunk.fulfillWithValue();
