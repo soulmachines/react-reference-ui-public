@@ -10,5 +10,5 @@ export const logoAltText = 'Soul Machines logo';
 export const logoLink = '/';
 
 // background image is positioned in a way that is best for pictures of the persona's face.
-// adjust spacing as neccessary in Landing.js for different images
+// adjust spacing as necessary in Landing.js for different images
 export const landingBackground = aria;

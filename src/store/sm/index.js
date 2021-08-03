@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { smwebsdk } from '@soulmachines/smwebsdk';
+import to from 'await-to-js';
 import proxyVideo, { mediaStreamProxy } from '../../proxyVideo';
 import roundObject from '../../utils/roundObject';
 import { meatballString } from './meatball';
@@ -129,13 +130,17 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
   // request permissions from user
   const { microphone, microphoneAndCamera } = smwebsdk.userMedia;
   const requestedUserMedia = audioOnly ? microphone : microphoneAndCamera;
-  // create instance of Scene w/ granted permissions
-  scene = new smwebsdk.Scene(
-    proxyVideo,
-    false,
-    requestedUserMedia,
-    microphone,
-  );
+  // create instance of Scene and ask for webcam/mic permissions
+  try {
+    scene = new smwebsdk.Scene(
+      proxyVideo,
+      false,
+      requestedUserMedia,
+      microphone,
+    );
+  } catch (e) {
+    console.error(e);
+  }
   /* BIND HANDLERS */
   scene.onDisconnected = () => thunk.dispatch(disconnect());
   scene.onMessage = (message) => {
@@ -332,7 +337,6 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
   try {
     // get signed JWT from token server so we can connect to Persona server
     const res = await fetch(TOKEN_ISSUER, { method: 'POST' });
-    console.log(process.env);
     const { url, jwt } = await res.json();
 
     // connect to Persona server
@@ -340,8 +344,18 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
       maxRetries: 20,
       delayMs: 500,
     };
-    await scene.connect(url, '', jwt, retryOptions);
-
+    const [err] = await to(scene.connect(url, '', jwt, retryOptions));
+    if (err) {
+      switch (err.name) {
+        case 'notSupported':
+        case 'noUserMedia': {
+          return thunk.rejectWithValue({ msg: 'permissionsDenied', err: { ...err } });
+        }
+        default: {
+          return thunk.rejectWithValue({ msg: 'generic', err: { ...err } });
+        }
+      }
+    }
     // we can't disable logging until after the connection is established
     // logging is pretty crowded, not recommended to enable
     // unless you need to debug emotional data from webcam
@@ -351,13 +365,19 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
     const { videoWidth, videoHeight } = thunk.getState().sm;
     scene.sendVideoBounds(videoWidth, videoHeight);
 
+    // create proxy of webcam video feed if user has granted us permission
+
     // since we can't store the userMediaStream in the store since it's not serializable,
     // we use an external proxy for video streams
     const { userMediaStream: stream } = scene.session();
-    // pass dispatch before calling setUserMediaStream so proxy can send dimensions to store
-    mediaStreamProxy.passDispatch(thunk.dispatch);
-    mediaStreamProxy.setUserMediaStream(stream);
-    mediaStreamProxy.enableToggle(scene);
+    // detect if we're running audio-only
+    const videoEnabled = stream !== undefined && stream.getVideoTracks().length > 0;
+    if (videoEnabled) {
+      // pass dispatch before calling setUserMediaStream so proxy can send dimensions to store
+      mediaStreamProxy.passDispatch(thunk.dispatch);
+      mediaStreamProxy.setUserMediaStream(stream);
+      mediaStreamProxy.enableToggle(scene);
+    } else thunk.dispatch(actions.setCameraState({ cameraOn: false }));
 
     // fulfill promise, reducer sets state to indicate loading and connection are complete
     return thunk.fulfillWithValue();
@@ -482,14 +502,16 @@ const smSlice = createSlice({
       scene.sendVideoBounds(videoWidth, videoHeight);
       return { ...state, videoWidth, videoHeight };
     },
-    disconnect: () => {
+    disconnect: (state) => {
       scene.onMessage = null;
       scene.onDisconnected = null;
       scene = null;
       persona = null;
+      const { error } = state;
       return {
-      // completely reset SM state on disconnect
+        // completely reset SM state on disconnect, except for errors
         ...initialState,
+        error,
       };
     },
   },
@@ -497,17 +519,19 @@ const smSlice = createSlice({
     [createScene.pending]: (state) => ({
       ...state,
       loading: true,
+      error: null,
     }),
     [createScene.fulfilled]: (state) => ({
       ...state,
       loading: false,
       connected: true,
+      error: null,
     }),
-    [createScene.rejected]: (state, { error }) => ({
+    [createScene.rejected]: (state, { payload }) => ({
       ...state,
       loading: false,
       connected: false,
-      error,
+      error: { ...payload },
     }),
   },
 });

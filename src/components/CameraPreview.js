@@ -16,6 +16,10 @@ const CameraPreview = ({ connected, className, cameraOn }) => {
     }
   }, [connected]);
 
+  // disable camera preview if camera is off
+  // in the future, if smwebsdk supports toggling the camera on and off, remove this line
+  if (cameraOn === false) return null;
+
   return (
     <div className={className}>
       {/* NOTE: toggleVideo behavior is not supported by smwebsdk so it's not recommended */}
