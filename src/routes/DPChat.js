@@ -85,6 +85,7 @@ DPChat.propTypes = {
     msg: PropTypes.string,
     err: PropTypes.objectOf(PropTypes.string),
   }),
+  tosAccepted: PropTypes.bool.isRequired,
 };
 
 DPChat.defaultProps = {

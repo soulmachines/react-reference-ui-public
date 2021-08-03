@@ -142,6 +142,7 @@ const Landing = ({ className, dispatchAcceptTOS }) => (
 
 Landing.propTypes = {
   className: PropTypes.string.isRequired,
+  dispatchAcceptTOS: PropTypes.func.isRequired,
 };
 
 const StyledLanding = styled(Landing)`

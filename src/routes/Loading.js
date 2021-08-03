@@ -197,6 +197,7 @@ Loading.propTypes = {
     msg: PropTypes.string,
     err: PropTypes.objectOf(PropTypes.string),
   }),
+  tosAccepted: PropTypes.bool.isRequired,
 };
 
 Loading.defaultProps = {
