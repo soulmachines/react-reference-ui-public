@@ -115,6 +115,7 @@ const StyledDPChat = styled(DPChat)`
 
       display: flex;
       align-items: center;
+      scrollbar-width: none; /* Firefox 64 */
       &::-webkit-scrollbar {
         display: none;
       }
