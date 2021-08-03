@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Link, useHistory, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import {
-  ArrowRightCircleFill, CameraFill, CameraVideo, CameraVideoFill, LightningCharge, MicFill, Soundwave,
+  ArrowRightCircleFill, CameraVideo, CameraVideoFill, LightningCharge, MicFill, Soundwave,
 } from 'react-bootstrap-icons';
 import { createScene } from '../store/sm';
 import Header from '../components/Header';
@@ -19,7 +19,7 @@ const Loading = ({
   const query = useQuery();
   // create scene on mount
   useEffect(() => {
-    // if we encounter a fatak error, app redirects to /loading to display
+    // if we encounter a fatal error, app redirects to /loading to display
     if (!connected && !loading && query.get('error') !== true) dispatchCreateScene();
   }, []);
 
@@ -89,8 +89,8 @@ const Loading = ({
                             and audio quality during the call.
                           </li>
                           <li className="mt-2">
-                            If you experience connectivity issues, the picture quality may temporarily
-                            deteriorate or disappear entirely
+                            If you experience connectivity issues, the picture quality may
+                            temporarily deteriorate or disappear entirely
                           </li>
                         </ul>
                       </div>
@@ -148,6 +148,7 @@ const Loading = ({
             : (
               <div className="alert alert-danger col-md-6 offset-md-3">
                 {
+                  // special error for webcam and mic denied permissions
                   error.msg === 'permissionsDenied'
                     ? (
                       <div>
