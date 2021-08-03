@@ -160,7 +160,7 @@ const Loading = ({
                         </h4>
                         <hr />
                         Looks like you’ve denied us access to your camera and microphone.
-                        That’s okay, sometimes it happens accidentally.
+                        If you&apos;d prefer, you can only enable the microphone.
                         You can always change permissions in your browser settings and
                         {' '}
                         <button onClick={() => history.go(0)} type="button" className="link-primary">try again</button>
