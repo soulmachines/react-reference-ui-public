@@ -11,7 +11,7 @@ import Header from '../components/Header';
 import { headerHeight, landingBackground } from '../config';
 
 const Loading = ({
-  className, connected, loading, dispatchCreateScene, error,
+  className, connected, loading, dispatchCreateScene, error, tosAccepted,
 }) => {
   const [spinnerDisplay, setSpinnerDisplay] = useState('');
   const [spinnerIndex, setSpinnerIndex] = useState(0);
@@ -37,6 +37,8 @@ const Loading = ({
 
   // use to reload page if user unblocks perms and presses "try again"
   const history = useHistory();
+  // if TOS hasn't been accepted, send to /
+  if (tosAccepted === false) history.push('/');
 
   return (
     <div className={className}>
@@ -243,6 +245,7 @@ const mapStateToProps = ({ sm }) => ({
   connected: sm.connected,
   loading: sm.loading,
   error: sm.error,
+  tosAccepted: sm.tosAccepted,
 });
 
 const mapDispatchToProps = (dispatch) => ({
