@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useHistory, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import {
   ArrowRightCircleFill, CameraFill, CameraVideo, CameraVideoFill, LightningCharge, MicFill, Soundwave,
@@ -15,9 +15,12 @@ const Loading = ({
 }) => {
   const [spinnerDisplay, setSpinnerDisplay] = useState('');
   const [spinnerIndex, setSpinnerIndex] = useState(0);
+  const useQuery = () => new URLSearchParams(useLocation().search);
+  const query = useQuery();
   // create scene on mount
   useEffect(() => {
-    if (!connected && !loading) dispatchCreateScene();
+    // if we encounter a fatak error, app redirects to /loading to display
+    if (!connected && !loading && query.get('error') !== true) dispatchCreateScene();
   }, []);
 
   const spinner = '▖▘▝▗';
@@ -32,6 +35,7 @@ const Loading = ({
     return () => clearTimeout(timeout);
   }, [spinnerIndex]);
 
+  // use to reload page if user unblocks perms and presses "try again"
   const history = useHistory();
 
   return (
@@ -143,20 +147,36 @@ const Loading = ({
             )
             : (
               <div className="alert alert-danger col-md-6 offset-md-3">
-                <h4>
-                  <CameraVideoFill />
-                  {' / '}
-                  <MicFill />
-                  {' '}
-                  Permissions Denied
-                </h4>
-                <hr />
-                Looks like you’ve denied us access to your camera and microphone.
-                That’s okay, sometimes it happens accidentally.
-                You can always change permissions in your browser settings and
-                {' '}
-                <button onClick={() => history.go(0)} type="button" className="link-primary">try again</button>
-                .
+                {
+                  error.msg === 'permissionsDenied'
+                    ? (
+                      <div>
+                        <h4>
+                          <CameraVideoFill />
+                          {' / '}
+                          <MicFill />
+                          {' '}
+                          Permissions Denied
+                        </h4>
+                        <hr />
+                        Looks like you’ve denied us access to your camera and microphone.
+                        That’s okay, sometimes it happens accidentally.
+                        You can always change permissions in your browser settings and
+                        {' '}
+                        <button onClick={() => history.go(0)} type="button" className="link-primary">try again</button>
+                        .
+                      </div>
+                    )
+                    : (
+                      <div>
+                        <h4>Encountered fatal error!</h4>
+                        <hr />
+                        <pre>
+                          {JSON.stringify(error, null, '  ')}
+                        </pre>
+                      </div>
+                    )
+                }
               </div>
             )
         }
@@ -170,6 +190,14 @@ Loading.propTypes = {
   connected: PropTypes.bool.isRequired,
   loading: PropTypes.bool.isRequired,
   dispatchCreateScene: PropTypes.func.isRequired,
+  error: PropTypes.shape({
+    msg: PropTypes.string,
+    err: PropTypes.objectOf(PropTypes.string),
+  }),
+};
+
+Loading.defaultProps = {
+  error: null,
 };
 
 const StyledLoading = styled(Loading)`

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import PersonaVideo from '../components/PersonaVideo';
 import Captions from '../components/Captions';
 import Controls from '../components/Controls';
@@ -14,13 +15,18 @@ import { transparentHeader, headerHeight } from '../config';
 import CameraPreview from '../components/CameraPreview';
 
 const DPChat = ({
-  className, connected, loading, dispatchCreateScene, dispatchDisconnect,
+  className, connected, loading, dispatchCreateScene, dispatchDisconnect, error,
 }) => {
   useEffect(() => {
     if (!connected) dispatchCreateScene();
     // cleanup function, disconnects on component dismount
     return () => dispatchDisconnect();
   }, []);
+
+  const history = useHistory();
+  useEffect(() => {
+    if (error !== null) history.push('/loading?error=true');
+  }, [error]);
 
   return (
     <div className={className}>
@@ -73,6 +79,14 @@ DPChat.propTypes = {
   dispatchDisconnect: PropTypes.func.isRequired,
   connected: PropTypes.bool.isRequired,
   loading: PropTypes.bool.isRequired,
+  error: PropTypes.shape({
+    msg: PropTypes.string,
+    err: PropTypes.objectOf(PropTypes.string),
+  }),
+};
+
+DPChat.defaultProps = {
+  error: null,
 };
 
 const StyledDPChat = styled(DPChat)`
@@ -118,6 +132,7 @@ const StyledDPChat = styled(DPChat)`
 const mapStateToProps = ({ sm }) => ({
   connected: sm.connected,
   loading: sm.loading,
+  error: sm.error,
 });
 
 const mapDispatchToProps = (dispatch) => ({

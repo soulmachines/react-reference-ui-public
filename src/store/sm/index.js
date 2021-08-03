@@ -507,10 +507,11 @@ const smSlice = createSlice({
       scene.onDisconnected = null;
       scene = null;
       persona = null;
+      const { error } = state;
       return {
         // completely reset SM state on disconnect, except for errors
-        error: { ...state?.error },
         ...initialState,
+        error,
       };
     },
   },
