@@ -11,6 +11,7 @@ const PERSONA_ID = '1';
 const CAMERA_ID = 'CloseUp';
 
 const initialState = {
+  tosAccepted: false,
   connected: false,
   loading: false,
   error: null,
@@ -410,6 +411,10 @@ const smSlice = createSlice({
   name: 'sm',
   initialState,
   reducers: {
+    acceptTOS: (state) => ({
+      ...state,
+      tosAccepted: true,
+    }),
     toggleShowTranscript: (state) => ({
       ...state,
       showTranscript: !state.showTranscript,
@@ -540,7 +545,7 @@ const smSlice = createSlice({
 actions = smSlice.actions;
 
 export const {
-  setVideoDimensions, stopSpeaking, setActiveCards, setCameraState, toggleShowTranscript,
+  setVideoDimensions, stopSpeaking, setActiveCards, setCameraState, toggleShowTranscript, acceptTOS,
 } = smSlice.actions;
 
 export default smSlice.reducer;

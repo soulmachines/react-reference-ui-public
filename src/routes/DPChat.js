@@ -15,7 +15,7 @@ import { transparentHeader, headerHeight } from '../config';
 import CameraPreview from '../components/CameraPreview';
 
 const DPChat = ({
-  className, connected, loading, dispatchCreateScene, dispatchDisconnect, error,
+  className, connected, loading, dispatchCreateScene, dispatchDisconnect, error, tosAccepted,
 }) => {
   useEffect(() => {
     if (!connected) dispatchCreateScene();
@@ -27,6 +27,8 @@ const DPChat = ({
   useEffect(() => {
     if (error !== null) history.push('/loading?error=true');
   }, [error]);
+  // if TOS hasn't been accepted, send to /
+  if (tosAccepted === false) history.push('/');
 
   return (
     <div className={className}>
@@ -133,6 +135,7 @@ const mapStateToProps = ({ sm }) => ({
   connected: sm.connected,
   loading: sm.loading,
   error: sm.error,
+  tosAccepted: sm.tosAccepted,
 });
 
 const mapDispatchToProps = (dispatch) => ({

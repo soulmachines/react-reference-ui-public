@@ -6,10 +6,12 @@ import {
   CameraVideo, CheckSquare, FileEarmarkMedical, GraphUp,
 } from 'react-bootstrap-icons';
 import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
 import Header from '../components/Header';
 import { headerHeight, landingBackground } from '../config';
+import { acceptTOS } from '../store/sm/index';
 
-const Landing = ({ className }) => (
+const Landing = ({ className, dispatchAcceptTOS }) => (
   <div className={className}>
     <Header />
     <div className="landing-wrapper">
@@ -126,6 +128,7 @@ const Landing = ({ className }) => (
           <Link
             to="/loading"
             className="btn btn-success btn-lg action-btn"
+            onClick={dispatchAcceptTOS}
           >
             I accept terms and conditions
             {' '}
@@ -173,5 +176,8 @@ const StyledLanding = styled(Landing)`
     }
   }
 `;
+const mapDispatchToProps = (dispatch) => ({
+  dispatchAcceptTOS: () => dispatch(acceptTOS()),
+});
 
-export default StyledLanding;
+export default connect(null, mapDispatchToProps)(StyledLanding);
