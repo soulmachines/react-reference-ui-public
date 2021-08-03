@@ -15,7 +15,3 @@ handlers:
   - url: /(.*)$
     static_files: build/\1
     upload: build/(.*)
-
-# - url: /(.*)
-#   static_files: dist/\1
-#   upload: dist/(.*)
