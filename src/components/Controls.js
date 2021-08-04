@@ -81,9 +81,9 @@ const Controls = ({
         analyser.getByteFrequencyData(volumes);
         let volumeSum = 0;
         volumes.forEach((v) => { volumeSum += v; });
-        // add 30 to value so the volume meter appears more responsive
-        // (otherwise the fill doesn't show)
-        const averageVolume = (volumeSum / volumes.length) + 30;
+        // multiply value by 2 so the volume meter appears more responsive
+        // (otherwise the fill doesn't always show)
+        const averageVolume = (volumeSum / volumes.length) * 2;
         // Value range: 127 = analyser.maxDecibels - analyser.minDecibels;
         setVolume(averageVolume > 127 ? 127 : averageVolume);
       };
