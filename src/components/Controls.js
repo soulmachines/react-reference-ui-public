@@ -3,11 +3,15 @@ import { connect } from 'react-redux';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import {
-  ChatSquareDotsFill, MicFill, MicMuteFill, XOctagonFill,
+  ChatSquareDotsFill, MicMuteFill, XOctagonFill,
 } from 'react-bootstrap-icons';
 import {
   sendTextMessage, mute, stopSpeaking, toggleShowTranscript,
 } from '../store/sm/index';
+import mic from '../img/mic.svg';
+import micFill from '../img/mic-fill.svg';
+
+const volumeMeterHeight = 24;
 
 const Controls = ({
   className,
@@ -26,6 +30,7 @@ const Controls = ({
   const [inputFocused, setInputFocused] = useState(false);
   const [spinnerDisplay, setSpinnerDisplay] = useState('');
   const [spinnerIndex, setSpinnerIndex] = useState(0);
+  const [volume, setVolume] = useState(0);
 
   const handleInput = (e) => setInputValue(e.target.value);
   const handleFocus = () => {
@@ -54,7 +59,48 @@ const Controls = ({
     return () => clearTimeout(timeout);
   }, [spinnerIndex]);
 
-  // clear placeholder text on reconnnect, sometimes the state updates won't propagate
+  useEffect(async () => {
+    let volumeCallback = null;
+    // Initialize
+    try {
+      const audioStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+        },
+      });
+      const audioContext = new AudioContext();
+      const audioSource = audioContext.createMediaStreamSource(audioStream);
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 512;
+      analyser.minDecibels = -127;
+      analyser.maxDecibels = 0;
+      analyser.smoothingTimeConstant = 0.4;
+      audioSource.connect(analyser);
+      const volumes = new Uint8Array(analyser.frequencyBinCount);
+      volumeCallback = () => {
+        analyser.getByteFrequencyData(volumes);
+        let volumeSum = 0;
+        volumes.forEach((v) => { volumeSum += v; });
+        // add 30 to value so the volume meter appears more responsive
+        // (otherwise the fill doesn't show)
+        const averageVolume = (volumeSum / volumes.length) + 30;
+        // Value range: 127 = analyser.maxDecibels - analyser.minDecibels;
+        setVolume(averageVolume > 127 ? 127 : averageVolume);
+      };
+      // runs every time the window paints
+      const volumeDisplay = () => {
+        window.requestAnimationFrame(() => {
+          volumeCallback();
+          volumeDisplay();
+        });
+      };
+      volumeDisplay();
+    } catch (e) {
+      console.error('Failed to initialize volume visualizer!', e);
+    }
+  }, []);
+
+  // clear placeholder text on reconnect, sometimes the state updates won't propagate
   const placeholder = intermediateUserUtterance === '' ? '' : intermediateUserUtterance;
   return (
     <div className={className}>
@@ -66,10 +112,17 @@ const Controls = ({
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <button type="button" className={`speaking-status btn btn-${isMuted ? 'outline-secondary' : 'danger '}`} onClick={dispatchMute} data-tip="Toggle Microphone Input">
-                <div className={userSpeaking ? 'd-none' : ''}>
-                  { isMuted ? <MicMuteFill size={21} /> : <MicFill size={21} /> }
+                <div>
+                  { isMuted ? <MicMuteFill size={21} />
+                    : (
+                      <div className="volume-display">
+                        {/* compute height as fraction of 127 so fill corresponds to volume */}
+                        <div style={{ height: `${volumeMeterHeight}px` }} className="meter-component meter-component-1" />
+                        <div style={{ height: `${(volume / 127) * volumeMeterHeight}px` }} className="meter-component meter-component-2" />
+                      </div>
+                    ) }
                 </div>
-                { userSpeaking ? spinnerDisplay : null }
+                {/* { userSpeaking ? spinnerDisplay : null } */}
               </button>
               <input type="text" className="form-control" placeholder={placeholder} value={inputValue} onChange={handleInput} onFocus={handleFocus} onBlur={handleBlur} aria-label="User input" />
             </div>
@@ -106,6 +159,35 @@ const StyledControls = styled(Controls)`
     margin: 0px auto;
   }
 
+  .speaking-status {
+    width: 47px;
+  }
+
+  .volume-display {
+    position: relative;
+    top: ${volumeMeterHeight * 0.5}px;
+    display: flex;
+    align-items: flex-end;
+    .meter-component {
+      height: ${volumeMeterHeight}px;
+      width: 21px;
+      background-repeat: no-repeat;
+      position: absolute;
+    }
+    .meter-component-1 {
+      background: url(${mic});
+      background-position: top;
+      background-size: ${volumeMeterHeight}px;
+      z-index: 10;
+    }
+    .meter-component-2 {
+      background: url(${micFill});
+      background-position: bottom;
+      background-size: ${volumeMeterHeight}px;
+      z-index: 20;
+    }
+  }
+
   svg {
     /* make bootstrap icons vertically centered in buttons */
     margin-top: -0.1rem;
@@ -116,10 +198,6 @@ const StyledControls = styled(Controls)`
     &:focus {
       opacity: 1;
     }
-  }
-
-  .speaking-status {
-    width: 47px;
   }
 `;
 
