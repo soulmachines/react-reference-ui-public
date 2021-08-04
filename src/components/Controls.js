@@ -28,6 +28,8 @@ const Controls = ({
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
+  const [spinnerDisplay, setSpinnerDisplay] = useState('');
+  const [spinnerIndex, setSpinnerIndex] = useState(0);
   const [volume, setVolume] = useState(0);
 
   const handleInput = (e) => setInputValue(e.target.value);
@@ -45,18 +47,37 @@ const Controls = ({
   if (userSpeaking === false && lastUserUtterance !== '' && inputValue !== lastUserUtterance && inputFocused === false) setInputValue(lastUserUtterance);
   else if (userSpeaking === true && inputValue !== '' && inputFocused === false) setInputValue('');
 
+  const spinner = '...';
+  const spinnerInterval = 500;
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (userSpeaking) {
+        const nextDisplay = spinner.slice(0, spinnerIndex);
+        setSpinnerDisplay(nextDisplay);
+        const nextIndex = (spinnerIndex === spinner.length) ? 0 : spinnerIndex + 1;
+        setSpinnerIndex(nextIndex);
+      } else setSpinnerDisplay('');
+      console.log(spinnerDisplay);
+    }, spinnerInterval);
+    return () => clearTimeout(timeout);
+  }, [spinnerIndex, userSpeaking]);
+
   useEffect(async () => {
     // credit: https://stackoverflow.com/a/64650826
     let volumeCallback = null;
+    let audioStream;
+    let audioContext;
+    let audioSource;
+    let unmounted = false;
     // Initialize
     try {
-      const audioStream = await navigator.mediaDevices.getUserMedia({
+      audioStream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
         },
       });
-      const audioContext = new AudioContext();
-      const audioSource = audioContext.createMediaStreamSource(audioStream);
+      audioContext = new AudioContext();
+      audioSource = audioContext.createMediaStreamSource(audioStream);
       const analyser = audioContext.createAnalyser();
       analyser.fftSize = 512;
       analyser.minDecibels = -127;
@@ -77,14 +98,26 @@ const Controls = ({
       // runs every time the window paints
       const volumeDisplay = () => {
         window.requestAnimationFrame(() => {
-          volumeCallback();
-          volumeDisplay();
+          if (!unmounted) {
+            volumeCallback();
+            volumeDisplay();
+          }
         });
       };
       volumeDisplay();
     } catch (e) {
       console.error('Failed to initialize volume visualizer!', e);
     }
+
+    return () => {
+      console.log('closing down the audio stuff');
+      unmounted = true;
+      audioStream.getTracks().forEach((track) => {
+        track.stop();
+      });
+      audioContext.close();
+      audioSource.close();
+    };
   }, []);
 
   // clear placeholder text on reconnect, sometimes the state updates won't propagate
@@ -111,7 +144,7 @@ const Controls = ({
                 </div>
                 {/* { userSpeaking ? spinnerDisplay : null } */}
               </button>
-              <input type="text" className="form-control" placeholder={placeholder} value={inputValue} onChange={handleInput} onFocus={handleFocus} onBlur={handleBlur} aria-label="User input" />
+              <input type="text" className="form-control" placeholder={`${placeholder}${spinnerDisplay}`} value={inputValue} onChange={handleInput} onFocus={handleFocus} onBlur={handleBlur} aria-label="User input" />
             </div>
           </form>
         </div>
