@@ -28,8 +28,6 @@ const Controls = ({
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
-  const [spinnerDisplay, setSpinnerDisplay] = useState('');
-  const [spinnerIndex, setSpinnerIndex] = useState(0);
   const [volume, setVolume] = useState(0);
 
   const handleInput = (e) => setInputValue(e.target.value);
@@ -46,18 +44,6 @@ const Controls = ({
 
   if (userSpeaking === false && lastUserUtterance !== '' && inputValue !== lastUserUtterance && inputFocused === false) setInputValue(lastUserUtterance);
   else if (userSpeaking === true && inputValue !== '' && inputFocused === false) setInputValue('');
-
-  const spinner = '▖▘▝▗';
-  const spinnerInterval = 100;
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      const nextDisplay = spinner[spinnerIndex];
-      setSpinnerDisplay(nextDisplay);
-      const nextIndex = (spinnerIndex === spinner.length - 1) ? 0 : spinnerIndex + 1;
-      setSpinnerIndex(nextIndex);
-    }, spinnerInterval);
-    return () => clearTimeout(timeout);
-  }, [spinnerIndex]);
 
   useEffect(async () => {
     // credit: https://stackoverflow.com/a/64650826
