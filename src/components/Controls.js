@@ -60,6 +60,7 @@ const Controls = ({
   }, [spinnerIndex]);
 
   useEffect(async () => {
+    // credit: https://stackoverflow.com/a/64650826
     let volumeCallback = null;
     // Initialize
     try {
