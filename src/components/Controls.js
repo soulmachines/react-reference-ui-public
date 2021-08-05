@@ -28,9 +28,8 @@ const Controls = ({
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
-  const [spinnerDisplay, setSpinnerDisplay] = useState('');
-  const [spinnerIndex, setSpinnerIndex] = useState(0);
   const [volume, setVolume] = useState(0);
+  const [hideInputDisplay, setHideInputDisplay] = useState(true);
 
   const handleInput = (e) => setInputValue(e.target.value);
   const handleFocus = () => {
@@ -44,23 +43,18 @@ const Controls = ({
     setInputValue('');
   };
 
-  if (userSpeaking === false && lastUserUtterance !== '' && inputValue !== lastUserUtterance && inputFocused === false) setInputValue(lastUserUtterance);
-  else if (userSpeaking === true && inputValue !== '' && inputFocused === false) setInputValue('');
+  if (userSpeaking === true && inputValue !== '' && inputFocused === false) setInputValue('');
 
-  const spinner = '...';
-  const spinnerInterval = 500;
+  let timeout;
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (userSpeaking) {
-        const nextDisplay = spinner.slice(0, spinnerIndex);
-        setSpinnerDisplay(nextDisplay);
-        const nextIndex = (spinnerIndex === spinner.length) ? 0 : spinnerIndex + 1;
-        setSpinnerIndex(nextIndex);
-      } else setSpinnerDisplay('');
-      console.log(spinnerDisplay);
-    }, spinnerInterval);
+    setHideInputDisplay(false);
+    const createTimeout = () => setTimeout(() => {
+      if (userSpeaking === false) setHideInputDisplay(true);
+      else createTimeout();
+    }, 3000);
+    timeout = createTimeout();
     return () => clearTimeout(timeout);
-  }, [spinnerIndex, userSpeaking]);
+  }, [userSpeaking, lastUserUtterance]);
 
   useEffect(async () => {
     // credit: https://stackoverflow.com/a/64650826
@@ -68,7 +62,7 @@ const Controls = ({
     let audioStream;
     let audioContext;
     let audioSource;
-    let unmounted = false;
+    const unmounted = false;
     // Initialize
     try {
       audioStream = await navigator.mediaDevices.getUserMedia({
@@ -111,12 +105,12 @@ const Controls = ({
 
     return () => {
       console.log('closing down the audio stuff');
-      unmounted = true;
-      audioStream.getTracks().forEach((track) => {
-        track.stop();
-      });
-      audioContext.close();
-      audioSource.close();
+      // unmounted = true;
+      // audioStream.getTracks().forEach((track) => {
+      //   track.stop();
+      // });
+      // audioContext.close();
+      // audioSource.close();
     };
   }, []);
 
@@ -124,6 +118,35 @@ const Controls = ({
   const placeholder = intermediateUserUtterance === '' ? '' : intermediateUserUtterance;
   return (
     <div className={className}>
+      <div className="row">
+        {
+          lastUserUtterance || userSpeaking
+            ? (
+              <div className="col d-flex justify-content-center mb-2">
+                <span
+                  className={`badge rounded-pill bg-light align-items-center input-display
+                  ${userSpeaking ? 'utterance-processing' : ''}
+                  ${hideInputDisplay ? 'hide-input' : 'show-input'}
+                  `}
+                >
+                  I heard:
+                  {' '}
+                  {placeholder || lastUserUtterance}
+                  {
+                    userSpeaking
+                      ? (
+                        <div className="spinner-border spinner-border-sm ms-1" role="status">
+                          <span className="visually-hidden">Loading...</span>
+                        </div>
+                      )
+                      : null
+                  }
+                </span>
+              </div>
+            )
+            : null
+        }
+      </div>
       <div className="row mb-3">
         <div className="col-auto">
           <button type="button" className={`btn btn-${showTranscript ? '' : 'outline-'}secondary`} aria-label="Toggle Transcript" data-tip="Toggle Transcript" onClick={dispatchToggleShowTranscript}><ChatSquareDotsFill /></button>
@@ -142,9 +165,8 @@ const Controls = ({
                       </div>
                     ) }
                 </div>
-                {/* { userSpeaking ? spinnerDisplay : null } */}
               </button>
-              <input type="text" className="form-control" placeholder={`${placeholder}${spinnerDisplay}`} value={inputValue} onChange={handleInput} onFocus={handleFocus} onBlur={handleBlur} aria-label="User input" />
+              <input type="text" className="form-control" value={inputValue} onChange={handleInput} onFocus={handleFocus} onBlur={handleBlur} aria-label="User input" />
             </div>
           </form>
         </div>
@@ -177,6 +199,29 @@ const StyledControls = styled(Controls)`
   .row {
     max-width: 50rem;
     margin: 0px auto;
+  }
+  .badge {
+    font-size: 14pt;
+    font-weight: normal;
+    color: #000;
+  }
+  .utterance-processing {
+    opacity: 0.7;
+  }
+  .input-display {
+    transition: bottom 0.3s, visibility 0.3s;
+    height: auto;
+    display: flex;
+  }
+  .hide-input {
+    position: relative;
+    bottom: -3rem;
+    visibility: hidden;
+  }
+  .show-input {
+    position: relative;
+    bottom: 0rem;
+    visibility: visible;
   }
 
   .speaking-status {
@@ -211,13 +256,6 @@ const StyledControls = styled(Controls)`
   svg {
     /* make bootstrap icons vertically centered in buttons */
     margin-top: -0.1rem;
-  }
-
-  .form-control {
-    opacity: 0.7;
-    &:focus {
-      opacity: 1;
-    }
   }
 `;
 
