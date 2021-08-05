@@ -3,11 +3,15 @@ import { connect } from 'react-redux';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import {
-  ChatSquareDotsFill, MicFill, MicMuteFill, XOctagonFill,
+  ChatSquareDotsFill, MicMuteFill, XOctagonFill,
 } from 'react-bootstrap-icons';
 import {
   sendTextMessage, mute, stopSpeaking, toggleShowTranscript,
 } from '../store/sm/index';
+import mic from '../img/mic.svg';
+import micFill from '../img/mic-fill.svg';
+
+const volumeMeterHeight = 24;
 
 const Controls = ({
   className,
@@ -21,11 +25,12 @@ const Controls = ({
   dispatchStopSpeaking,
   dispatchToggleShowTranscript,
   showTranscript,
+  transcript,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
-  const [spinnerDisplay, setSpinnerDisplay] = useState('');
-  const [spinnerIndex, setSpinnerIndex] = useState(0);
+  const [volume, setVolume] = useState(0);
+  const [hideInputDisplay, setHideInputDisplay] = useState(true);
 
   const handleInput = (e) => setInputValue(e.target.value);
   const handleFocus = () => {
@@ -39,25 +44,104 @@ const Controls = ({
     setInputValue('');
   };
 
-  if (userSpeaking === false && lastUserUtterance !== '' && inputValue !== lastUserUtterance && inputFocused === false) setInputValue(lastUserUtterance);
-  else if (userSpeaking === true && inputValue !== '' && inputFocused === false) setInputValue('');
+  if (userSpeaking === true && inputValue !== '' && inputFocused === false) setInputValue('');
 
-  const spinner = '▖▘▝▗';
-  const spinnerInterval = 100;
+  let timeout;
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      const nextDisplay = spinner[spinnerIndex];
-      setSpinnerDisplay(nextDisplay);
-      const nextIndex = (spinnerIndex === spinner.length - 1) ? 0 : spinnerIndex + 1;
-      setSpinnerIndex(nextIndex);
-    }, spinnerInterval);
+    setHideInputDisplay(false);
+    const createTimeout = () => setTimeout(() => {
+      if (userSpeaking === false) setHideInputDisplay(true);
+      else createTimeout();
+    }, 3000);
+    timeout = createTimeout();
     return () => clearTimeout(timeout);
-  }, [spinnerIndex]);
+  }, [userSpeaking, lastUserUtterance]);
 
-  // clear placeholder text on reconnnect, sometimes the state updates won't propagate
+  useEffect(async () => {
+    // credit: https://stackoverflow.com/a/64650826
+    let volumeCallback = null;
+    let audioStream;
+    let audioContext;
+    let audioSource;
+    const unmounted = false;
+    // Initialize
+    try {
+      audioStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+        },
+      });
+      audioContext = new AudioContext();
+      audioSource = audioContext.createMediaStreamSource(audioStream);
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 512;
+      analyser.minDecibels = -127;
+      analyser.maxDecibels = 0;
+      analyser.smoothingTimeConstant = 0.4;
+      audioSource.connect(analyser);
+      const volumes = new Uint8Array(analyser.frequencyBinCount);
+      volumeCallback = () => {
+        analyser.getByteFrequencyData(volumes);
+        let volumeSum = 0;
+        volumes.forEach((v) => { volumeSum += v; });
+        // multiply value by 2 so the volume meter appears more responsive
+        // (otherwise the fill doesn't always show)
+        const averageVolume = (volumeSum / volumes.length) * 2;
+        // Value range: 127 = analyser.maxDecibels - analyser.minDecibels;
+        setVolume(averageVolume > 127 ? 127 : averageVolume);
+      };
+      // runs every time the window paints
+      const volumeDisplay = () => {
+        window.requestAnimationFrame(() => {
+          if (!unmounted) {
+            volumeCallback();
+            volumeDisplay();
+          }
+        });
+      };
+      volumeDisplay();
+    } catch (e) {
+      console.error('Failed to initialize volume visualizer!', e);
+    }
+
+    return () => {
+      console.log('closing down the audio stuff');
+      // unmounted = true;
+      // audioStream.getTracks().forEach((track) => {
+      //   track.stop();
+      // });
+      // audioContext.close();
+      // audioSource.close();
+    };
+  }, []);
+
+  // clear placeholder text on reconnect, sometimes the state updates won't propagate
   const placeholder = intermediateUserUtterance === '' ? '' : intermediateUserUtterance;
   return (
     <div className={className}>
+      <div className="row">
+        <div className="col d-flex justify-content-center mb-2">
+          <span
+            className={`badge rounded-pill bg-light align-items-center input-display
+              ${userSpeaking ? 'utterance-processing' : ''}
+              ${(transcript.length === 0 && intermediateUserUtterance === '') || hideInputDisplay ? 'hide-input' : 'show-input'}
+              `}
+          >
+            I heard:
+            {' '}
+            {placeholder || lastUserUtterance}
+            {
+              userSpeaking
+                ? (
+                  <div className="spinner-border spinner-border-sm ms-1" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                )
+                : null
+            }
+          </span>
+        </div>
+      </div>
       <div className="row mb-3">
         <div className="col-auto">
           <button type="button" className={`btn btn-${showTranscript ? '' : 'outline-'}secondary`} aria-label="Toggle Transcript" data-tip="Toggle Transcript" onClick={dispatchToggleShowTranscript}><ChatSquareDotsFill /></button>
@@ -66,12 +150,18 @@ const Controls = ({
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <button type="button" className={`speaking-status btn btn-${isMuted ? 'outline-secondary' : 'danger '}`} onClick={dispatchMute} data-tip="Toggle Microphone Input">
-                <div className={userSpeaking ? 'd-none' : ''}>
-                  { isMuted ? <MicMuteFill size={21} /> : <MicFill size={21} /> }
+                <div>
+                  { isMuted ? <MicMuteFill size={21} />
+                    : (
+                      <div className="volume-display">
+                        {/* compute height as fraction of 127 so fill corresponds to volume */}
+                        <div style={{ height: `${volumeMeterHeight}px` }} className="meter-component meter-component-1" />
+                        <div style={{ height: `${(volume / 127) * volumeMeterHeight}px` }} className="meter-component meter-component-2" />
+                      </div>
+                    ) }
                 </div>
-                { userSpeaking ? spinnerDisplay : null }
               </button>
-              <input type="text" className="form-control" placeholder={placeholder} value={inputValue} onChange={handleInput} onFocus={handleFocus} onBlur={handleBlur} aria-label="User input" />
+              <input type="text" className="form-control" value={inputValue} onChange={handleInput} onFocus={handleFocus} onBlur={handleBlur} aria-label="User input" />
             </div>
           </form>
         </div>
@@ -97,6 +187,7 @@ Controls.propTypes = {
   dispatchStopSpeaking: PropTypes.func.isRequired,
   showTranscript: PropTypes.bool.isRequired,
   dispatchToggleShowTranscript: PropTypes.func.isRequired,
+  transcript: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
 const StyledControls = styled(Controls)`
@@ -105,21 +196,62 @@ const StyledControls = styled(Controls)`
     max-width: 50rem;
     margin: 0px auto;
   }
-
-  svg {
-    /* make bootstrap icons vertically centered in buttons */
-    margin-top: -0.1rem;
+  .badge {
+    font-size: 14pt;
+    font-weight: normal;
+    color: #000;
   }
-
-  .form-control {
+  .utterance-processing {
     opacity: 0.7;
-    &:focus {
-      opacity: 1;
-    }
+  }
+  .input-display {
+    transition: bottom 0.3s, visibility 0.3s;
+    height: auto;
+    display: flex;
+  }
+  .hide-input {
+    position: relative;
+    bottom: -2.5rem;
+    visibility: hidden;
+  }
+  .show-input {
+    position: relative;
+    bottom: 0rem;
+    visibility: visible;
   }
 
   .speaking-status {
     width: 47px;
+  }
+
+  .volume-display {
+    position: relative;
+    top: ${volumeMeterHeight * 0.5}px;
+    display: flex;
+    align-items: flex-end;
+    .meter-component {
+      height: ${volumeMeterHeight}px;
+      width: 21px;
+      background-repeat: no-repeat;
+      position: absolute;
+    }
+    .meter-component-1 {
+      background: url(${mic});
+      background-position: top;
+      background-size: ${volumeMeterHeight}px;
+      z-index: 10;
+    }
+    .meter-component-2 {
+      background: url(${micFill});
+      background-position: bottom;
+      background-size: ${volumeMeterHeight}px;
+      z-index: 20;
+    }
+  }
+
+  svg {
+    /* make bootstrap icons vertically centered in buttons */
+    margin-top: -0.1rem;
   }
 `;
 
@@ -131,6 +263,7 @@ const mapStateToProps = (state) => ({
   isMuted: state.sm.isMuted,
   speechState: state.sm.speechState,
   showTranscript: state.sm.showTranscript,
+  transcript: state.sm.transcript,
 });
 
 const mapDispatchToProps = (dispatch) => ({
