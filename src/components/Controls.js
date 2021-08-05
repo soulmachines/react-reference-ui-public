@@ -120,25 +120,26 @@ const Controls = ({
   return (
     <div className={className}>
       <div className="row">
-        <div className="col d-flex justify-content-center mb-2">
+        <div className="col-10 offset-1 d-flex justify-content-start mb-2">
           <span
-            className={`badge rounded-pill bg-light align-items-center input-display
+            className={`badge bg-light align-items-center input-display
               ${userSpeaking ? 'utterance-processing' : ''}
               ${(transcript.length === 0 && intermediateUserUtterance === '') || hideInputDisplay ? 'hide-input' : 'show-input'}
               `}
           >
-            I heard:
-            {' '}
-            {placeholder || lastUserUtterance}
-            {
-              userSpeaking
-                ? (
-                  <div className="spinner-border spinner-border-sm ms-1" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                  </div>
-                )
-                : null
-            }
+            <div className="text-wrap text-start">
+              { userSpeaking ? 'Listening: ' : 'I heard: '}
+              {placeholder || lastUserUtterance}
+              {
+                userSpeaking
+                  ? (
+                    <div className="spinner-border spinner-border-sm ms-1" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                  )
+                  : null
+              }
+            </div>
           </span>
         </div>
       </div>
@@ -203,6 +204,7 @@ const StyledControls = styled(Controls)`
   }
   .utterance-processing {
     opacity: 0.7;
+    font-style: italic;
   }
   .input-display {
     transition: bottom 0.3s, visibility 0.3s;
