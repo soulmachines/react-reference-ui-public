@@ -242,7 +242,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
         const contentCards = {};
         relevantKeys.forEach((k) => {
           // remove public- prefix from key
-          const cardKey = k.match(/(?<=public-)(.*)/gm)[0];
+          const cardKey = k.match(/public-(.*)/m)[1];
           try {
             contentCards[cardKey] = JSON.parse(context[k]);
           } catch {
