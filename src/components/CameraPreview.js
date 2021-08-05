@@ -65,7 +65,6 @@ const StyledCameraPreview = styled(CameraPreview)`
   }
 
   video {
-    position: absolute;
     height: ${({ size }) => size || 4}rem;
     transform: rotateY(180deg);
     aspect-ratio: ${({ cameraWidth, cameraHeight }) => cameraWidth / cameraHeight};
