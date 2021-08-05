@@ -215,7 +215,7 @@ const StyledControls = styled(Controls)`
   }
   .hide-input {
     position: relative;
-    bottom: -3rem;
+    bottom: -2.5rem;
     visibility: hidden;
   }
   .show-input {
