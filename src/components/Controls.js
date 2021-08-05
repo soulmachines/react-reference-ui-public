@@ -25,6 +25,7 @@ const Controls = ({
   dispatchStopSpeaking,
   dispatchToggleShowTranscript,
   showTranscript,
+  transcript,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
@@ -119,33 +120,27 @@ const Controls = ({
   return (
     <div className={className}>
       <div className="row">
-        {
-          lastUserUtterance || userSpeaking
-            ? (
-              <div className="col d-flex justify-content-center mb-2">
-                <span
-                  className={`badge rounded-pill bg-light align-items-center input-display
-                  ${userSpeaking ? 'utterance-processing' : ''}
-                  ${hideInputDisplay ? 'hide-input' : 'show-input'}
-                  `}
-                >
-                  I heard:
-                  {' '}
-                  {placeholder || lastUserUtterance}
-                  {
-                    userSpeaking
-                      ? (
-                        <div className="spinner-border spinner-border-sm ms-1" role="status">
-                          <span className="visually-hidden">Loading...</span>
-                        </div>
-                      )
-                      : null
-                  }
-                </span>
-              </div>
-            )
-            : null
-        }
+        <div className="col d-flex justify-content-center mb-2">
+          <span
+            className={`badge rounded-pill bg-light align-items-center input-display
+              ${userSpeaking ? 'utterance-processing' : ''}
+              ${(transcript.length === 0 && intermediateUserUtterance === '') || hideInputDisplay ? 'hide-input' : 'show-input'}
+              `}
+          >
+            I heard:
+            {' '}
+            {placeholder || lastUserUtterance}
+            {
+              userSpeaking
+                ? (
+                  <div className="spinner-border spinner-border-sm ms-1" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                )
+                : null
+            }
+          </span>
+        </div>
       </div>
       <div className="row mb-3">
         <div className="col-auto">
@@ -192,6 +187,7 @@ Controls.propTypes = {
   dispatchStopSpeaking: PropTypes.func.isRequired,
   showTranscript: PropTypes.bool.isRequired,
   dispatchToggleShowTranscript: PropTypes.func.isRequired,
+  transcript: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
 const StyledControls = styled(Controls)`
@@ -267,6 +263,7 @@ const mapStateToProps = (state) => ({
   isMuted: state.sm.isMuted,
   speechState: state.sm.speechState,
   showTranscript: state.sm.showTranscript,
+  transcript: state.sm.transcript,
 });
 
 const mapDispatchToProps = (dispatch) => ({
