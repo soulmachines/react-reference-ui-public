@@ -106,10 +106,12 @@ export const animateCamera = createAsyncThunk('sm/animateCamera', ({ options, du
 });
 
 // tells persona to stop listening to mic input
-export const mute = createAsyncThunk('sm/mute', async (args, thunk) => {
+export const mute = createAsyncThunk('sm/mute', async (specifiedMuteState, thunk) => {
   const { isMuted } = thunk.getState().sm;
   if (scene) {
-    const muteState = !isMuted;
+    // if arg is a boolean use it, otherwise just toggle.
+    // sometimes events from button clicks are passed in, so we need to filter for that
+    const muteState = typeof specifiedMuteState === 'boolean' ? specifiedMuteState : !isMuted;
     const command = `${muteState ? 'stop' : 'start'}Recognize`;
     scene.sendRequest(command, {});
     thunk.dispatch(actions.setMute({ isMuted: muteState }));
@@ -545,7 +547,12 @@ const smSlice = createSlice({
 actions = smSlice.actions;
 
 export const {
-  setVideoDimensions, stopSpeaking, setActiveCards, setCameraState, toggleShowTranscript, acceptTOS,
+  setVideoDimensions,
+  stopSpeaking,
+  setActiveCards,
+  setCameraState,
+  toggleShowTranscript,
+  acceptTOS,
 } = smSlice.actions;
 
 export default smSlice.reducer;

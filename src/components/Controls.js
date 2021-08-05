@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { createRef, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import {
-  ChatSquareDotsFill, MicMuteFill, XOctagonFill,
+  ChatSquareDotsFill, Keyboard, MicMuteFill, XOctagonFill,
 } from 'react-bootstrap-icons';
 import {
   sendTextMessage, mute, stopSpeaking, toggleShowTranscript,
@@ -31,6 +31,7 @@ const Controls = ({
   const [inputFocused, setInputFocused] = useState(false);
   const [volume, setVolume] = useState(0);
   const [hideInputDisplay, setHideInputDisplay] = useState(true);
+  const [showTextInput, setShowTextInput] = useState(false);
 
   const handleInput = (e) => setInputValue(e.target.value);
   const handleFocus = () => {
@@ -106,6 +107,7 @@ const Controls = ({
 
     return () => {
       console.log('closing down the audio stuff');
+      // FIXME: tracking #79
       // unmounted = true;
       // audioStream.getTracks().forEach((track) => {
       //   track.stop();
@@ -115,12 +117,24 @@ const Controls = ({
     };
   }, []);
 
+
+  const toggleKeyboardInput = () => {
+    const toggledTextInput = !showTextInput;
+    dispatchMute(toggledTextInput);
+    setShowTextInput(toggledTextInput);
+  };
+  // when we switch to keyboard input, capture focus
+  const textInput = createRef();
+  useEffect(() => {
+    if (showTextInput === true) textInput.current.focus();
+  }, [showTextInput]);
+
   // clear placeholder text on reconnect, sometimes the state updates won't propagate
   const placeholder = intermediateUserUtterance === '' ? '' : intermediateUserUtterance;
   return (
     <div className={className}>
       <div className="row">
-        <div className="col-10 offset-1 d-flex justify-content-start mb-2">
+        <div className="col-10 offset-1 d-flex justify-content-center mb-2">
           <span
             className={`badge bg-light align-items-center input-display
               ${userSpeaking ? 'utterance-processing' : ''}
@@ -143,14 +157,14 @@ const Controls = ({
           </span>
         </div>
       </div>
-      <div className="row mb-3">
+      <div className="row mb-3 display-flex justify-content-center">
         <div className="col-auto">
-          <button type="button" className={`btn btn-${showTranscript ? '' : 'outline-'}secondary`} aria-label="Toggle Transcript" data-tip="Toggle Transcript" onClick={dispatchToggleShowTranscript}><ChatSquareDotsFill /></button>
+          <button type="button" className={`btn btn-${showTranscript ? '' : 'outline-'}secondary`} aria-label="Toggle Transcript" data-tip="Toggle Transcript" onClick={dispatchToggleShowTranscript} disabled={transcript.length === 0}><ChatSquareDotsFill /></button>
         </div>
-        <div className="col">
+        <div className="col-auto">
           <form onSubmit={handleSubmit}>
             <div className="input-group">
-              <button type="button" className={`speaking-status btn btn-${isMuted ? 'outline-secondary' : 'danger '}`} onClick={dispatchMute} data-tip="Toggle Microphone Input">
+              <button type="button" className={`speaking-status btn btn-${isMuted ? 'outline-secondary' : 'secondary '}`} onClick={toggleKeyboardInput} data-tip="Toggle Microphone Input">
                 <div>
                   { isMuted ? <MicMuteFill size={21} />
                     : (
@@ -162,7 +176,32 @@ const Controls = ({
                     ) }
                 </div>
               </button>
-              <input type="text" className="form-control" value={inputValue} onChange={handleInput} onFocus={handleFocus} onBlur={handleBlur} aria-label="User input" />
+              <button
+                type="button"
+                className={`btn btn-${showTextInput ? 'secondary' : 'outline-secondary'}`}
+                aria-label="Toggle Keyboard Input"
+                data-tip="Toggle Keyboard Input"
+                onClick={toggleKeyboardInput}
+              >
+                <Keyboard size={21} />
+              </button>
+              {
+                showTextInput
+                  ? (
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={inputValue}
+                      onChange={handleInput}
+                      onFocus={handleFocus}
+                      onBlur={handleBlur}
+                      aria-label="Keyboard input"
+                      ref={textInput}
+                    />
+                  )
+                  : null
+              }
+
             </div>
           </form>
         </div>
@@ -197,6 +236,13 @@ const StyledControls = styled(Controls)`
     max-width: 50rem;
     margin: 0px auto;
   }
+  .form-control {
+    min-width: 20rem;
+    opacity: 0.8;
+    &:focus {
+      opacity: 1;
+    }
+  }
   .badge {
     font-size: 14pt;
     font-weight: normal;
@@ -207,19 +253,19 @@ const StyledControls = styled(Controls)`
     font-style: italic;
   }
   .input-display {
-    transition: bottom 0.3s, visibility 0.3s;
+    transition: bottom 0.3s, opacity 0.3s;
     height: auto;
     display: flex;
   }
   .hide-input {
     position: relative;
     bottom: -2.5rem;
-    visibility: hidden;
+    opacity: 0;
   }
   .show-input {
     position: relative;
     bottom: 0rem;
-    visibility: visible;
+    opacity: 1;
   }
 
   .speaking-status {
@@ -270,7 +316,7 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   dispatchText: (text) => dispatch(sendTextMessage({ text })),
-  dispatchMute: () => dispatch(mute()),
+  dispatchMute: (muteState) => dispatch(mute(muteState)),
   dispatchStopSpeaking: () => dispatch(stopSpeaking()),
   dispatchToggleShowTranscript: () => dispatch(toggleShowTranscript()),
 });
