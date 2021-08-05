@@ -117,7 +117,6 @@ const Controls = ({
     };
   }, []);
 
-
   const toggleKeyboardInput = () => {
     const toggledTextInput = !showTextInput;
     dispatchMute(toggledTextInput);
@@ -265,7 +264,7 @@ const StyledControls = styled(Controls)`
   .show-input {
     position: relative;
     bottom: 0rem;
-    opacity: 1;
+    opacity: ${({ userSpeaking }) => (userSpeaking ? 0.7 : 1)};;
   }
 
   .speaking-status {
