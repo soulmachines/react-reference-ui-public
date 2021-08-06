@@ -231,10 +231,7 @@ Controls.propTypes = {
 
 const StyledControls = styled(Controls)`
   display: ${(props) => (props.connected ? '' : 'none')};
-  .row {
-    /* max-width: 50rem; */
-    margin: 0px auto;
-  }
+
   .form-control {
     min-width: 20rem;
     opacity: 0.8;
