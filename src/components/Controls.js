@@ -160,7 +160,7 @@ const Controls = ({
         <div className="col-auto">
           <button type="button" className={`btn btn-${showTranscript ? '' : 'outline-'}secondary`} aria-label="Toggle Transcript" data-tip="Toggle Transcript" onClick={dispatchToggleShowTranscript} disabled={transcript.length === 0}><ChatSquareDotsFill /></button>
         </div>
-        <div className="col-auto">
+        <div className="col d-flex justify-content-center">
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <button type="button" className={`speaking-status btn btn-${isMuted ? 'outline-secondary' : 'secondary '}`} onClick={toggleKeyboardInput} data-tip="Toggle Microphone Input">
@@ -231,10 +231,7 @@ Controls.propTypes = {
 
 const StyledControls = styled(Controls)`
   display: ${(props) => (props.connected ? '' : 'none')};
-  .row {
-    max-width: 50rem;
-    margin: 0px auto;
-  }
+
   .form-control {
     min-width: 20rem;
     opacity: 0.8;
