@@ -1,3 +1,4 @@
+/* eslint-disable */
 export default (
   <div>
     <h1 id="user-terms-and-conditions">USER TERMS AND CONDITIONS</h1>
