@@ -30,6 +30,8 @@ class UserMediaStream {
     if (this.dispatch === null) throw new Error('call passDispatch() before setUserMediaStream()!');
     // store stream data so we can access it later
     if (stream !== null) this.userMediaStream = stream;
+    // try to get video stream dimensions, if it doesn't work, then we can presume
+    // that we don't have access to the webcam.
     try {
       // send webcam stream dimensions to store
       const track = stream.getVideoTracks()[0];
