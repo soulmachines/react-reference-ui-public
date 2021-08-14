@@ -415,9 +415,9 @@ const smSlice = createSlice({
   name: 'sm',
   initialState,
   reducers: {
-    acceptTOS: (state) => ({
+    setTOS: (state, { payload }) => ({
       ...state,
-      tosAccepted: true,
+      tosAccepted: payload.accepted,
     }),
     toggleShowTranscript: (state) => ({
       ...state,
@@ -555,7 +555,7 @@ export const {
   setActiveCards,
   setCameraState,
   toggleShowTranscript,
-  acceptTOS,
+  setTOS,
 } = smSlice.actions;
 
 export default smSlice.reducer;

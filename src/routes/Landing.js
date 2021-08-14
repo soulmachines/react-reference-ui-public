@@ -9,14 +9,15 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import Header from '../components/Header';
 import { headerHeight, landingBackground } from '../config';
-import { acceptTOS } from '../store/sm/index';
+import { setTOS } from '../store/sm/index';
+import eula from '../eula';
 
-const Landing = ({ className, dispatchAcceptTOS }) => (
+const Landing = ({ className, dispatchAcceptTOS, tosAccepted }) => (
   <div className={className}>
     <Header />
     <div className="landing-wrapper">
       <div className="container">
-        <div className="card col-lg-6 p-3">
+        <div className="card col-lg-8 p-3">
           <div className="card-body">
             <h2 className="first-things-first">
               <CheckSquare />
@@ -34,10 +35,26 @@ const Landing = ({ className, dispatchAcceptTOS }) => (
                 {' '}
                 <a href="https://www.soulmachines.com/privacy-policy/" target="_blank" rel="noreferrer">Privacy Policy</a>
               </div>
+              {/* EULA modal */}
+              <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div className="modal-dialog modal-xl">
+                  <div className="modal-content">
+                    <div className="modal-header">
+                      <h5 className="modal-title" id="exampleModalLabel">End User License Agreement</h5>
+                      <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+                    </div>
+                    <div className="modal-body">
+                      {eula}
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div className="mx-4">
                 <FileEarmarkMedical />
                 {' '}
-                <a href="https://www.soulmachines.com/privacy-policy/" target="_blank" rel="noreferrer">EULA</a>
+                <button type="button" className="link-primary link-button" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                  EULA
+                </button>
               </div>
               <div className="mx-4">
                 <i className="bi bi-camera-video" />
@@ -53,44 +70,46 @@ const Landing = ({ className, dispatchAcceptTOS }) => (
             </div>
             <strong>Frequently Asked Questions:</strong>
 
-            <div className="accordion accordion-flush" id="accordionFlushExample">
+            <div className="accordion accordion-flush" id="tocAccordion">
               <div className="accordion-item">
                 <h2 className="accordion-header" id="flush-headingOne">
-                  <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                  <button className="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="true" aria-controls="flush-collapseOne">
                     Who is running this system?
                   </button>
                 </h2>
-                <div id="flush-collapseOne" className="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+                <div id="flush-collapseOne" className="accordion-collapse collapse show" aria-labelledby="flush-headingOne">
                   <div className="accordion-body">
                     <p>
-                      Soul Machines Limited is a New Zealand company whose address is
+                      <b>Legal Entity Name </b>
+                      is working with Soul Machines Limited, a New Zealand company whose address is
                       L1, 106 Customs Street West, Auckland, 1010, New Zealand.
                     </p>
                     <p>
-                      Soul Machines have built a “Digital Brain” and
-                      “Embodied Cognitive User Experience” which we call a “Digital Person”.
+                      Soul Machines have built a “Digital Brain” and “Embodied Cognitive
+                      User Experience” which we call a “Digital Person”.
                     </p>
                   </div>
                 </div>
               </div>
               <div className="accordion-item">
                 <h2 className="accordion-header" id="flush-headingTwo">
-                  <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
+                  <button className="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="true" aria-controls="flush-collapseTwo">
                     What information are we collecting?
                   </button>
                 </h2>
-                <div id="flush-collapseTwo" className="accordion-collapse collapse" aria-labelledby="flush-headingTwo" data-bs-parent="#accordionFlushExample">
+                <div id="flush-collapseTwo" className="accordion-collapse collapse show" aria-labelledby="flush-headingTwo">
                   <div className="accordion-body">
                     <p>
-                      For the Digital Person to be able to interact with you in an authentic and
-                      human way, their Digital Brain™ needs to collect and process information
-                      about your expressions.
+                      We will be collecting information about your facial features, expressions
+                      and voice characteristics when you are interacting with the Digital Human.
+                      If you want to find out more information and how we collect and use your
+                      information please see our Privacy Policy, found here:
+                      {' '}
+                      <a href="https://www.soulmachines.com/privacy-policy/" target="_blank" rel="noreferrer">https://www.soulmachines.com/privacy-policy/</a>
+                      .
                     </p>
                     <p>
-                      As soon as it is collected, this information is anonymized. We do not
-                      keep this information, provide it to third parties, or share it.
-                      It is purely used while you are interacting with the Digital Person to
-                      generate the best experience possible.
+                      If you are happy to proceed on this basis, please confirm your acceptance.
                     </p>
                   </div>
                 </div>
@@ -101,7 +120,7 @@ const Landing = ({ className, dispatchAcceptTOS }) => (
                     Why are we collecting this information?
                   </button>
                 </h2>
-                <div id="flush-collapseThree" className="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#accordionFlushExample">
+                <div id="flush-collapseThree" className="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#tocAccordion">
                   <div className="accordion-body">
                     <p>
                       We want your experience with the Digital Person to be as fun, natural and
@@ -125,12 +144,17 @@ const Landing = ({ className, dispatchAcceptTOS }) => (
               </div>
             </div>
           </div>
-          <Link
-            to="/loading"
-            className="btn btn-success btn-lg action-btn"
-            onClick={dispatchAcceptTOS}
+          <button
+            className="btn btn-success btn-lg action-btn mb-1"
+            onClick={() => dispatchAcceptTOS(!tosAccepted)}
+            type="button"
           >
-            I accept terms and conditions
+            I accept Privacy Notice and EULA
+            {' '}
+            <input className="form-check-input" type="checkbox" id="flexCheckChecked" checked={tosAccepted} onChange={() => dispatchAcceptTOS(!tosAccepted)} />
+          </button>
+          <Link to="loading" className={`btn btn-success btn-lg action-btn ${tosAccepted ? '' : 'disabled'}`} aria-disabled={!tosAccepted}>
+            Proceed
             {' '}
             <ArrowRightCircleFill />
           </Link>
@@ -143,9 +167,16 @@ const Landing = ({ className, dispatchAcceptTOS }) => (
 Landing.propTypes = {
   className: PropTypes.string.isRequired,
   dispatchAcceptTOS: PropTypes.func.isRequired,
+  tosAccepted: PropTypes.bool.isRequired,
 };
 
 const StyledLanding = styled(Landing)`
+  .link-button {
+    background: none;
+    border: none;
+    text-decoration: underline;
+    padding: 0;
+  }
   .landing-wrapper {
     padding-top: ${headerHeight};
     min-height: calc(100vh - ${headerHeight} );
@@ -174,8 +205,11 @@ const StyledLanding = styled(Landing)`
     }
   }
 `;
+const mapStateToProps = ({ sm }) => ({
+  tosAccepted: sm.tosAccepted,
+});
 const mapDispatchToProps = (dispatch) => ({
-  dispatchAcceptTOS: () => dispatch(acceptTOS()),
+  dispatchAcceptTOS: (accepted) => dispatch(setTOS({ accepted })),
 });
 
-export default connect(null, mapDispatchToProps)(StyledLanding);
+export default connect(mapStateToProps, mapDispatchToProps)(StyledLanding);
