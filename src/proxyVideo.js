@@ -31,10 +31,14 @@ class UserMediaStream {
     // store stream data so we can access it later
     if (stream !== null) this.userMediaStream = stream;
     if (audioOnly === false) {
+      try {
       // send webcam stream dimensions to store
-      const track = stream.getVideoTracks()[0];
-      const { width: cameraWidth, height: cameraHeight } = track.getSettings();
-      this.dispatch(setCameraState({ cameraOn: true, cameraWidth, cameraHeight }));
+        const track = stream.getVideoTracks()[0];
+        const { width: cameraWidth, height: cameraHeight } = track.getSettings();
+        this.dispatch(setCameraState({ cameraOn: true, cameraWidth, cameraHeight }));
+      } catch {
+        this.dispatch(setCameraState({ cameraOn: false }));
+      }
     }
   }
 
