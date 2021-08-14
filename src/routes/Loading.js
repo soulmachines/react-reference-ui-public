@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { createRef, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Link, useHistory, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import {
-  ArrowRightCircleFill, CameraVideo, CameraVideoFill, LightningCharge, MicFill, Soundwave,
+  ArrowRightCircleFill, CameraVideoFill, MicFill,
 } from 'react-bootstrap-icons';
+import { AnimatePresence, motion } from 'framer-motion';
 import { createScene } from '../store/sm';
 import Header from '../components/Header';
 import { headerHeight, landingBackground } from '../config';
@@ -13,138 +14,170 @@ import { headerHeight, landingBackground } from '../config';
 const Loading = ({
   className, connected, loading, dispatchCreateScene, error, tosAccepted,
 }) => {
-  const [spinnerDisplay, setSpinnerDisplay] = useState('');
-  const [spinnerIndex, setSpinnerIndex] = useState(0);
+  // pull querystring to see if we are displaying an error
+  // (app can redirect to /loading on fatal err)
   const useQuery = () => new URLSearchParams(useLocation().search);
   const query = useQuery();
-  // create scene on mount
-  useEffect(() => {
+
+  const [displayedPage, setDisplayedPage] = useState(0);
+  // create persona scene when user presses button
+  const createSceneAndIteratePage = () => {
     // if we encounter a fatal error, app redirects to /loading to display
     if (!connected && !loading && query.get('error') !== true) dispatchCreateScene();
-  }, []);
-
-  const spinner = '▖▘▝▗';
-  const spinnerInterval = 100;
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      const nextDisplay = spinner[spinnerIndex];
-      setSpinnerDisplay(nextDisplay);
-      const nextIndex = (spinnerIndex === spinner.length - 1) ? 0 : spinnerIndex + 1;
-      setSpinnerIndex(nextIndex);
-    }, spinnerInterval);
-    return () => clearTimeout(timeout);
-  }, [spinnerIndex]);
+    setDisplayedPage(displayedPage + 1);
+  };
 
   // use to reload page if user unblocks perms and presses "try again"
   const history = useHistory();
+
   // if TOS hasn't been accepted, send to /
   if (tosAccepted === false) history.push('/');
 
+  const pages = [
+    <div>
+      <div className="m-1">
+        <h1>
+          Before we get started,
+        </h1>
+        <h5>there are some things we should go over.</h5>
+      </div>
+      <div className="card">
+        <div className="card-body">
+          <p>For me to work best, I need to be able to see you and hear your voice.</p>
+          <p>This will be just like a video call where we can talk face to face.</p>
+          <p>
+            <b>
+              If that sounds okay, please turn on access to your microphone and
+              camera when we request it.
+            </b>
+          </p>
+          <div className="d-grid gap-2">
+            <button type="button" onClick={createSceneAndIteratePage} className="btn btn-primary">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>,
+
+    <div className="card">
+      <div className="card-body">
+        <p>
+          Also,
+          {' '}
+          <b>
+            the speed of your internet connection can have a big impact on picture
+            and audio quality during the call.
+          </b>
+        </p>
+        <p>
+          If you experience connectivity issues, the picture quality may
+          temporarily deteriorate or disappear entirely
+        </p>
+        <p>
+          If that happens, try finding a location with a better connection and try again.
+        </p>
+        <div className="d-grid gap-2">
+          <button type="button" onClick={() => setDisplayedPage(displayedPage + 1)} className="btn btn-primary">Next</button>
+        </div>
+      </div>
+    </div>,
+
+    <div className="card">
+      <div className="card-body">
+
+        <h5>Finally, please find a quiet environment.</h5>
+        <p>
+          I can find it hard to hear you when you&apos;re in a noisy room or
+          there is a lot of noise in the background.
+        </p>
+        <p>
+          Find a quiet place and let&apos;s keep this one-on-one for now.
+        </p>
+        <p>
+          <b>All ready?</b>
+        </p>
+        <div className="d-grid gap-2">
+          <Link to="/video" className={`btn  btn-lg ${connected ? 'btn-success' : 'btn-light disabled'}`}>
+            {
+          connected
+            ? (
+              <div>
+                Proceed
+                {' '}
+                <ArrowRightCircleFill />
+              </div>
+            )
+            : (
+              <div>
+                Loading...
+              </div>
+            )
+        }
+          </Link>
+        </div>
+      </div>
+    </div>,
+  ];
+
+  const variants = {
+    enter: {
+      x: 1000,
+      opacity: 0,
+    },
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: {
+      x: -1000,
+      opacity: 0,
+      position: 'absolute',
+    },
+  };
+
+  const overlayRef = createRef();
+  const [height, setHeight] = useState('100vh');
+
+  const handleResize = () => {
+    setHeight(window.innerHeight);
+  };
+
+  useEffect(() => {
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    // cleanup
+    return () => { window.removeEventListener('resize', handleResize); };
+  }, []);
+
   return (
-    <div className={className}>
+    <div className={className} ref={overlayRef} style={{ minHeight: height }}>
       <Header />
-      <div className="container">
+      <div className="container loading-wrapper">
         {
           !error
             ? (
-              <div>
-                <div className="row">
-                  <div className="col">
-                    <div className="card">
-
-                      <div className="card-body">
-                        <div className="background-primary text-center">
-                          <CameraVideo color="#2222ff" size={42} />
-                        </div>
-                        <hr />
-                        <h5 className="card-title text-center">
-                          Enable / Allow Video &amp; Microphone Access
-                        </h5>
-                        <ul>
-                          <li>
-                            For me to work best, I need to be able to see you and hear your voice.
-                          </li>
-                          <li className="mt-2">
-                            This will be jut like a video call where we can talk face to face.
-                            {' '}
-                          </li>
-                          <li className="mt-2">
-                            If that sounds okay, please turn on access to your microphone and
-                            camera when we request it.
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col">
-                    <div className="card">
-
-                      <div className="card-body">
-                        <div className="text-center">
-                          <LightningCharge color="#98980c" size={42} />
-                        </div>
-                        <hr />
-                        <h5 className="card-title text-center">Check connection speed</h5>
-                        <ul>
-                          <li>
-                            The speed of your internet connection can have a big impact on picture
-                            and audio quality during the call.
-                          </li>
-                          <li className="mt-2">
-                            If you experience connectivity issues, the picture quality may
-                            temporarily deteriorate or disappear entirely
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col">
-                    <div className="card">
-                      <div className="card-body">
-                        <div className="text-center">
-                          <Soundwave color="#da1d1d" size={42} />
-                        </div>
-                        <hr />
-                        <h5 className="card-title text-center">Find a quiet environment</h5>
-                        <ul>
-                          <li>
-                            I can find it hard to hear you when you&apos;re in a noisy room or
-                            there is a lot of noise in the background
-                          </li>
-                          <li className="mt-2">
-                            Find a quiet place and let&apos;s keep this one-on-one for now
-                          </li>
-                          <li className="mt-2">
-                            If that sounds ok, please turn on access to your microphone and
-                            camera when we request it.
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="row mt-4">
-                  <div className="col d-flex justify-content-center">
-                    <Link to="/video" className={`btn  btn-lg ${connected ? 'btn-success' : 'btn-light disabled'}`}>
-                      {
-                        connected ? (
-                          <div>
-                            Proceed
-                            {' '}
-                            <ArrowRightCircleFill />
-                          </div>
-                        )
-                          : (
-                            <div>
-                              Loading
-                              {' '}
-                              {spinnerDisplay}
-                            </div>
-                          )
-                      }
-                    </Link>
-                  </div>
-                </div>
+              <div className="col-md-6 offset-md-3">
+                <AnimatePresence initial={false}>
+                  {pages.flatMap((p, i) => {
+                    if (i !== displayedPage) return null;
+                    return (
+                      <motion.div
+                      // using indexes as keys is fine since the pages are pre-defined and static
+                      // eslint-disable-next-line react/no-array-index-key
+                        key={i}
+                        variants={variants}
+                        initial="enter"
+                        animate="center"
+                        exit="exit"
+                        transition={{
+                          x: { type: 'spring', stiffness: 300, damping: 30 },
+                          opacity: { duration: 0.2 },
+                        }}
+                      >
+                        {p}
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
               </div>
             )
             : (
@@ -205,8 +238,6 @@ Loading.defaultProps = {
 };
 
 const StyledLoading = styled(Loading)`
-  min-height: 100vh;
-
   background-image: url(${landingBackground});
   background-color: rgb(247, 232, 219);
   background-size: contain;
@@ -219,26 +250,24 @@ const StyledLoading = styled(Loading)`
     padding: 0;
   }
 
-  .container {
+  .loading-wrapper {
     padding-top: calc(${headerHeight} + 2rem);
     min-height: calc(100vh - ${headerHeight});
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 
-    code {
-      border-radius: 3px;
-      font-size: 1.5rem;
-      background: #FFFFFF;
-      padding: 0.5rem 1rem 0.5rem 1rem;
-    }
-
-    .btn-lg {
+    .loading-text {
       font-size: 2rem;
     }
   }
-  svg {
-    vertical-align: -0.125em;
+
+  .instructions-wrapper {
+    overflow-x: scroll;
+  }
+  .instructions-card {
+    display: inline-block;
+    width: 100%;
   }
 `;
 

@@ -20,7 +20,7 @@ const Link = ({ data, className }) => {
             {/* open link in new tab */}
             <a href={url} className="btn btn-primary" target="_blank" rel="noreferrer">
               Visit Link
-              <ArrowUpRightSquare size={18} />
+              <ArrowUpRightSquare />
             </a>
           </div>
         </div>
@@ -46,10 +46,5 @@ export default styled(Link)`
   img {
     width: auto;
     height: auto;
-  }
-
-  svg {
-    margin-top: -0.2rem;
-    margin-left: 0.4rem;
   }
 `;

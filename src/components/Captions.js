@@ -73,7 +73,7 @@ const Captions = ({
   return (
     <div className={className}>
       <div className={`captions ${showCaptions ? '' : 'hide-captions'} text-center`}>
-        { captionText }
+        { showCaptions ? captionText : null }
       </div>
     </div>
   );
@@ -105,11 +105,13 @@ const StyledCaptions = styled(Captions)`
     align-items: center;
 
     min-height: 35px;
+    transition: height 0.3s;
+  }
+  .hide-captions {
+    min-height: 0 !important;
+    background-color: rgba(0,0,0,0);
   }
 
-  .hide-captions {
-    opacity: 0;
-  }
 `;
 
 const mapStateToProps = (state) => ({

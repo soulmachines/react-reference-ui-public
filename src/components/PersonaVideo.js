@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/media-has-caption */
-import React, { useEffect, useState } from 'react';
+import React, { createRef, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
@@ -11,11 +11,13 @@ const PersonaVideo = ({
   loading, connected, setVideoDimensions, className,
 }) => {
   // video elem ref used to link proxy video element to displayed video
-  const videoRef = React.createRef();
+  const videoRef = createRef();
   // we need the container dimensions to render the right size video in the persona server
-  const containerRef = React.createRef();
+  const containerRef = createRef();
   // only set the video ref once, otherwise we get a flickering whenever the window is resized
   const [videoDisplayed, setVideoDisplayed] = useState(false);
+  // we need to keep track of the inner window height so the video displays correctly
+  const [height, setHeight] = useState('100vh');
 
   const handleResize = () => {
     if (containerRef.current) {
@@ -25,6 +27,8 @@ const PersonaVideo = ({
       const videoWidth = containerRef.current.clientWidth;
       const videoHeight = containerRef.current.clientHeight;
       setVideoDimensions(videoWidth, videoHeight);
+      // constrain to inner window height so it fits on mobile
+      setHeight(window.innerHeight);
     }
   };
 
@@ -44,7 +48,7 @@ const PersonaVideo = ({
   });
 
   return (
-    <div ref={containerRef} className={className}>
+    <div ref={containerRef} className={className} style={{ height }}>
       {
         connected
           ? (

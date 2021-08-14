@@ -366,7 +366,10 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
 
     // set video dimensions
     const { videoWidth, videoHeight } = thunk.getState().sm;
-    scene.sendVideoBounds(videoWidth, videoHeight);
+    // calc resolution w/ device pixel ratio
+    const deviceWidth = Math.round(videoWidth * window.devicePixelRatio);
+    const deviceHeight = Math.round(videoHeight * window.devicePixelRatio);
+    scene.sendVideoBounds(deviceWidth, deviceHeight);
 
     // create proxy of webcam video feed if user has granted us permission
 
@@ -375,12 +378,11 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
     const { userMediaStream: stream } = scene.session();
     // detect if we're running audio-only
     const videoEnabled = stream !== undefined && stream.getVideoTracks().length > 0;
-    if (videoEnabled) {
-      // pass dispatch before calling setUserMediaStream so proxy can send dimensions to store
-      mediaStreamProxy.passDispatch(thunk.dispatch);
-      mediaStreamProxy.setUserMediaStream(stream);
-      mediaStreamProxy.enableToggle(scene);
-    } else thunk.dispatch(actions.setCameraState({ cameraOn: false }));
+    if (videoEnabled === false) thunk.dispatch(actions.setCameraState({ cameraOn: false }));
+    // pass dispatch before calling setUserMediaStream so proxy can send dimensions to store
+    mediaStreamProxy.passDispatch(thunk.dispatch);
+    mediaStreamProxy.setUserMediaStream(stream, videoEnabled);
+    mediaStreamProxy.enableToggle(scene);
 
     // fulfill promise, reducer sets state to indicate loading and connection are complete
     return thunk.fulfillWithValue();
@@ -393,7 +395,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
 // usually used for typed input or UI elems that trigger a certain phrase
 export const sendTextMessage = createAsyncThunk('sm/sendTextMessage', async ({ text }, thunk) => {
   if (scene && persona) {
-    if (ORCHESTRATION_MODE) scene.sendUserText(text);
+    if (ORCHESTRATION_MODE === true) scene.sendUserText(text);
     else persona.conversationSend(text);
     thunk.dispatch(actions.addConversationResult({
       source: 'user',
@@ -506,12 +508,13 @@ const smSlice = createSlice({
     setVideoDimensions: (state, { payload }) => {
       const { videoWidth, videoHeight } = payload;
       // update video dimensions in persona
-      scene.sendVideoBounds(videoWidth, videoHeight);
+      // calc resolution w/ device pixel ratio
+      const deviceWidth = Math.round(videoWidth * window.devicePixelRatio);
+      const deviceHeight = Math.round(videoHeight * window.devicePixelRatio);
+      scene.sendVideoBounds(deviceWidth, deviceHeight);
       return { ...state, videoWidth, videoHeight };
     },
     disconnect: (state) => {
-      scene.onMessage = null;
-      scene.onDisconnected = null;
       scene = null;
       persona = null;
       const { error } = state;

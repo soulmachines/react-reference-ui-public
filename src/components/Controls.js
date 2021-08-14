@@ -10,8 +10,13 @@ import {
 } from '../store/sm/index';
 import mic from '../img/mic.svg';
 import micFill from '../img/mic-fill.svg';
+import breakpoints from '../utils/breakpoints';
+import { mediaStreamProxy } from '../proxyVideo';
 
 const volumeMeterHeight = 24;
+const volumeMeterMultiplier = 1.2;
+const smallHeight = volumeMeterHeight;
+const largeHeight = volumeMeterHeight * volumeMeterMultiplier;
 
 const Controls = ({
   className,
@@ -26,12 +31,16 @@ const Controls = ({
   dispatchToggleShowTranscript,
   showTranscript,
   transcript,
+  videoWidth,
+  connected,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
   const [volume, setVolume] = useState(0);
   const [hideInputDisplay, setHideInputDisplay] = useState(true);
-  const [showTextInput, setShowTextInput] = useState(false);
+  const [showTextInput, setShowTextInput] = useState(isMuted);
+  const isLarger = videoWidth >= breakpoints.md ? largeHeight : smallHeight;
+  const [responsiveVolumeHeight, setResponsiveVolumeHeight] = useState(isLarger);
 
   const handleInput = (e) => setInputValue(e.target.value);
   const handleFocus = () => {
@@ -59,63 +68,64 @@ const Controls = ({
   }, [userSpeaking, lastUserUtterance]);
 
   useEffect(async () => {
-    // credit: https://stackoverflow.com/a/64650826
-    let volumeCallback = null;
-    let audioStream;
-    let audioContext;
-    let audioSource;
-    const unmounted = false;
-    // Initialize
-    try {
-      audioStream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-        },
-      });
-      audioContext = new AudioContext();
-      audioSource = audioContext.createMediaStreamSource(audioStream);
-      const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 512;
-      analyser.minDecibels = -127;
-      analyser.maxDecibels = 0;
-      analyser.smoothingTimeConstant = 0.4;
-      audioSource.connect(analyser);
-      const volumes = new Uint8Array(analyser.frequencyBinCount);
-      volumeCallback = () => {
-        analyser.getByteFrequencyData(volumes);
-        let volumeSum = 0;
-        volumes.forEach((v) => { volumeSum += v; });
-        // multiply value by 2 so the volume meter appears more responsive
-        // (otherwise the fill doesn't always show)
-        const averageVolume = (volumeSum / volumes.length) * 2;
-        // Value range: 127 = analyser.maxDecibels - analyser.minDecibels;
-        setVolume(averageVolume > 127 ? 127 : averageVolume);
-      };
-      // runs every time the window paints
-      const volumeDisplay = () => {
-        window.requestAnimationFrame(() => {
-          if (!unmounted) {
-            volumeCallback();
-            volumeDisplay();
-          }
-        });
-      };
-      volumeDisplay();
-    } catch (e) {
-      console.error('Failed to initialize volume visualizer!', e);
-    }
+    if (connected) {
+      // credit: https://stackoverflow.com/a/64650826
+      let volumeCallback = null;
+      let audioStream;
+      let audioContext;
+      let audioSource;
+      let unmounted = false;
+      // Initialize
+      try {
+        audioStream = mediaStreamProxy.getUserMediaStream();
+        audioContext = new AudioContext();
+        audioSource = audioContext.createMediaStreamSource(audioStream);
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 512;
+        analyser.minDecibels = -127;
+        analyser.maxDecibels = 0;
+        analyser.smoothingTimeConstant = 0.4;
+        audioSource.connect(analyser);
+        const volumes = new Uint8Array(analyser.frequencyBinCount);
+        volumeCallback = () => {
+          analyser.getByteFrequencyData(volumes);
+          let volumeSum = 0;
+          volumes.forEach((v) => { volumeSum += v; });
+          // multiply value by 2 so the volume meter appears more responsive
+          // (otherwise the fill doesn't always show)
+          const averageVolume = (volumeSum / volumes.length) * 2;
+          // Value range: 127 = analyser.maxDecibels - analyser.minDecibels;
+          setVolume(averageVolume > 127 ? 127 : averageVolume);
+        };
+        // runs every time the window paints
+        const volumeDisplay = () => {
+          window.requestAnimationFrame(() => {
+            if (!unmounted) {
+              volumeCallback();
+              volumeDisplay();
+            }
+          });
+        };
+        volumeDisplay();
+      } catch (e) {
+        console.error('Failed to initialize volume visualizer!', e);
+      }
 
-    return () => {
-      console.log('closing down the audio stuff');
-      // FIXME: tracking #79
-      // unmounted = true;
-      // audioStream.getTracks().forEach((track) => {
-      //   track.stop();
-      // });
-      // audioContext.close();
-      // audioSource.close();
-    };
-  }, []);
+      return () => {
+        console.log('closing down the audio stuff');
+        // FIXME: tracking #79
+        unmounted = true;
+        audioContext.close();
+        audioSource.close();
+      };
+    } return false;
+  }, [connected]);
+
+  useEffect(() => {
+    // check window width, if larger display then increase mic indicator size
+    if (videoWidth >= breakpoints.md) setResponsiveVolumeHeight(largeHeight);
+    else setResponsiveVolumeHeight(smallHeight);
+  });
 
   const toggleKeyboardInput = () => {
     const toggledTextInput = !showTextInput;
@@ -130,20 +140,38 @@ const Controls = ({
 
   // clear placeholder text on reconnect, sometimes the state updates won't propagate
   const placeholder = intermediateUserUtterance === '' ? '' : intermediateUserUtterance;
-  return (
-    <div className={className}>
-      <div className="row">
-        <div className="col-10 offset-1 d-flex justify-content-center mb-2">
-          <span
-            className={`badge bg-light align-items-center input-display
+
+  const transcriptButton = (
+    <button
+      type="button"
+      className={`btn btn-${showTranscript ? '' : 'outline-'}secondary`}
+      aria-label="Toggle Transcript"
+      data-tip="Toggle Transcript"
+      data-place="top"
+      onClick={dispatchToggleShowTranscript}
+      disabled={transcript.length === 0}
+    >
+      <ChatSquareDotsFill />
+    </button>
+  );
+
+  const interruptButton = (
+    <button type="button" className="btn btn-outline-secondary" disabled={speechState !== 'speaking'} onClick={dispatchStopSpeaking} data-tip="Stop Speaking" data-place="top">
+      <XOctagonFill />
+    </button>
+  );
+
+  const feedbackDisplay = (
+    <span
+      className={`badge bg-light input-display
               ${userSpeaking ? 'utterance-processing' : ''}
               ${(transcript.length === 0 && intermediateUserUtterance === '') || hideInputDisplay ? 'hide-input' : 'show-input'}
               `}
-          >
-            <div className="text-wrap text-start">
-              { userSpeaking ? 'Listening: ' : 'I heard: '}
-              {placeholder || lastUserUtterance}
-              {
+    >
+      <div className="text-wrap text-start input-display">
+        { userSpeaking ? 'Listening: ' : 'I heard: '}
+        {placeholder || lastUserUtterance}
+        {
                 userSpeaking
                   ? (
                     <div className="spinner-border spinner-border-sm ms-1" role="status">
@@ -152,39 +180,52 @@ const Controls = ({
                   )
                   : null
               }
-            </div>
-          </span>
+      </div>
+    </span>
+  );
+
+  return (
+    <div className={className}>
+      <div className="row">
+        <div className={`${showTextInput ? 'justify-content-md-start' : ''} col-md-10 offset-md-1 d-flex justify-content-center mb-2`}>
+          { feedbackDisplay }
+        </div>
+      </div>
+      <div className="row">
+        <div className={`d-${showTextInput ? 'flex' : 'none'} d-md-none justify-content-between align-items-end pb-2`}>
+          <div>{ transcriptButton }</div>
+          <div className={speechState === 'speaking' ? 'interrupt' : 'interrupt interrupt-active'}>{ interruptButton }</div>
         </div>
       </div>
       <div className="row mb-3 display-flex justify-content-center">
-        <div className="col-auto">
-          <button type="button" className={`btn btn-${showTranscript ? '' : 'outline-'}secondary`} aria-label="Toggle Transcript" data-tip="Toggle Transcript" onClick={dispatchToggleShowTranscript} disabled={transcript.length === 0}><ChatSquareDotsFill /></button>
+        <div className={`col-auto d-md-block d-${showTextInput ? 'none' : 'block'}`}>
+          { transcriptButton }
         </div>
-        <div className="col d-flex justify-content-center">
-          <form onSubmit={handleSubmit}>
-            <div className="input-group">
-              <button type="button" className={`speaking-status btn btn-${isMuted ? 'outline-secondary' : 'secondary '}`} onClick={toggleKeyboardInput} data-tip="Toggle Microphone Input">
-                <div>
-                  { isMuted ? <MicMuteFill size={21} />
-                    : (
-                      <div className="volume-display">
-                        {/* compute height as fraction of 127 so fill corresponds to volume */}
-                        <div style={{ height: `${volumeMeterHeight}px` }} className="meter-component meter-component-1" />
-                        <div style={{ height: `${(volume / 127) * volumeMeterHeight}px` }} className="meter-component meter-component-2" />
-                      </div>
-                    ) }
-                </div>
-              </button>
-              <button
-                type="button"
-                className={`btn btn-${showTextInput ? 'secondary' : 'outline-secondary'}`}
-                aria-label="Toggle Keyboard Input"
-                data-tip="Toggle Keyboard Input"
-                onClick={toggleKeyboardInput}
-              >
-                <Keyboard size={21} />
-              </button>
-              {
+        <form onSubmit={handleSubmit} className="col ">
+          <div className="input-group d-flex justify-content-center">
+            <button type="button" className={`speaking-status btn btn-${isMuted ? 'outline-secondary' : 'secondary '}`} onClick={toggleKeyboardInput} data-tip="Toggle Microphone Input">
+              <div>
+                { isMuted ? <MicMuteFill />
+                  : (
+                    <div className="volume-display">
+                      {/* compute height as fraction of 127 so fill corresponds to volume */}
+                      <div style={{ height: `${responsiveVolumeHeight}px` }} className="meter-component meter-component-1" />
+                      <div style={{ height: `${(volume / 127) * responsiveVolumeHeight}px` }} className="meter-component meter-component-2" />
+                    </div>
+                  ) }
+              </div>
+            </button>
+            <button
+              type="button"
+              className={`btn btn-${showTextInput ? 'secondary' : 'outline-secondary'}`}
+              aria-label="Toggle Keyboard Input"
+              data-tip="Toggle Keyboard Input"
+              data-place="top"
+              onClick={toggleKeyboardInput}
+            >
+              <Keyboard />
+            </button>
+            {
                 showTextInput
                   ? (
                     <input
@@ -201,13 +242,10 @@ const Controls = ({
                   : null
               }
 
-            </div>
-          </form>
-        </div>
-        <div className="col-auto">
-          <button type="button" className="btn btn-outline-secondary" disabled={speechState !== 'speaking'} onClick={dispatchStopSpeaking} data-tip="Stop Speaking">
-            <XOctagonFill size={21} />
-          </button>
+          </div>
+        </form>
+        <div className={`col-auto d-md-block d-${showTextInput ? 'none' : 'block'}`}>
+          <div className={speechState === 'speaking' ? 'interrupt' : 'interrupt interrupt-active'}>{ interruptButton }</div>
         </div>
       </div>
     </div>
@@ -227,13 +265,14 @@ Controls.propTypes = {
   showTranscript: PropTypes.bool.isRequired,
   dispatchToggleShowTranscript: PropTypes.func.isRequired,
   transcript: PropTypes.arrayOf(PropTypes.object).isRequired,
+  videoWidth: PropTypes.number.isRequired,
+  connected: PropTypes.bool.isRequired,
 };
 
 const StyledControls = styled(Controls)`
   display: ${(props) => (props.connected ? '' : 'none')};
 
   .form-control {
-    min-width: 20rem;
     opacity: 0.8;
     &:focus {
       opacity: 1;
@@ -265,7 +304,15 @@ const StyledControls = styled(Controls)`
   }
 
   .speaking-status {
-    width: 47px;
+    min-width: 47px;
+  }
+
+  .interrupt {
+    opacity: 1;
+    transition: opacity 0.1s;
+  }
+  .interrupt-active {
+    opacity: 0;
   }
 
   .volume-display {
@@ -273,30 +320,28 @@ const StyledControls = styled(Controls)`
     top: ${volumeMeterHeight * 0.5}px;
     display: flex;
     align-items: flex-end;
+    justify-content: center;
+    min-width: ${({ videoWidth }) => (videoWidth >= breakpoints.md ? 21 : 32)}px;
     .meter-component {
-      height: ${volumeMeterHeight}px;
-      width: 21px;
+      /* don't use media queries for this since we need to write the value
+      in the body of the component */
+      height: ${({ videoWidth }) => (videoWidth >= breakpoints.md ? largeHeight : smallHeight)}px;
+      background-size: ${({ videoWidth }) => (videoWidth >= breakpoints.md ? largeHeight : smallHeight)}px;
+      background-position: bottom;
       background-repeat: no-repeat;
+      min-width: ${({ videoWidth }) => (videoWidth >= breakpoints.md ? 21 : 28)}px;
       position: absolute;
     }
     .meter-component-1 {
-      background: url(${mic});
-      background-position: top;
-      background-size: ${volumeMeterHeight}px;
+      background-image: url(${mic});
       z-index: 10;
     }
     .meter-component-2 {
-      background: url(${micFill});
-      background-position: bottom;
-      background-size: ${volumeMeterHeight}px;
+      background-image: url(${micFill});
       z-index: 20;
     }
   }
 
-  svg {
-    /* make bootstrap icons vertically centered in buttons */
-    margin-top: -0.1rem;
-  }
 `;
 
 const mapStateToProps = (state) => ({
@@ -308,6 +353,7 @@ const mapStateToProps = (state) => ({
   speechState: state.sm.speechState,
   showTranscript: state.sm.showTranscript,
   transcript: state.sm.transcript,
+  videoWidth: state.sm.videoWidth,
 });
 
 const mapDispatchToProps = (dispatch) => ({

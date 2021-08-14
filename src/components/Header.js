@@ -15,19 +15,27 @@ const Header = ({
 }) => {
   const { pathname } = useLocation();
   return (
-    <div className={className}>
-      <div>
-        {/* left align */}
-        <Link to={logoLink}>
-          <img src={logo} className="logo" alt={logoAltText} />
-        </Link>
-      </div>
-      <div>
-        {/* middle align */}
-      </div>
-      <div>
-        {/* right align */}
-        <button type="button" disabled={!connected} className={`btn btn-outline-danger ${connected && !loading && pathname === '/video' ? '' : 'd-none'}`} onClick={dispatchDisconnect} data-tip="Disconnect" data-place="bottom">Disconnect</button>
+    <div className={`${className}`}>
+      <div className="container">
+        <div className="row">
+          <div className="d-flex align-items-center justify-content-between">
+            <div>
+              {/* left align */}
+              <Link to={logoLink}>
+                <img src={logo} className="logo" alt={logoAltText} />
+              </Link>
+            </div>
+            <div>
+              {/* middle align */}
+            </div>
+            <div>
+              {/* right align */}
+              <button type="button" disabled={!connected} className={`btn btn-outline-danger ${connected && !loading && pathname === '/video' ? '' : 'd-none'}`} onClick={dispatchDisconnect} data-tip="Disconnect" data-place="bottom">
+                Exit
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -40,24 +48,24 @@ Header.propTypes = {
 };
 
 const StyledHeader = styled(Header)`
-  height: ${headerHeight};
-  width: 100%;
-  padding-left: 2rem;
-  padding-right: 2rem;
-
   position: ${transparentHeader ? 'absolute' : 'relative'};
+  top: 0;
   z-index: 100;
-
+  width: 100%;
   background-color: ${transparentHeader ? 'none' : '#FFFFFF'};
 
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 
+  .row {
+    height: ${headerHeight};
+  }
   .logo {
     /* height constrain logo image */
-    height: calc(0.8 * ${headerHeight});
+    height: calc(0.6 * ${headerHeight});
     width: auto;
+    // Medium devices (tablets, 768px and up)
+    @media (min-width: 768px) {
+      height: calc(0.8 * ${headerHeight});
+   }
   }
 `;
 

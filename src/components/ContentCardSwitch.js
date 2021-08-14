@@ -8,6 +8,11 @@ import Image from './ContentCards/Image';
 import Video from './ContentCards/Video';
 import { setActiveCards, animateCamera } from '../store/sm/index';
 
+const returnCardError = (errMsg) => {
+  console.error(errMsg);
+  return <div className="alert alert-danger" key={Math.random()}>{errMsg}</div>;
+};
+
 const ContentCardSwitch = ({
   activeCards, dispatchActiveCards, card, index,
 }) => {
@@ -33,12 +38,9 @@ const ContentCardSwitch = ({
       removeOnClick: false,
     },
   };
+  if (card === undefined) return returnCardError('unknown content card name! did you make a typo in @showCards()?');
   const { component: componentName, data } = card;
-  if (componentName in componentMap === false) {
-    const errMsg = `component ${componentName} not found in componentMap!`;
-    console.error(errMsg);
-    return <div className="alert alert-danger">{errMsg}</div>;
-  }
+  if (componentName in componentMap === false) return returnCardError(`component ${componentName} not found in componentMap!`);
   const { element: Element, removeOnClick } = componentMap[componentName];
 
   let removeElem;

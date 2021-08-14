@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { createRef, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -13,14 +13,34 @@ import {
 import Header from '../components/Header';
 import { transparentHeader, headerHeight } from '../config';
 import CameraPreview from '../components/CameraPreview';
+import breakpoints from '../utils/breakpoints';
 
 const DPChat = ({
-  className, connected, loading, dispatchCreateScene, dispatchDisconnect, error, tosAccepted,
+  className,
+  connected,
+  loading,
+  dispatchCreateScene,
+  dispatchDisconnect,
+  error,
+  tosAccepted,
+  cameraOn,
 }) => {
+  const overlayRef = createRef();
+  const [height, setHeight] = useState('100vh');
+
+  const handleResize = () => {
+    setHeight(window.innerHeight);
+  };
+
   useEffect(() => {
     if (!connected) dispatchCreateScene();
-    // cleanup function, disconnects on component dismount
-    return () => dispatchDisconnect();
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    // cleanup
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      dispatchDisconnect();
+    };
   }, []);
 
   const history = useHistory();
@@ -33,10 +53,24 @@ const DPChat = ({
   return (
     <div className={className}>
       <Header />
-      <div className="video-overlay">
+      <div className="video-overlay" ref={overlayRef} style={{ height }}>
+        {/* top tow */}
         <div className="container d-flex flex-column">
+          {
+              cameraOn
+                ? (
+                  <div className="row d-flex justify-content-end">
+                    <div className="col-auto">
+                      <div className="camera-preview-zeroheight-wrapper">
+                        <CameraPreview />
+                      </div>
+                    </div>
+                  </div>
+                )
+                : <div />
+            }
           {/* middle row */}
-          <div className={loading || connected === false ? 'loading-container' : 'vertical-fit-container col-5'}>
+          <div className="vertical-fit-container col-md-5">
             {
             loading && connected === false
               ? (
@@ -48,21 +82,27 @@ const DPChat = ({
               // connect button
               : <button type="button" className={`btn btn-outline-success ${!connected && !loading ? '' : 'd-none'}`} onClick={dispatchCreateScene} data-tip="Connect">Connect</button>
             }
-            { connected ? <ContentCardDisplay /> : null}
+            {/* on larger devices, show cards next to DP */}
+            <div className="d-md-block d-none">
+              <ContentCardDisplay />
+            </div>
           </div>
           {/* bottom row */}
-          <div className="row">
-            <div className="col text-center">
-              <Captions />
+          <div>
+            {/* on smaller devices, show the cards over the DP, centered */}
+            <div className="row">
+              <div className="d-block d-md-none">
+                <ContentCardDisplay />
+              </div>
             </div>
-          </div>
-          <div className="row">
-            <div className="col">
-              <Controls />
+            <div className="row">
+              <div className="col text-center">
+                <Captions />
+              </div>
             </div>
-            <div className="col-auto">
-              <div className="camera-preview-zeroheight-wrapper">
-                <CameraPreview />
+            <div className="row">
+              <div className="col">
+                <Controls />
               </div>
             </div>
           </div>
@@ -86,6 +126,7 @@ DPChat.propTypes = {
     err: PropTypes.objectOf(PropTypes.string),
   }),
   tosAccepted: PropTypes.bool.isRequired,
+  cameraOn: PropTypes.bool.isRequired,
 };
 
 DPChat.defaultProps = {
@@ -101,23 +142,24 @@ const StyledDPChat = styled(DPChat)`
     z-index: 10;
 
     width: 100%;
-    height: ${transparentHeader ? '100vh' : `calc(100vh - ${headerHeight})`};
     ${transparentHeader ? 'padding' : 'margin'}-top: ${headerHeight};
-    /* overflow: hidden; */
 
     .container {
-      height: calc(100vh - ${headerHeight});
+      height: 100%;
     }
 
     .vertical-fit-container {
       flex: 1 1 auto;
       overflow-y: scroll;
 
-      display: flex;
-      align-items: center;
       scrollbar-width: none; /* Firefox 64 */
       &::-webkit-scrollbar {
         display: none;
+      }
+
+      @media (min-width: ${breakpoints.md}px) {
+        display: flex;
+        align-items: center;
       }
     }
     .loading-container {
@@ -126,9 +168,9 @@ const StyledDPChat = styled(DPChat)`
     }
 
     .camera-preview-zeroheight-wrapper {
-      position: absolute;
+      /* position: absolute;
       bottom: .5rem;
-      right: 1rem;
+      right: 1rem; */
     }
   }
 `;
@@ -138,6 +180,7 @@ const mapStateToProps = ({ sm }) => ({
   loading: sm.loading,
   error: sm.error,
   tosAccepted: sm.tosAccepted,
+  cameraOn: sm.cameraOn,
 });
 
 const mapDispatchToProps = (dispatch) => ({

@@ -148,7 +148,7 @@ Landing.propTypes = {
 const StyledLanding = styled(Landing)`
   .landing-wrapper {
     padding-top: ${headerHeight};
-    min-height: calc(100vh - ${headerHeight});
+    min-height: calc(100vh - ${headerHeight} );
 
     background-image: url(${landingBackground});
     background-color: rgb(247, 232, 219);
@@ -156,9 +156,6 @@ const StyledLanding = styled(Landing)`
     background-repeat: no-repeat;
     background-position: center bottom;
 
-    svg {
-      vertical-align: -0.125em;
-    }
     .container {
       display: flex;
       justify-content: center;

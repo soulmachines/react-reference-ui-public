@@ -24,26 +24,29 @@ class UserMediaStream {
     this.dispatch = dispatch;
   }
 
-  setUserMediaStream = (stream) => {
+  setUserMediaStream = (stream, audioOnly = false) => {
+    this.videoOff = !audioOnly;
     // call passDispatch before this so we have access to store
     if (this.dispatch === null) throw new Error('call passDispatch() before setUserMediaStream()!');
     // store stream data so we can access it later
     if (stream !== null) this.userMediaStream = stream;
-    // send webcam stream dimensions to store
-    const track = stream.getVideoTracks()[0];
-    const { width: cameraWidth, height: cameraHeight } = track.getSettings();
-    this.dispatch(setCameraState({ cameraOn: true, cameraWidth, cameraHeight }));
+    if (audioOnly === false) {
+      // send webcam stream dimensions to store
+      const track = stream.getVideoTracks()[0];
+      const { width: cameraWidth, height: cameraHeight } = track.getSettings();
+      this.dispatch(setCameraState({ cameraOn: true, cameraWidth, cameraHeight }));
+    }
   }
 
   getUserMediaStream = () => this.userMediaStream;
 
-  // NOTE: renders emotional recognition nonfunctional, not reccomended for use as of 7/14/21
+  // NOTE: renders emotional recognition nonfunctional, not recommended for use as of 7/14/21
   // if we toggle video, we need to provide scene w/ the new feed
   enableToggle = (scene) => {
     this.scene = scene;
   }
 
-  // NOTE: renders emotional recognition nonfunctional, not reccomended for use as of 7/14/21
+  // NOTE: renders emotional recognition nonfunctional, not recommended for use as of 7/14/21
   toggleVideo = async () => {
     if (this.scene !== null) {
       const { videoOff, userMediaStream } = this;

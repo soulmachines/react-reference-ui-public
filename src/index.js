@@ -5,12 +5,14 @@ import ReactTooltip from 'react-tooltip';
 import Router from './Router';
 import store from './store';
 import reportWebVitals from './reportWebVitals';
+import GlobalStyle from './globalStyle';
 
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>
       <Router />
     </Provider>
+    <GlobalStyle />
     {/* globally enable react tooltips */}
     <ReactTooltip />
   </React.StrictMode>,

@@ -57,6 +57,7 @@ const StyledTranscript = styled(Transcript)`
   .transcript-list-group {
     flex-shrink: 1;
     overflow-y: scroll;
+    scrollbar-width: none;
     &::-webkit-scrollbar {
       display: none;
     }

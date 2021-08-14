@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
@@ -6,6 +6,7 @@ import { setActiveCards, animateCamera } from '../store/sm/index';
 import { calculateCameraPosition } from '../utils/camera';
 import Transcript from './ContentCards/Transcript';
 import ContentCardSwitch from './ContentCardSwitch';
+import breakpoints from '../utils/breakpoints';
 
 const ContentCardDisplay = ({
   activeCards, dispatchAnimateCamera, videoWidth, videoHeight, showTranscript, className,
@@ -17,9 +18,20 @@ const ContentCardDisplay = ({
     </div>
   ));
 
-  if (activeCards.length > 0 || showTranscript === true) {
-    dispatchAnimateCamera(calculateCameraPosition(videoWidth, videoHeight, 0.7));
-  } else dispatchAnimateCamera(calculateCameraPosition(videoWidth, videoHeight, 0.5));
+  const animateCameraToFitCards = () => {
+    if ((activeCards.length > 0 || showTranscript === true) && videoWidth >= breakpoints.md) {
+      dispatchAnimateCamera(calculateCameraPosition(videoWidth, videoHeight, 0.7));
+    } else dispatchAnimateCamera(calculateCameraPosition(videoWidth, videoHeight, 0.5));
+  };
+
+  useEffect(() => {
+    animateCameraToFitCards();
+  }, [showTranscript, activeCards]);
+
+  useEffect(() => {
+    window.addEventListener('resize', animateCameraToFitCards);
+    return () => window.removeEventListener('resize', animateCameraToFitCards);
+  });
 
   return (
     <div className={className}>
@@ -38,7 +50,27 @@ ContentCardDisplay.propTypes = {
 };
 
 const StyledContentCardDisplay = styled(ContentCardDisplay)`
-  max-height: 100%;
+  max-height: 10rem;
+  overflow-y: scroll;
+  margin-bottom: 0.9rem;
+
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* show translucent background if card showing on small device */
+  ${({ activeCards, showTranscript }) => (activeCards.length > 0 || showTranscript === true
+    ? `background: rgba(255, 255, 255, 0.3);
+    outline: 0.5rem solid rgba(255, 255, 255, 0.3);`
+    : '')}
+
+  @media(min-width: ${breakpoints.md}px) {
+    max-height: 100%;
+    background: none;
+    outline: none;
+    margin-bottom: auto;
+  }
   width: 100%;
 `;
 
