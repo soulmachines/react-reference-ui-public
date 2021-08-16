@@ -12,3 +12,8 @@ export const logoLink = '/';
 // background image is positioned in a way that is best for pictures of the persona's face.
 // adjust spacing as necessary in Landing.js for different images
 export const landingBackground = aria;
+
+// if set to true, on disconnect, the app will redirect to the specified route.
+// if false, it will redirect to /
+export const disconnectPage = true;
+export const disconnectRoute = '/feedback';
