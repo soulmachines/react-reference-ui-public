@@ -11,13 +11,16 @@ import {
   createScene, disconnect,
 } from '../store/sm/index';
 import Header from '../components/Header';
-import { transparentHeader, headerHeight } from '../config';
+import {
+  transparentHeader, headerHeight, disconnectPage, disconnectRoute,
+} from '../config';
 import CameraPreview from '../components/CameraPreview';
 import breakpoints from '../utils/breakpoints';
 
 const DPChat = ({
   className,
   connected,
+  disconnected,
   loading,
   dispatchCreateScene,
   dispatchDisconnect,
@@ -48,7 +51,12 @@ const DPChat = ({
     if (error !== null) history.push('/loading?error=true');
   }, [error]);
   // if TOS hasn't been accepted, send to /
-  if (tosAccepted === false) history.push('/');
+  if (tosAccepted === false && disconnected === false) history.push('/');
+  if (disconnected === true) {
+    if (disconnectPage) {
+      history.push(disconnectRoute);
+    } else history.push('/');
+  }
 
   return (
     <div className={className}>
@@ -120,6 +128,7 @@ DPChat.propTypes = {
   dispatchCreateScene: PropTypes.func.isRequired,
   dispatchDisconnect: PropTypes.func.isRequired,
   connected: PropTypes.bool.isRequired,
+  disconnected: PropTypes.bool.isRequired,
   loading: PropTypes.bool.isRequired,
   error: PropTypes.shape({
     msg: PropTypes.string,
@@ -177,6 +186,7 @@ const StyledDPChat = styled(DPChat)`
 
 const mapStateToProps = ({ sm }) => ({
   connected: sm.connected,
+  disconnected: sm.disconnected,
   loading: sm.loading,
   error: sm.error,
   tosAccepted: sm.tosAccepted,

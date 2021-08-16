@@ -13,6 +13,7 @@ const CAMERA_ID = 'CloseUp';
 const initialState = {
   tosAccepted: false,
   connected: false,
+  disconnected: false,
   loading: false,
   error: null,
   isMuted: false,
@@ -521,6 +522,7 @@ const smSlice = createSlice({
       return {
         // completely reset SM state on disconnect, except for errors
         ...initialState,
+        disconnected: true,
         error,
       };
     },
@@ -529,6 +531,7 @@ const smSlice = createSlice({
     [createScene.pending]: (state) => ({
       ...state,
       loading: true,
+      disconnected: false,
       error: null,
     }),
     [createScene.fulfilled]: (state) => ({

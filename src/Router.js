@@ -8,6 +8,7 @@ import {
 import DPChat from './routes/DPChat';
 import Landing from './routes/Landing';
 import Loading from './routes/Loading';
+import Feedback from './routes/Feedback';
 
 const App = () => (
   <Router>
@@ -17,6 +18,9 @@ const App = () => (
       </Route>
       <Route path="/video">
         <DPChat />
+      </Route>
+      <Route path="/feedback">
+        <Feedback />
       </Route>
       {/* / goes at the bottom */}
       <Route path="/">
