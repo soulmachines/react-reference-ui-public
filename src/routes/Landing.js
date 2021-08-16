@@ -144,7 +144,7 @@ const Landing = ({ className, dispatchAcceptTOS }) => (
               </div>
             </div>
           </div>
-          <Link to="loading" className="btn btn-success btn-lg action-btn" onChange={() => dispatchAcceptTOS(true)}>
+          <Link to="loading" className="btn btn-success btn-lg action-btn" onClick={() => dispatchAcceptTOS(true)}>
             I accept Privacy Notice and EULA
             {' '}
             <ArrowRightCircleFill />
