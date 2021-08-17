@@ -29,9 +29,15 @@ const Loading = ({
     if (!connected && !loading && query.get('error') !== true) dispatchCreateScene();
     setDisplayedPage(displayedPage + 1);
   };
+
+  const createSceneIfNotStarted = () => {
+    if (!loading) dispatchCreateScene();
+  };
   useEffect(() => {
     if (window.innerWidth > breakpoints.md) dispatchCreateScene();
-  });
+    window.addEventListener('resize', createSceneIfNotStarted);
+    return () => window.removeEventListener('resize', createSceneIfNotStarted);
+  }, []);
 
   // use to reload page if user unblocks perms and presses "try again"
   const history = useHistory();
@@ -168,8 +174,9 @@ const Loading = ({
   return (
     <div className={className} ref={overlayRef} style={{ minHeight: height }}>
       <Header />
-      <div className="container loading-wrapper">
-        {
+      <div className="container">
+        <div className="loading-wrapper">
+          {
           !error
             ? (
               <div>
@@ -182,7 +189,6 @@ const Loading = ({
                 <div className="d-md-block d-none">
                   <div className="row">
                     <div className="card-group">
-                      {/* { pages.map((p, i) => <div className="col" key={i}>{p}</div>) } */}
                       {pages}
                     </div>
                   </div>
@@ -254,6 +260,7 @@ const Loading = ({
               </div>
             )
         }
+        </div>
       </div>
     </div>
   );
@@ -281,6 +288,7 @@ const StyledLoading = styled(Loading)`
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center bottom;
+  width: 100vw;
 
   button.link-primary {
     background: none;
@@ -294,6 +302,7 @@ const StyledLoading = styled(Loading)`
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    margin: 0;
 
     .loading-text {
       font-size: 2rem;
