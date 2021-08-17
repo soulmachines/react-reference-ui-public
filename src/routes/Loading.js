@@ -46,7 +46,7 @@ const Loading = ({
   if (tosAccepted === false) history.push('/');
 
   const proceedButton = (
-    <Link to="/video" className={`btn  btn-lg ${connected ? 'btn-success' : 'btn-light disabled'}`}>
+    <Link to="/video" className={`btn  btn-lg ${connected ? 'btn-success' : 'btn-dark disabled'}`}>
       {
           connected
             ? (
