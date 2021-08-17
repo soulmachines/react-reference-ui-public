@@ -12,7 +12,7 @@ import { headerHeight, landingBackground } from '../config';
 import { setTOS } from '../store/sm/index';
 import eula from '../eula';
 
-const Landing = ({ className, dispatchAcceptTOS, tosAccepted }) => (
+const Landing = ({ className, dispatchAcceptTOS }) => (
   <div className={className}>
     <Header />
     <div className="landing-wrapper">
@@ -144,17 +144,8 @@ const Landing = ({ className, dispatchAcceptTOS, tosAccepted }) => (
               </div>
             </div>
           </div>
-          <button
-            className="btn btn-success btn-lg action-btn mb-1"
-            onClick={() => dispatchAcceptTOS(!tosAccepted)}
-            type="button"
-          >
+          <Link to="loading" className="btn btn-success btn-lg action-btn" onClick={() => dispatchAcceptTOS(true)}>
             I accept Privacy Notice and EULA
-            {' '}
-            <input className="form-check-input" type="checkbox" id="flexCheckChecked" checked={tosAccepted} onChange={() => dispatchAcceptTOS(!tosAccepted)} />
-          </button>
-          <Link to="loading" className={`btn btn-success btn-lg action-btn ${tosAccepted ? '' : 'disabled'}`} aria-disabled={!tosAccepted}>
-            Proceed
             {' '}
             <ArrowRightCircleFill />
           </Link>
@@ -167,7 +158,6 @@ const Landing = ({ className, dispatchAcceptTOS, tosAccepted }) => (
 Landing.propTypes = {
   className: PropTypes.string.isRequired,
   dispatchAcceptTOS: PropTypes.func.isRequired,
-  tosAccepted: PropTypes.bool.isRequired,
 };
 
 const StyledLanding = styled(Landing)`
@@ -205,11 +195,8 @@ const StyledLanding = styled(Landing)`
     }
   }
 `;
-const mapStateToProps = ({ sm }) => ({
-  tosAccepted: sm.tosAccepted,
-});
 const mapDispatchToProps = (dispatch) => ({
   dispatchAcceptTOS: (accepted) => dispatch(setTOS({ accepted })),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(StyledLanding);
+export default connect(null, mapDispatchToProps)(StyledLanding);
