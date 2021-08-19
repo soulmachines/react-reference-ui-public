@@ -14,7 +14,7 @@ const returnCardError = (errMsg) => {
 };
 
 const ContentCardSwitch = ({
-  activeCards, dispatchActiveCards, card, index,
+  activeCards, dispatchActiveCards, card, index, inTranscript,
 }) => {
   const componentMap = {
     options: {
@@ -66,7 +66,7 @@ const ContentCardSwitch = ({
     >
       {/* elements that are interactive but shouldn't be removed immediately
          can use triggerRemoval to have the card removed */}
-      <Element data={data} triggerRemoval={removeElem} />
+      <Element data={data} triggerRemoval={removeElem} inTranscript={inTranscript} />
     </div>
   );
   return elem;
@@ -79,6 +79,11 @@ ContentCardSwitch.propTypes = {
   videoWidth: PropTypes.number.isRequired,
   videoHeight: PropTypes.number.isRequired,
   showTranscript: PropTypes.bool.isRequired,
+  inTranscript: PropTypes.bool,
+};
+
+ContentCardSwitch.defaultProps = {
+  inTranscript: false,
 };
 
 const mapStateToProps = ({ sm }) => ({

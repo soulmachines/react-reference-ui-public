@@ -12,6 +12,7 @@ const Video = ({
   dispatchMute,
   dispatchTextMessage,
   dispatchHideCards,
+  inTranscript,
 }) => {
   const { videoId, autoplay } = data;
   const containerRef = React.createRef();
@@ -29,14 +30,18 @@ const Video = ({
   useEffect(() => {
     // use containerRef to size video embed to elem dimensions
     // assume 16:9 aspect ratio for video
-    const { clientWidth: width } = containerRef.current;
-    const computedWidth = width * 0.9;
-    const computedHeight = computedWidth / (16 / 9);
+    const { clientWidth: width, clientHeight: height } = containerRef.current;
+    let computedWidth = width * 0.9;
+    let computedHeight = computedWidth / (16 / 9);
+    if (computedHeight > (0.9 * height)) {
+      computedHeight = 0.8 * height;
+      computedWidth = (16 / 9) * computedHeight;
+    }
     const opts = {
       width: computedWidth,
       height: computedHeight,
       playerVars: {
-        autoplay: !!autoplay,
+        autoplay: inTranscript ? false : !!autoplay,
         mute: 0,
       },
     };
@@ -52,6 +57,8 @@ const Video = ({
     setYTElem(elem);
     return () => setYTElem(null);
   }, []);
+
+  if (inTranscript === true) return <div ref={containerRef}>{YTElem}</div>;
 
   return (
     <div ref={containerRef} className={`${className} ${fadeOut === true ? 'fade' : ''}`} key={videoId}>
@@ -82,6 +89,11 @@ Video.propTypes = {
   dispatchMute: PropTypes.func.isRequired,
   dispatchTextMessage: PropTypes.func.isRequired,
   dispatchHideCards: PropTypes.func.isRequired,
+  inTranscript: PropTypes.bool,
+};
+
+Video.defaultProps = {
+  inTranscript: false,
 };
 
 const mapStateToProps = ({ sm }) => ({
