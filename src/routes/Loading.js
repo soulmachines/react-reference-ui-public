@@ -252,7 +252,7 @@ const Loading = ({
                           However, if you prefer, you can also interact with me by typing only.
                         </p>
                         <div className="d-grid">
-                          <button type="button" className="btn btn-outline-primary">
+                          <button type="button" className="btn btn-outline-primary" onClick={() => dispatchCreateScene(true)}>
                             I prefer to type
                           </button>
                         </div>
@@ -337,7 +337,7 @@ const mapStateToProps = ({ sm }) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  dispatchCreateScene: () => dispatch(createScene()),
+  dispatchCreateScene: (typingOnly = false) => dispatch(createScene(typingOnly)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(StyledLoading);

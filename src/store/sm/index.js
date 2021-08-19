@@ -17,6 +17,7 @@ const initialState = {
   loading: false,
   error: null,
   isMuted: false,
+  typingOnly: false,
   videoHeight: window.innerHeight,
   videoWidth: window.innerWidth,
   transcript: [],
@@ -129,18 +130,21 @@ export const disconnect = createAsyncThunk('sm/disconnect', async (args, thunk) 
   }, 500);
 });
 
-export const createScene = createAsyncThunk('sm/createScene', async (audioOnly = false, thunk) => {
+export const createScene = createAsyncThunk('sm/createScene', async (typingOnly = false, thunk) => {
   /* CREATE SCENE */
-  // request permissions from user
-  const { microphone, microphoneAndCamera } = smwebsdk.userMedia;
-  const requestedUserMedia = audioOnly ? microphone : microphoneAndCamera;
-  // create instance of Scene and ask for webcam/mic permissions
+  // request permissions from user and create instance of Scene and ask for webcam/mic permissions
+  const { microphone, microphoneAndCamera, none } = smwebsdk.userMedia;
   try {
     scene = new smwebsdk.Scene(
       proxyVideo,
+      // audio only toggle, but this is set automatically if user denies camera permissions.
+      // change value if your application needs to have an explicit audio-only mode.
       false,
-      requestedUserMedia,
-      microphone,
+      // requested permissions
+      typingOnly ? none : microphoneAndCamera,
+      // if user denies camera and mic permissions, smwebsdk will request mic only for us
+      // required permissions
+      typingOnly ? none : microphone,
     );
   } catch (e) {
     console.error(e);
@@ -378,8 +382,11 @@ export const createScene = createAsyncThunk('sm/createScene', async (audioOnly =
     // we use an external proxy for video streams
     const { userMediaStream: stream } = scene.session();
     // detect if we're running audio-only
-    const videoEnabled = stream !== undefined && stream.getVideoTracks().length > 0;
+    const videoEnabled = typingOnly === false
+      && stream !== undefined
+      && stream.getVideoTracks().length > 0;
     if (videoEnabled === false) thunk.dispatch(actions.setCameraState({ cameraOn: false }));
+    if (typingOnly === true) thunk.dispatch(actions.setTypingOnly());
     // pass dispatch before calling setUserMediaStream so proxy can send dimensions to store
     mediaStreamProxy.passDispatch(thunk.dispatch);
     mediaStreamProxy.setUserMediaStream(stream, videoEnabled);
@@ -423,6 +430,10 @@ const smSlice = createSlice({
     toggleShowTranscript: (state) => ({
       ...state,
       showTranscript: !state.showTranscript,
+    }),
+    setTypingOnly: (state) => ({
+      ...state,
+      typingOnly: true,
     }),
     setCameraState: (state, { payload }) => ({
       ...state,
