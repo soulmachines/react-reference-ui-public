@@ -34,7 +34,7 @@ const Loading = ({
     if (!loading) dispatchCreateScene();
   };
   useEffect(() => {
-    if (window.innerWidth > breakpoints.md) dispatchCreateScene();
+    if (window.innerWidth >= breakpoints.md) dispatchCreateScene();
     window.addEventListener('resize', createSceneIfNotStarted);
     return () => window.removeEventListener('resize', createSceneIfNotStarted);
   }, []);
@@ -308,7 +308,7 @@ const StyledLoading = styled(Loading)`
   }
 
   .loading-wrapper {
-    padding-top: calc(${headerHeight} + 2rem);
+    padding-top: ${headerHeight};
     min-height: calc(100vh - ${headerHeight});
     display: flex;
     flex-direction: column;
