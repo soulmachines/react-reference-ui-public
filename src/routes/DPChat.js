@@ -38,23 +38,33 @@ const DPChat = ({
     else setLargeViewport(false);
   };
 
+  const cleanup = () => {
+    console.log('cleanup function invoked!');
+    window.removeEventListener('resize', handleResize);
+    dispatchDisconnect();
+  };
+
   useEffect(() => {
-    if (!connected) dispatchCreateScene();
     handleResize();
     window.addEventListener('resize', handleResize);
-    // cleanup
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      dispatchDisconnect();
-    };
+    // run cleanup on unmount
+    return () => cleanup();
   }, []);
+
+  window.onbeforeunload = () => {
+    console.log('cleaning up');
+    cleanup();
+  };
 
   const history = useHistory();
   useEffect(() => {
     if (error !== null) history.push('/loading?error=true');
   }, [error]);
   // if TOS hasn't been accepted, send to /
-  if (tosAccepted === false && disconnected === false) history.push('/');
+  if (tosAccepted === false && disconnected === false) {
+    cleanup();
+    history.push('/');
+  }
   if (disconnected === true) {
     if (disconnectPage) {
       history.push(disconnectRoute);
