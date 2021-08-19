@@ -34,7 +34,7 @@ const Loading = ({
     if (!loading) dispatchCreateScene();
   };
   useEffect(() => {
-    if (window.innerWidth > breakpoints.md) dispatchCreateScene();
+    if (window.innerWidth >= breakpoints.md) dispatchCreateScene();
     window.addEventListener('resize', createSceneIfNotStarted);
     return () => window.removeEventListener('resize', createSceneIfNotStarted);
   }, []);
