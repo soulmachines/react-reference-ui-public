@@ -61,7 +61,6 @@ const DPChat = ({
     } else history.push('/');
   }
 
-
   return (
     <div className={className}>
       <Header />
