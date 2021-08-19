@@ -12,7 +12,7 @@ import {
 } from '../store/sm/index';
 import Header from '../components/Header';
 import {
-  transparentHeader, headerHeight, disconnectPage, disconnectRoute,
+  headerHeight, disconnectPage, disconnectRoute,
 } from '../config';
 import CameraPreview from '../components/CameraPreview';
 import breakpoints from '../utils/breakpoints';
