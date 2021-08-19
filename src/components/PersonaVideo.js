@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import * as actions from '../store/sm';
 import proxyVideo from '../proxyVideo';
-import { transparentHeader, headerHeight } from '../config';
 
 const PersonaVideo = ({
   loading, connected, setVideoDimensions, className,
@@ -35,13 +34,13 @@ const PersonaVideo = ({
   // persona video feed is routed through a proxy <video> tag,
   // we need to get the src data from that element to use here
   useEffect(() => {
+    handleResize();
+    window.addEventListener('resize', handleResize);
     if (connected) {
       if (!videoDisplayed) {
         videoRef.current.srcObject = proxyVideo.srcObject;
         setVideoDisplayed(true);
       }
-      handleResize();
-      window.addEventListener('resize', handleResize);
     }
     // when component dismounts, remove resize listener
     return () => window.removeEventListener('resize', handleResize);
@@ -84,7 +83,6 @@ PersonaVideo.propTypes = {
 const StyledPersonaVideo = styled(PersonaVideo)`
   /* if you need the persona video to be different than the window dimensions, change these values */
   width: 100vw;
-  height: ${transparentHeader ? '100vh' : `calc(100vh - ${headerHeight})`};
 
   position: relative;
   z-index: 0;
