@@ -63,8 +63,8 @@ const DPChat = ({
 
   return (
     <div className={className}>
-      <Header />
       <div className="video-overlay" ref={overlayRef} style={{ height }}>
+        <Header />
         {/* top tow */}
         <div className="container d-flex flex-column">
           {
@@ -72,7 +72,7 @@ const DPChat = ({
                 ? (
                   <div className="row d-flex justify-content-end">
                     <div className="col-auto">
-                      <div className="camera-preview-zeroheight-wrapper">
+                      <div className="camera-preview">
                         <CameraPreview />
                       </div>
                     </div>
@@ -154,10 +154,9 @@ const StyledDPChat = styled(DPChat)`
     z-index: 10;
 
     width: 100%;
-    ${transparentHeader ? 'padding' : 'margin'}-top: ${headerHeight};
 
     .container {
-      height: 100%;
+      height: calc(100% - ${headerHeight});
     }
 
     .vertical-fit-container {
@@ -179,11 +178,6 @@ const StyledDPChat = styled(DPChat)`
       text-align: center;
     }
 
-    .camera-preview-zeroheight-wrapper {
-      /* position: absolute;
-      bottom: .5rem;
-      right: 1rem; */
-    }
   }
 `;
 
