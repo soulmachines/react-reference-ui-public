@@ -3,7 +3,10 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import {
   ArrowRightCircleFill,
-  CameraVideo, CheckSquare, GraphUp, FileEarmarkMedical
+  CameraVideo,
+  CheckSquare,
+  GraphUp,
+  FileEarmarkMedical,
 } from 'react-bootstrap-icons';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
