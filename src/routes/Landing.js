@@ -3,20 +3,21 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import {
   ArrowRightCircleFill,
-  CameraVideo, CheckSquare, GraphUp,
+  CameraVideo, CheckSquare, GraphUp, FileEarmarkMedical
 } from 'react-bootstrap-icons';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import Header from '../components/Header';
 import { headerHeight, landingBackground } from '../config';
 import { setTOS } from '../store/sm/index';
+import eula from '../eula';
 
 const Landing = ({ className, dispatchAcceptTOS }) => (
   <div className={className}>
     <div className="landing-wrapper">
       <Header />
       <div className="container landing-container">
-        <div className="card col-lg-6 p-3">
+        <div className="card col-lg-6 p-3 mb-2">
           <div className="card-body">
             <h2 className="header-with-bottom-border">
               <CheckSquare />
@@ -24,8 +25,34 @@ const Landing = ({ className, dispatchAcceptTOS }) => (
               First things first
             </h2>
 
-            <b>Before we get started:</b>
+            <h5>Before we get started:</h5>
             <div className="mb-3">
+              <div className="mx-4 mt-2">
+                <FileEarmarkMedical />
+                {' '}
+                <a href="https://www.soulmachines.com/privacy-policy/" target="_blank" rel="noreferrer">Privacy Policy</a>
+              </div>
+              {/* EULA modal */}
+              <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div className="modal-dialog modal-xl">
+                  <div className="modal-content">
+                    <div className="modal-header">
+                      <h5 className="modal-title" id="exampleModalLabel">End User License Agreement</h5>
+                      <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+                    </div>
+                    <div className="modal-body">
+                      {eula}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="mx-4">
+                <FileEarmarkMedical />
+                {' '}
+                <button type="button" className="link-primary link-button" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                  EULA
+                </button>
+              </div>
               <div className="mx-4">
                 <i className="bi bi-camera-video" />
                 <CameraVideo />
