@@ -22,7 +22,7 @@ const Header = ({
             <div>
               {/* left align */}
               <Link to={logoLink}>
-                <img src={logo} className="logo" alt={logoAltText} />
+                <img src={logo} className="logo position-relative" alt={logoAltText} />
               </Link>
             </div>
             <div>
@@ -50,10 +50,13 @@ Header.propTypes = {
 const StyledHeader = styled(Header)`
   position: ${transparentHeader ? 'absolute' : 'relative'};
   top: 0;
-  z-index: 100;
+  z-index: 10;
   width: 100%;
   background-color: ${transparentHeader ? 'none' : '#FFFFFF'};
 
+  .position-relative {
+    position: relative;
+  }
 
   .row {
     height: ${headerHeight};
