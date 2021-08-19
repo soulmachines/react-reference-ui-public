@@ -30,9 +30,12 @@ const DPChat = ({
 }) => {
   const overlayRef = createRef();
   const [height, setHeight] = useState('100vh');
+  const [largeViewport, setLargeViewport] = useState(false);
 
   const handleResize = () => {
     setHeight(window.innerHeight);
+    if (window.innerWidth >= breakpoints.md) setLargeViewport(true);
+    else setLargeViewport(false);
   };
 
   useEffect(() => {
@@ -57,6 +60,7 @@ const DPChat = ({
       history.push(disconnectRoute);
     } else history.push('/');
   }
+
 
   return (
     <div className={className}>
@@ -92,7 +96,7 @@ const DPChat = ({
             }
             {/* on larger devices, show cards next to DP */}
             <div className="d-md-block d-none">
-              <ContentCardDisplay />
+              {largeViewport === true ? <ContentCardDisplay /> : null}
             </div>
           </div>
           {/* bottom row */}
@@ -100,7 +104,7 @@ const DPChat = ({
             {/* on smaller devices, show the cards over the DP, centered */}
             <div className="row">
               <div className="d-block d-md-none">
-                <ContentCardDisplay />
+                {largeViewport === false ? <ContentCardDisplay /> : null}
               </div>
             </div>
             <div className="row">
