@@ -9,7 +9,16 @@ const Transcript = ({ className, transcript }) => {
     source, text, card, timestamp,
   }) => {
     // we don't want to wrap cards in a bubble, return as is w/ a key added
-    if (card) return <ContentCardSwitch card={card} index={null} key={timestamp} />;
+    if (card) {
+      return (
+        <ContentCardSwitch
+          card={card}
+          index={null}
+          key={timestamp}
+          inTranscript
+        />
+      );
+    }
     return (
       <div key={timestamp} className={`transcript-entry ${source === 'user' ? 'transcript-entry-user' : ''}`}>
         <div className="transcript-entry-content">
