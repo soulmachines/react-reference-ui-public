@@ -30,9 +30,13 @@ const Video = ({
   useEffect(() => {
     // use containerRef to size video embed to elem dimensions
     // assume 16:9 aspect ratio for video
-    const { clientWidth: width } = containerRef.current;
-    const computedWidth = width * 0.9;
-    const computedHeight = computedWidth / (16 / 9);
+    const { clientWidth: width, clientHeight: height } = containerRef.current;
+    let computedWidth = width * 0.9;
+    let computedHeight = computedWidth / (16 / 9);
+    if (computedHeight > (0.9 * height)) {
+      computedHeight = 0.8 * height;
+      computedWidth = (16 / 9) * computedHeight;
+    }
     const opts = {
       width: computedWidth,
       height: computedHeight,
