@@ -114,8 +114,8 @@ export const mute = createAsyncThunk('sm/mute', async (specifiedMuteState, thunk
     // if arg is a boolean use it, otherwise just toggle.
     // sometimes events from button clicks are passed in, so we need to filter for that
     const muteState = typeof specifiedMuteState === 'boolean' ? specifiedMuteState : !isMuted;
-    const command = `${muteState ? 'stop' : 'start'}Recognize`;
-    scene.sendRequest(command, {});
+    if (muteState === true) scene.stopRecognize();
+    else scene.startRecognize();
     thunk.dispatch(actions.setMute({ isMuted: muteState }));
   } else { console.warn('muting not possible, no active scene!'); }
 });
@@ -328,6 +328,16 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
       // left unimplemented for now since there is only one named camera (closeUp)
       case ('animateToNamedCamera'): {
         // console.warn('animateToNamedCamera handler not yet implemented', message);
+        break;
+      }
+
+      case ('stopRecognize'): {
+        console.log('stopRecognize', message);
+        break;
+      }
+
+      case ('startRecognize'): {
+        console.log('startRecognize', message);
         break;
       }
 
