@@ -43,10 +43,10 @@ const DPChat = ({
     handleResize();
     window.addEventListener('resize', handleResize);
     // cleanup
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      dispatchDisconnect();
-    };
+    // return () => {
+    //   window.removeEventListener('resize', handleResize);
+    //   dispatchDisconnect();
+    // };
   }, []);
 
   const history = useHistory();
@@ -61,19 +61,18 @@ const DPChat = ({
     } else history.push('/');
   }
 
-
   return (
     <div className={className}>
-      <Header />
       <div className="video-overlay" ref={overlayRef} style={{ height }}>
-        {/* top tow */}
+        <Header />
+        {/* top row */}
         <div className="container d-flex flex-column">
           {
               cameraOn
                 ? (
                   <div className="row d-flex justify-content-end">
                     <div className="col-auto">
-                      <div className="camera-preview-zeroheight-wrapper">
+                      <div className="camera-preview">
                         <CameraPreview />
                       </div>
                     </div>
@@ -155,10 +154,9 @@ const StyledDPChat = styled(DPChat)`
     z-index: 10;
 
     width: 100%;
-    ${transparentHeader ? 'padding' : 'margin'}-top: ${headerHeight};
 
     .container {
-      height: 100%;
+      height: calc(100% - ${headerHeight});
     }
 
     .vertical-fit-container {
@@ -180,11 +178,6 @@ const StyledDPChat = styled(DPChat)`
       text-align: center;
     }
 
-    .camera-preview-zeroheight-wrapper {
-      /* position: absolute;
-      bottom: .5rem;
-      right: 1rem; */
-    }
   }
 `;
 

@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import Header from '../components/Header';
+import { headerHeight } from '../config';
 
 const Feedback = ({ className }) => {
   const [display, setDisplay] = useState(null);
   return (
     <div className={className}>
-      <div className="container d-flex justify-content-center align-items-center">
+      <Header />
+      <div className="container feedback-container d-flex justify-content-center align-items-center">
         <div className="card">
           <div className="card-body">
             <div className="row">
@@ -44,7 +47,7 @@ Feedback.propTypes = {
   className: PropTypes.string.isRequired,
 };
 export default styled(Feedback)`
-  .container {
-    height: 100vh;
+  .feedback-container {
+    height: calc(100vh - ${headerHeight});
   }
 `;

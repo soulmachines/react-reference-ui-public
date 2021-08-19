@@ -33,12 +33,13 @@ const Controls = ({
   transcript,
   videoWidth,
   connected,
+  typingOnly,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
   const [volume, setVolume] = useState(0);
   const [hideInputDisplay, setHideInputDisplay] = useState(true);
-  const [showTextInput, setShowTextInput] = useState(isMuted);
+  const [showTextInput, setShowTextInput] = useState(isMuted || typingOnly);
   const isLarger = videoWidth >= breakpoints.md ? largeHeight : smallHeight;
   const [responsiveVolumeHeight, setResponsiveVolumeHeight] = useState(isLarger);
 
@@ -68,7 +69,7 @@ const Controls = ({
   }, [userSpeaking, lastUserUtterance]);
 
   useEffect(async () => {
-    if (connected) {
+    if (connected && typingOnly === false) {
       // credit: https://stackoverflow.com/a/64650826
       let volumeCallback = null;
       let audioStream;
@@ -208,18 +209,25 @@ const Controls = ({
         </div>
         <form onSubmit={handleSubmit} className="col ">
           <div className="input-group d-flex justify-content-center">
-            <button type="button" className={`speaking-status btn btn-${isMuted ? 'outline-secondary' : 'secondary '}`} onClick={toggleKeyboardInput} data-tip="Toggle Microphone Input">
-              <div>
-                { isMuted ? <MicMuteFill />
-                  : (
-                    <div className="volume-display">
-                      {/* compute height as fraction of 127 so fill corresponds to volume */}
-                      <div style={{ height: `${responsiveVolumeHeight}px` }} className="meter-component meter-component-1" />
-                      <div style={{ height: `${(volume / 127) * responsiveVolumeHeight}px` }} className="meter-component meter-component-2" />
+            {
+              // hide mic indicator when in typing-only mode
+              typingOnly
+                ? null
+                : (
+                  <button type="button" className={`speaking-status btn btn-${isMuted ? 'outline-secondary' : 'secondary '}`} onClick={toggleKeyboardInput} data-tip="Toggle Microphone Input">
+                    <div>
+                      { isMuted ? <MicMuteFill />
+                        : (
+                          <div className="volume-display">
+                            {/* compute height as fraction of 127 so fill corresponds to volume */}
+                            <div style={{ height: `${responsiveVolumeHeight}px` }} className="meter-component meter-component-1" />
+                            <div style={{ height: `${(volume / 127) * responsiveVolumeHeight}px` }} className="meter-component meter-component-2" />
+                          </div>
+                        ) }
                     </div>
-                  ) }
-              </div>
-            </button>
+                  </button>
+                )
+}
             <button
               type="button"
               className={`btn btn-${showTextInput ? 'secondary' : 'outline-secondary'}`}
@@ -272,6 +280,7 @@ Controls.propTypes = {
   transcript: PropTypes.arrayOf(PropTypes.object).isRequired,
   videoWidth: PropTypes.number.isRequired,
   connected: PropTypes.bool.isRequired,
+  typingOnly: PropTypes.bool.isRequired,
 };
 
 const StyledControls = styled(Controls)`
@@ -362,6 +371,7 @@ const mapStateToProps = (state) => ({
   showTranscript: state.sm.showTranscript,
   transcript: state.sm.transcript,
   videoWidth: state.sm.videoWidth,
+  typingOnly: state.sm.typingOnly,
 });
 
 const mapDispatchToProps = (dispatch) => ({

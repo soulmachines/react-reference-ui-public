@@ -48,9 +48,9 @@ Header.propTypes = {
 };
 
 const StyledHeader = styled(Header)`
-  position: ${transparentHeader ? 'absolute' : 'relative'};
+  position: relative;
+  z-index: 20;
   top: 0;
-  z-index: 10;
   width: 100%;
   background-color: ${transparentHeader ? 'none' : '#FFFFFF'};
 

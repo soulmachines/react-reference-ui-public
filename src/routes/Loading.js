@@ -239,12 +239,23 @@ const Loading = ({
                           Permissions Denied
                         </h4>
                         <hr />
-                        Looks like you’ve denied us access to your camera and microphone.
-                        If you&apos;d prefer, you can only enable the microphone.
-                        You can always change permissions in your browser settings and
-                        {' '}
-                        <button onClick={() => history.go(0)} type="button" className="link-primary">try again</button>
-                        .
+                        <p>
+                          Looks like you’ve denied us access to your camera and microphone.
+                          If you&apos;d prefer, you can only enable the microphone.
+                          You can always change permissions in your browser settings and try again.
+                        </p>
+                        <div className="d-grid mb-3">
+                          <button onClick={() => history.go(0)} type="button" className="btn btn-primary">Reload</button>
+                        </div>
+                        <p>
+                          We can have the best conversation when I can see and hear you.
+                          However, if you prefer, you can also interact with me by typing only.
+                        </p>
+                        <div className="d-grid">
+                          <button type="button" className="btn btn-outline-primary" onClick={() => dispatchCreateScene(true)}>
+                            I prefer to type
+                          </button>
+                        </div>
                       </div>
                     )
                     : (
@@ -326,7 +337,7 @@ const mapStateToProps = ({ sm }) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  dispatchCreateScene: () => dispatch(createScene()),
+  dispatchCreateScene: (typingOnly = false) => dispatch(createScene(typingOnly)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(StyledLoading);

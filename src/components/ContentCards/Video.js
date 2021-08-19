@@ -5,7 +5,6 @@ import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { mute, sendTextMessage, setActiveCards } from '../../store/sm/index';
 
-
 const Video = ({
   data,
   className,
