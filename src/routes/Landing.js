@@ -3,14 +3,13 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import {
   ArrowRightCircleFill,
-  CameraVideo, CheckSquare, FileEarmarkMedical, GraphUp,
+  CameraVideo, CheckSquare, GraphUp,
 } from 'react-bootstrap-icons';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import Header from '../components/Header';
 import { headerHeight, landingBackground } from '../config';
 import { setTOS } from '../store/sm/index';
-import eula from '../eula';
 
 const Landing = ({ className, dispatchAcceptTOS }) => (
   <div className={className}>
