@@ -12,7 +12,7 @@ import {
 } from '../store/sm/index';
 import Header from '../components/Header';
 import {
-  headerHeight, disconnectPage, disconnectRoute,
+  transparentHeader, headerHeight, disconnectPage, disconnectRoute,
 } from '../config';
 import CameraPreview from '../components/CameraPreview';
 import breakpoints from '../utils/breakpoints';
@@ -43,10 +43,10 @@ const DPChat = ({
     handleResize();
     window.addEventListener('resize', handleResize);
     // cleanup
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      dispatchDisconnect();
-    };
+    // return () => {
+    //   window.removeEventListener('resize', handleResize);
+    //   dispatchDisconnect();
+    // };
   }, []);
 
   const history = useHistory();
@@ -65,7 +65,7 @@ const DPChat = ({
     <div className={className}>
       <div className="video-overlay" ref={overlayRef} style={{ height }}>
         <Header />
-        {/* top tow */}
+        {/* top row */}
         <div className="container d-flex flex-column">
           {
               cameraOn

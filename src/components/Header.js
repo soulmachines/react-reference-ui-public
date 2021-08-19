@@ -48,7 +48,7 @@ Header.propTypes = {
 };
 
 const StyledHeader = styled(Header)`
-  position: ${transparentHeader ? 'absolute' : 'relative'};
+  position: relative;
   z-index: 20;
   top: 0;
   width: 100%;

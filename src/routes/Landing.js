@@ -14,9 +14,9 @@ import eula from '../eula';
 
 const Landing = ({ className, dispatchAcceptTOS }) => (
   <div className={className}>
-    <Header />
     <div className="landing-wrapper">
-      <div className="container">
+      <Header />
+      <div className="container landing-container">
         <div className="card col-lg-8 p-3">
           <div className="card-body">
             <h2 className="first-things-first">
@@ -168,8 +168,7 @@ const StyledLanding = styled(Landing)`
     padding: 0;
   }
   .landing-wrapper {
-    padding-top: ${headerHeight};
-    min-height: calc(100vh - ${headerHeight} );
+    min-height: calc(100vh);
 
     background-image: url(${landingBackground});
     background-color: rgb(247, 232, 219);
@@ -177,7 +176,7 @@ const StyledLanding = styled(Landing)`
     background-repeat: no-repeat;
     background-position: center bottom;
 
-    .container {
+    .landing-container {
       display: flex;
       justify-content: center;
       align-items: center;
