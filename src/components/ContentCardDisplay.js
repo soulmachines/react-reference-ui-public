@@ -13,7 +13,7 @@ const ContentCardDisplay = ({
 }) => {
   if (!activeCards) return null;
   const CardDisplay = activeCards.map((c, index) => (
-    <div className="m-2" key={JSON.stringify(c)}>
+    <div className="mb-2" key={JSON.stringify(c)}>
       <ContentCardSwitch card={c} index={index} />
     </div>
   ));
