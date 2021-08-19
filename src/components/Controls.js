@@ -174,8 +174,13 @@ const Controls = ({
         {
                 userSpeaking
                   ? (
-                    <div className="spinner-border spinner-border-sm ms-1" role="status">
-                      <span className="visually-hidden">Loading...</span>
+                    <div>
+                      <div className="spinner-border ms-2 d-md-block d-none" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                      <div className="spinner-border spinner-border-sm ms-1 d-block d-md-none" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
                     </div>
                   )
                   : null
