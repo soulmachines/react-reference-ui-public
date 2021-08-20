@@ -78,7 +78,7 @@ const Video = ({
           onEnd={endVideo}
           onReady={(e) => {
             ytTarget = e.target;
-            ytRef.current.focus();
+            if (!inTranscript) ytRef.current.focus();
           }}
         />
       </div>
