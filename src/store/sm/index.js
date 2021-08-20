@@ -562,12 +562,20 @@ const smSlice = createSlice({
       connected: true,
       error: null,
     }),
-    [createScene.rejected]: (state, { payload }) => ({
-      ...state,
-      loading: false,
-      connected: false,
-      error: { ...payload },
-    }),
+    [createScene.rejected]: (state, { payload }) => {
+      scene.disconnect();
+      // if we call this immediately the disconnect call might not complete
+      setTimeout(() => {
+        scene = null;
+        persona = null;
+      }, 100);
+      return ({
+        ...state,
+        loading: false,
+        connected: false,
+        error: { ...payload },
+      });
+    },
   },
 });
 
