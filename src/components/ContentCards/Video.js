@@ -54,10 +54,10 @@ const Video = ({
         onEnd={endVideo}
       />
     );
-    // if (!inTranscript) localStorage.setItem('muted', isMuted);
-    setWasMuted(isMuted);
+
     setYTElem(elem);
-    if (!isMuted) {
+    if (!inTranscript) setWasMuted(isMuted);
+    if (!isMuted && !inTranscript) {
       dispatchMute(true);
     }
     return () => {
