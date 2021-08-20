@@ -113,9 +113,9 @@ export const mute = createAsyncThunk('sm/mute', async (specifiedMuteState, thunk
   if (scene) {
     // if arg is a boolean use it, otherwise just toggle.
     // sometimes events from button clicks are passed in, so we need to filter for that
-    const muteState = typeof specifiedMuteState === 'boolean' ? specifiedMuteState : !isMuted;
-    const command = `${muteState ? 'stop' : 'start'}Recognize`;
-    scene.sendRequest(command, {});
+    const muteState = typeof specifiedMuteState === 'boolean' ? !!specifiedMuteState : !isMuted;
+    if (muteState === true) scene.stopRecognize();
+    else scene.startRecognize();
     thunk.dispatch(actions.setMute({ isMuted: muteState }));
   } else { console.warn('muting not possible, no active scene!'); }
 });
@@ -132,6 +132,9 @@ export const disconnect = createAsyncThunk('sm/disconnect', async (args, thunk) 
 
 export const createScene = createAsyncThunk('sm/createScene', async (typingOnly = false, thunk) => {
   /* CREATE SCENE */
+  if (scene instanceof smwebsdk.Scene) {
+    return console.error('warning! you attempted to create a new scene, when one already exists!');
+  }
   // request permissions from user and create instance of Scene and ask for webcam/mic permissions
   const { microphone, microphoneAndCamera, none } = smwebsdk.userMedia;
   try {
@@ -328,6 +331,14 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
       // left unimplemented for now since there is only one named camera (closeUp)
       case ('animateToNamedCamera'): {
         // console.warn('animateToNamedCamera handler not yet implemented', message);
+        break;
+      }
+
+      case ('stopRecognize'): {
+        break;
+      }
+
+      case ('startRecognize'): {
         break;
       }
 
@@ -551,12 +562,20 @@ const smSlice = createSlice({
       connected: true,
       error: null,
     }),
-    [createScene.rejected]: (state, { payload }) => ({
-      ...state,
-      loading: false,
-      connected: false,
-      error: { ...payload },
-    }),
+    [createScene.rejected]: (state, { payload }) => {
+      scene.disconnect();
+      // if we call this immediately the disconnect call might not complete
+      setTimeout(() => {
+        scene = null;
+        persona = null;
+      }, 100);
+      return ({
+        ...state,
+        loading: false,
+        connected: false,
+        error: { ...payload },
+      });
+    },
   },
 });
 

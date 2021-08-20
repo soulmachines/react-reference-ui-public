@@ -9,7 +9,7 @@ import ContentCardSwitch from './ContentCardSwitch';
 import breakpoints from '../utils/breakpoints';
 
 const ContentCardDisplay = ({
-  activeCards, dispatchAnimateCamera, videoWidth, videoHeight, showTranscript, className,
+  activeCards, dispatchAnimateCamera, videoWidth, videoHeight, showTranscript, className, connected,
 }) => {
   if (!activeCards) return null;
   const CardDisplay = activeCards.map((c, index) => (
@@ -19,9 +19,11 @@ const ContentCardDisplay = ({
   ));
 
   const animateCameraToFitCards = () => {
-    if ((activeCards.length > 0 || showTranscript === true) && videoWidth >= breakpoints.md) {
-      dispatchAnimateCamera(calculateCameraPosition(videoWidth, videoHeight, 0.7));
-    } else dispatchAnimateCamera(calculateCameraPosition(videoWidth, videoHeight, 0.5));
+    if (connected) {
+      if ((activeCards.length > 0 || showTranscript === true) && videoWidth >= breakpoints.md) {
+        dispatchAnimateCamera(calculateCameraPosition(videoWidth, videoHeight, 0.7));
+      } else dispatchAnimateCamera(calculateCameraPosition(videoWidth, videoHeight, 0.5));
+    }
   };
 
   useEffect(() => {
@@ -47,6 +49,7 @@ ContentCardDisplay.propTypes = {
   videoHeight: PropTypes.number.isRequired,
   showTranscript: PropTypes.bool.isRequired,
   className: PropTypes.string.isRequired,
+  connected: PropTypes.bool.isRequired,
 };
 
 const StyledContentCardDisplay = styled(ContentCardDisplay)`
@@ -79,6 +82,7 @@ const mapStateToProps = ({ sm }) => ({
   videoWidth: sm.videoWidth,
   videoHeight: sm.videoHeight,
   showTranscript: sm.showTranscript,
+  connected: sm.connected,
 });
 
 const mapDispatchToProps = (dispatch) => ({

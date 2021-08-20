@@ -66,7 +66,7 @@ const Controls = ({
     }, 3000);
     timeout = createTimeout();
     return () => clearTimeout(timeout);
-  }, [userSpeaking, lastUserUtterance]);
+  }, [userSpeaking, lastUserUtterance, isMuted]);
 
   useEffect(async () => {
     if (connected && typingOnly === false) {
@@ -133,6 +133,10 @@ const Controls = ({
     dispatchMute(toggledTextInput);
     setShowTextInput(toggledTextInput);
   };
+  useEffect(() => {
+    if (isMuted !== showTextInput) setShowTextInput(isMuted || typingOnly);
+  }, [isMuted]);
+
   // when we switch to keyboard input, capture focus
   const textInput = createRef();
   useEffect(() => {
@@ -234,7 +238,7 @@ const Controls = ({
               aria-label="Toggle Keyboard Input"
               data-tip="Toggle Keyboard Input"
               data-place="top"
-              onClick={toggleKeyboardInput}
+              onClick={typingOnly ? null : toggleKeyboardInput}
             >
               <Keyboard />
             </button>
@@ -320,7 +324,7 @@ const StyledControls = styled(Controls)`
   .speaking-status {
     width: 47px;
     @media (min-width: ${breakpoints.md}px) {
-      min-width: 47px;
+      min-width: 56px;
     }
   }
 
@@ -337,7 +341,7 @@ const StyledControls = styled(Controls)`
     top: ${volumeMeterHeight * 0.5}px;
     display: flex;
     align-items: flex-end;
-    justify-content: center;
+    justify-content: start;
     min-width: ${({ videoWidth }) => (videoWidth <= breakpoints.md ? 21 : 32)}px;
     .meter-component {
       /* don't use media queries for this since we need to write the value

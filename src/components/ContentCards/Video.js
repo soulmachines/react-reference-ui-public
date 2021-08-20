@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { createRef, useEffect, useState } from 'react';
 import YouTube from 'react-youtube';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
@@ -18,6 +18,7 @@ const Video = ({
   const containerRef = React.createRef();
   const [YTElem, setYTElem] = useState();
   const [fadeOut, setFadeOut] = useState(false);
+  const [wasMuted, setWasMuted] = useState(isMuted);
 
   const endVideo = () => {
     setFadeOut(true);
@@ -28,6 +29,20 @@ const Video = ({
   };
 
   useEffect(() => {
+    const ytRef = createRef();
+    let ytTarget;
+    const handleKeyboardInput = (e) => {
+      // 1 = playing, 2 = paused
+      const playerState = ytTarget.getPlayerState();
+      switch (e.nativeEvent.data) {
+        case (' '): {
+          if (playerState === 1) ytTarget.pauseVideo();
+          else ytTarget.playVideo();
+          break;
+        }
+        default: { break; }
+      }
+    };
     // use containerRef to size video embed to elem dimensions
     // assume 16:9 aspect ratio for video
     const { clientWidth: width, clientHeight: height } = containerRef.current;
@@ -46,16 +61,40 @@ const Video = ({
       },
     };
     const elem = (
-      <YouTube
-        videoId={videoId}
-        opts={opts}
-        containerClassName="video-container"
-        onEnd={endVideo}
-      />
+      <div>
+        {/* capture focus to enable play/pause functionality */}
+        <input
+          className="visually-hidden"
+          aria-label="press space to play or pause video"
+          type="text"
+          ref={ytRef}
+          onChange={handleKeyboardInput}
+          value=""
+        />
+        <YouTube
+          videoId={videoId}
+          opts={opts}
+          containerClassName="video-container"
+          onEnd={endVideo}
+          onReady={(e) => {
+            ytTarget = e.target;
+            if (!inTranscript) ytRef.current.focus();
+          }}
+        />
+      </div>
     );
-    if (!isMuted) dispatchMute(true);
+
     setYTElem(elem);
-    return () => setYTElem(null);
+    if (!inTranscript) setWasMuted(isMuted);
+    if (!isMuted && !inTranscript) {
+      dispatchMute(true);
+    }
+    return () => {
+      setYTElem(null);
+      if (!inTranscript) {
+        dispatchMute(wasMuted);
+      }
+    };
   }, []);
 
   if (inTranscript === true) return <div ref={containerRef}>{YTElem}</div>;
@@ -101,7 +140,7 @@ const mapStateToProps = ({ sm }) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  dispatchMute: () => dispatch(mute()),
+  dispatchMute: (muteValue) => dispatch(mute(muteValue)),
   dispatchHideCards: () => dispatch(setActiveCards({})),
   dispatchTextMessage: (text) => dispatch(sendTextMessage({ text })),
 });
