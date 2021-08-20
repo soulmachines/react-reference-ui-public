@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { createRef, useEffect, useState } from 'react';
 import YouTube from 'react-youtube';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
@@ -29,6 +29,20 @@ const Video = ({
   };
 
   useEffect(() => {
+    const ytRef = createRef();
+    let ytTarget;
+    const handleKeyboardInput = (e) => {
+      // 1 = playing, 2 = paused
+      const playerState = ytTarget.getPlayerState();
+      switch (e.nativeEvent.data) {
+        case (' '): {
+          if (playerState === 1) ytTarget.pauseVideo();
+          else ytTarget.playVideo();
+          break;
+        }
+        default: { break; }
+      }
+    };
     // use containerRef to size video embed to elem dimensions
     // assume 16:9 aspect ratio for video
     const { clientWidth: width, clientHeight: height } = containerRef.current;
@@ -47,12 +61,27 @@ const Video = ({
       },
     };
     const elem = (
-      <YouTube
-        videoId={videoId}
-        opts={opts}
-        containerClassName="video-container"
-        onEnd={endVideo}
-      />
+      <div>
+        {/* capture focus to enable play/pause functionality */}
+        <input
+          className="visually-hidden"
+          aria-label="press space to play or pause video"
+          type="text"
+          ref={ytRef}
+          onChange={handleKeyboardInput}
+          value=""
+        />
+        <YouTube
+          videoId={videoId}
+          opts={opts}
+          containerClassName="video-container"
+          onEnd={endVideo}
+          onReady={(e) => {
+            ytTarget = e.target;
+            ytRef.current.focus();
+          }}
+        />
+      </div>
     );
 
     setYTElem(elem);
