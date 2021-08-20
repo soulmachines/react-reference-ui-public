@@ -18,6 +18,7 @@ const Video = ({
   const containerRef = React.createRef();
   const [YTElem, setYTElem] = useState();
   const [fadeOut, setFadeOut] = useState(false);
+  const [wasMuted, setWasMuted] = useState(isMuted);
 
   const endVideo = () => {
     setFadeOut(true);
@@ -53,9 +54,18 @@ const Video = ({
         onEnd={endVideo}
       />
     );
-    if (!isMuted) dispatchMute(true);
+    // if (!inTranscript) localStorage.setItem('muted', isMuted);
+    setWasMuted(isMuted);
     setYTElem(elem);
-    return () => setYTElem(null);
+    if (!isMuted) {
+      dispatchMute(true);
+    }
+    return () => {
+      setYTElem(null);
+      if (!inTranscript) {
+        dispatchMute(wasMuted);
+      }
+    };
   }, []);
 
   if (inTranscript === true) return <div ref={containerRef}>{YTElem}</div>;
@@ -101,7 +111,7 @@ const mapStateToProps = ({ sm }) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  dispatchMute: () => dispatch(mute()),
+  dispatchMute: (muteValue) => dispatch(mute(muteValue)),
   dispatchHideCards: () => dispatch(setActiveCards({})),
   dispatchTextMessage: (text) => dispatch(sendTextMessage({ text })),
 });

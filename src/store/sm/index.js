@@ -113,7 +113,7 @@ export const mute = createAsyncThunk('sm/mute', async (specifiedMuteState, thunk
   if (scene) {
     // if arg is a boolean use it, otherwise just toggle.
     // sometimes events from button clicks are passed in, so we need to filter for that
-    const muteState = typeof specifiedMuteState === 'boolean' ? specifiedMuteState : !isMuted;
+    const muteState = typeof specifiedMuteState === 'boolean' ? !!specifiedMuteState : !isMuted;
     if (muteState === true) scene.stopRecognize();
     else scene.startRecognize();
     thunk.dispatch(actions.setMute({ isMuted: muteState }));

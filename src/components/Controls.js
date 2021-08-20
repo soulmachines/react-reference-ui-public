@@ -66,7 +66,7 @@ const Controls = ({
     }, 3000);
     timeout = createTimeout();
     return () => clearTimeout(timeout);
-  }, [userSpeaking, lastUserUtterance]);
+  }, [userSpeaking, lastUserUtterance, isMuted]);
 
   useEffect(async () => {
     if (connected && typingOnly === false) {
@@ -133,6 +133,10 @@ const Controls = ({
     dispatchMute(toggledTextInput);
     setShowTextInput(toggledTextInput);
   };
+  useEffect(() => {
+    if (isMuted !== showTextInput) setShowTextInput(isMuted);
+  }, [isMuted]);
+
   // when we switch to keyboard input, capture focus
   const textInput = createRef();
   useEffect(() => {
