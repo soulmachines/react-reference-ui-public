@@ -134,7 +134,7 @@ const Controls = ({
     setShowTextInput(toggledTextInput);
   };
   useEffect(() => {
-    if (isMuted !== showTextInput) setShowTextInput(isMuted);
+    if (isMuted !== showTextInput) setShowTextInput(isMuted || typingOnly);
   }, [isMuted]);
 
   // when we switch to keyboard input, capture focus
@@ -238,7 +238,7 @@ const Controls = ({
               aria-label="Toggle Keyboard Input"
               data-tip="Toggle Keyboard Input"
               data-place="top"
-              onClick={toggleKeyboardInput}
+              onClick={typingOnly ? null : toggleKeyboardInput}
             >
               <Keyboard />
             </button>
