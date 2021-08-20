@@ -25,9 +25,7 @@ const Loading = ({
 
   // create persona scene on button press on on mount, depending on device size
   const createSceneIfNotStarted = () => {
-    console.error({ loading, connected });
     if (loading === false && connected === false && error === null) {
-      console.error('blam!');
       dispatchCreateScene();
     }
   };
