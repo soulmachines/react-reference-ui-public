@@ -8,7 +8,7 @@ import Captions from '../components/Captions';
 import Controls from '../components/Controls';
 import ContentCardDisplay from '../components/ContentCardDisplay';
 import {
-  createScene, disconnect,
+  disconnect,
 } from '../store/sm/index';
 import Header from '../components/Header';
 import {
@@ -21,8 +21,6 @@ const DPChat = ({
   className,
   connected,
   disconnected,
-  loading,
-  dispatchCreateScene,
   dispatchDisconnect,
   error,
   tosAccepted,
@@ -92,17 +90,6 @@ const DPChat = ({
             }
           {/* middle row */}
           <div className="vertical-fit-container col-md-5">
-            {
-            loading && connected === false
-              ? (
-                // loading spinner
-                <div className="spinner-border text-primary" role="status">
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-              )
-              // connect button
-              : <button type="button" className={`btn btn-outline-success ${!connected && !loading ? '' : 'd-none'}`} onClick={dispatchCreateScene} data-tip="Connect">Connect</button>
-            }
             {/* on larger devices, show cards next to DP */}
             <div className="d-md-block d-none">
               {largeViewport === true ? <ContentCardDisplay /> : null}
@@ -138,11 +125,9 @@ const DPChat = ({
 
 DPChat.propTypes = {
   className: PropTypes.string.isRequired,
-  dispatchCreateScene: PropTypes.func.isRequired,
   dispatchDisconnect: PropTypes.func.isRequired,
   connected: PropTypes.bool.isRequired,
   disconnected: PropTypes.bool.isRequired,
-  loading: PropTypes.bool.isRequired,
   error: PropTypes.shape({
     msg: PropTypes.string,
     err: PropTypes.objectOf(PropTypes.string),
@@ -201,7 +186,6 @@ const mapStateToProps = ({ sm }) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  dispatchCreateScene: () => dispatch(createScene()),
   dispatchDisconnect: () => dispatch(disconnect()),
 });
 

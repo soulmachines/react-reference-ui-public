@@ -132,6 +132,9 @@ export const disconnect = createAsyncThunk('sm/disconnect', async (args, thunk) 
 
 export const createScene = createAsyncThunk('sm/createScene', async (typingOnly = false, thunk) => {
   /* CREATE SCENE */
+  if (scene instanceof smwebsdk.Scene) {
+    return console.error('warning! you attempted to create a new scene, when one already exists!');
+  }
   // request permissions from user and create instance of Scene and ask for webcam/mic permissions
   const { microphone, microphoneAndCamera, none } = smwebsdk.userMedia;
   try {
@@ -332,12 +335,10 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
       }
 
       case ('stopRecognize'): {
-        console.log('stopRecognize', message);
         break;
       }
 
       case ('startRecognize'): {
-        console.log('startRecognize', message);
         break;
       }
 

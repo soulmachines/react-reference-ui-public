@@ -24,20 +24,24 @@ const Loading = ({
   const [displayedPage, setDisplayedPage] = useState(0);
 
   // create persona scene on button press on on mount, depending on device size
+  const createSceneIfNotStarted = () => {
+    console.error({ loading, connected });
+    if (loading === false && connected === false && error === null) {
+      console.error('blam!');
+      dispatchCreateScene();
+    }
+  };
   const createSceneAndIteratePage = () => {
     // if we encounter a fatal error, app redirects to /loading to display
-    if (!connected && !loading && query.get('error') !== true) dispatchCreateScene();
+    if (!connected && !loading && query.get('error') !== true) createSceneIfNotStarted();
     setDisplayedPage(displayedPage + 1);
   };
 
-  const createSceneIfNotStarted = () => {
-    if (!loading) dispatchCreateScene();
-  };
   useEffect(() => {
-    if (window.innerWidth >= breakpoints.md) dispatchCreateScene();
+    if (window.innerWidth >= breakpoints.md && !loading) createSceneIfNotStarted();
     window.addEventListener('resize', createSceneIfNotStarted);
     return () => window.removeEventListener('resize', createSceneIfNotStarted);
-  }, []);
+  }, [connected, loading]);
 
   // use to reload page if user unblocks perms and presses "try again"
   const history = useHistory();
