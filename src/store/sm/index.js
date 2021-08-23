@@ -355,8 +355,9 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
   /* CONNECT TO PERSONA */
   try {
     // get signed JWT from token server so we can connect to Persona server
-    const res = await fetch(TOKEN_ISSUER, { method: 'POST' });
-    const { url, jwt } = await res.json();
+    const [tokenErr, tokenRes] = await to(fetch(TOKEN_ISSUER, { method: 'POST' }));
+    if (tokenErr) return thunk.rejectWithValue({ msg: 'error fetching token! is this endpoint CORS authorized?' });
+    const { url, jwt } = await tokenRes.json();
 
     // connect to Persona server
     const retryOptions = {
