@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import {
   ChatSquareDotsFill, Keyboard, MicMuteFill, XOctagonFill,
 } from 'react-bootstrap-icons';
+import ReactTooltip from 'react-tooltip';
 import {
   sendTextMessage, mute, stopSpeaking, toggleShowTranscript,
 } from '../store/sm/index';
@@ -142,6 +143,10 @@ const Controls = ({
   useEffect(() => {
     if (showTextInput === true) textInput.current.focus();
   }, [showTextInput]);
+
+  useEffect(() => {
+    ReactTooltip.rebuild();
+  });
 
   // clear placeholder text on reconnect, sometimes the state updates won't propagate
   const placeholder = intermediateUserUtterance === '' ? '' : intermediateUserUtterance;
