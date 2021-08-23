@@ -431,6 +431,12 @@ export const sendEvent = createAsyncThunk('sm/sendEvent', async ({ payload, even
   }
 });
 
+export const keepAlive = createAsyncThunk('sm/keepAlive', async () => {
+  if (scene) {
+    scene.keepAlive();
+  }
+});
+
 const smSlice = createSlice({
   name: 'sm',
   initialState,

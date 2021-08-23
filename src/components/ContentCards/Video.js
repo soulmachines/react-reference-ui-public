@@ -3,7 +3,9 @@ import YouTube from 'react-youtube';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
-import { mute, sendTextMessage, setActiveCards } from '../../store/sm/index';
+import {
+  mute, sendTextMessage, setActiveCards, keepAlive,
+} from '../../store/sm/index';
 
 const Video = ({
   data,
@@ -13,6 +15,7 @@ const Video = ({
   dispatchTextMessage,
   dispatchHideCards,
   inTranscript,
+  dispatchKeepAlive,
 }) => {
   const { videoId, autoplay } = data;
   const containerRef = React.createRef();
@@ -97,6 +100,13 @@ const Video = ({
     };
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      dispatchKeepAlive();
+    }, 10000);
+    return () => clearInterval(interval);
+  });
+
   if (inTranscript === true) return <div ref={containerRef}>{YTElem}</div>;
 
   return (
@@ -129,6 +139,7 @@ Video.propTypes = {
   dispatchTextMessage: PropTypes.func.isRequired,
   dispatchHideCards: PropTypes.func.isRequired,
   inTranscript: PropTypes.bool,
+  dispatchKeepAlive: PropTypes.func.isRequired,
 };
 
 Video.defaultProps = {
@@ -143,6 +154,7 @@ const mapDispatchToProps = (dispatch) => ({
   dispatchMute: (muteValue) => dispatch(mute(muteValue)),
   dispatchHideCards: () => dispatch(setActiveCards({})),
   dispatchTextMessage: (text) => dispatch(sendTextMessage({ text })),
+  dispatchKeepAlive: () => dispatch(keepAlive()),
 });
 
 const ConnectedVideo = connect(mapStateToProps, mapDispatchToProps)(Video);
