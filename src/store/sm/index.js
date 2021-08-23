@@ -249,7 +249,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
         const { context } = message.body.output;
         // filter out $cardName.original, we just want values for $cardName
         const relevantKeys = Object.keys(context).filter((k) => /\.original/gm.test(k) === false);
-        const contentCards = {};
+        let contentCards = {};
         relevantKeys.forEach((k) => {
           // remove public- prefix from key
           const cardKey = k.match(/public-(.*)/m)[1];
@@ -259,6 +259,16 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
             console.error(`invalid JSON in content card payload for ${k}!`);
           }
         });
+        // also consume DF custom payload
+        const fulfillmentMessages = message
+          .body?.provider?.meta?.dialogflow?.queryResult?.fulfillmentMessages;
+        if (fulfillmentMessages) {
+          fulfillmentMessages.forEach((m) => {
+            if ('payload' in m && 'soulmachines' in m.payload) {
+              contentCards = { ...contentCards, ...m.payload.soulmachines };
+            }
+          });
+        }
         thunk.dispatch(actions.addContentCards({ contentCards }));
         break;
       }
