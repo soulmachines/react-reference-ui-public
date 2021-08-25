@@ -115,9 +115,10 @@ const Video = ({
         <div className="row">
           {YTElem}
         </div>
-        <div className="row d-flex align-items-center justify-content-between mt-2">
-          <span className="text-white text-center text-md-start col-md-auto">
-            The Digital Person is paused while you watch this video.
+        <div className="row d-flex align-items-center justify-content-between mt-2 video-controlblock">
+          <span className="text-white text-center text-md-start col-md-auto mb-2">
+            The Digital Person is paused while you watch this video and
+            will not respond to your voice.
           </span>
           <div className="d-flex col-md-auto justify-content-center mt-2 mt-md-0">
             <button type="button" className="btn btn-outline-light" onClick={endVideo}>I&apos;m done watching</button>
@@ -189,5 +190,9 @@ export default styled(ConnectedVideo)`
   .video-container {
     display: flex;
     justify-content: center;
+  }
+  .video-controlblock {
+    max-width: 90%;
+    margin: 0px auto;
   }
 `;
