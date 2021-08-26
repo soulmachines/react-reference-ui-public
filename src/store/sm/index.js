@@ -212,11 +212,31 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
             break;
           }
           case ('feature'): {
-            console.warn('@feature not implemented yet!');
+            console.log(message.body);
+            const { arguments: featureArgs } = message.body;
+            const feature = featureArgs[0];
+            const featureState = featureArgs[1];
+            switch (feature) {
+              case ('microphone'): {
+                if (featureState === 'on') thunk.dispatch(mute(false));
+                else if (featureState === 'off') thunk.dispatch(mute(true));
+                else console.error(`state ${featureState} not supported by @feature(microphone)!`);
+                break;
+              }
+              case ('transcript'): {
+                if (featureState === 'on') thunk.dispatch(actions.setShowTranscript(true));
+                else if (featureState === 'off') thunk.dispatch(actions.setShowTranscript(false));
+                else console.error(`state ${featureState} not supported by @feature(transcript)!`);
+                break;
+              }
+              default: {
+                console.error(`@feature(${feature}) not recognized!`);
+              }
+            }
             break;
           }
           case ('close'): {
-            console.warn('@close not implemented yet!');
+            thunk.dispatch(disconnect());
             break;
           }
           case ('marker'): {
@@ -455,9 +475,9 @@ const smSlice = createSlice({
       ...state,
       tosAccepted: payload.accepted,
     }),
-    toggleShowTranscript: (state) => ({
+    setShowTranscript: (state, { payload }) => ({
       ...state,
-      showTranscript: !state.showTranscript,
+      showTranscript: payload?.showTranscript || !state.showTranscript,
     }),
     setTypingOnly: (state) => ({
       ...state,
@@ -604,7 +624,7 @@ export const {
   stopSpeaking,
   setActiveCards,
   setCameraState,
-  toggleShowTranscript,
+  setShowTranscript,
   setTOS,
 } = smSlice.actions;
 

@@ -7,7 +7,7 @@ import {
 } from 'react-bootstrap-icons';
 import ReactTooltip from 'react-tooltip';
 import {
-  sendTextMessage, mute, stopSpeaking, toggleShowTranscript,
+  sendTextMessage, mute, stopSpeaking, setShowTranscript,
 } from '../store/sm/index';
 import mic from '../img/mic.svg';
 import micFill from '../img/mic-fill.svg';
@@ -387,7 +387,7 @@ const mapDispatchToProps = (dispatch) => ({
   dispatchText: (text) => dispatch(sendTextMessage({ text })),
   dispatchMute: (muteState) => dispatch(mute(muteState)),
   dispatchStopSpeaking: () => dispatch(stopSpeaking()),
-  dispatchToggleShowTranscript: () => dispatch(toggleShowTranscript()),
+  dispatchToggleShowTranscript: () => dispatch(setShowTranscript()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(StyledControls);
