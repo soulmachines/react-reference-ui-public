@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.6.0",
-    "@soulmachines/smwebsdk": "^12.1.1",
+    "@soulmachines/smwebsdk": "^14.0.0-rc.0",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
