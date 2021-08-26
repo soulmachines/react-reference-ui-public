@@ -16,22 +16,34 @@ const Video = ({
   dispatchHideCards,
   inTranscript,
   dispatchKeepAlive,
+  activeCards,
 }) => {
   const { videoId, autoplay } = data;
   const containerRef = React.createRef();
   const [YTElem, setYTElem] = useState();
   const [fadeOut, setFadeOut] = useState(false);
   const [wasMuted, setWasMuted] = useState(isMuted);
+  // we display videos inline in the transcript, then when they're clicked on,
+  //  we enter lightbox mode and mute the DP
+  const [isLightbox, setIsLightbox] = useState(inTranscript ? !inTranscript : true);
+
+  useEffect(() => {
+    const thisVideoCardIsActive = data === activeCards[0]?.data;
+    if (thisVideoCardIsActive) setIsLightbox(true);
+  }, [activeCards]);
 
   const endVideo = () => {
     setFadeOut(true);
     setTimeout(() => {
+      setIsLightbox(false);
+      setFadeOut(false);
       dispatchHideCards();
       dispatchTextMessage('I\'m done watching');
     }, 500);
   };
 
   useEffect(() => {
+    if (isLightbox) setFadeOut(false);
     const ytRef = createRef();
     let ytTarget;
     const handleKeyboardInput = (e) => {
@@ -59,7 +71,7 @@ const Video = ({
       width: computedWidth,
       height: computedHeight,
       playerVars: {
-        autoplay: inTranscript ? false : !!autoplay,
+        autoplay: !isLightbox ? false : !!autoplay,
         mute: 0,
       },
     };
@@ -79,35 +91,41 @@ const Video = ({
           opts={opts}
           containerClassName="video-container"
           onEnd={endVideo}
+          onStateChange={(e) => {
+            const { data: playerState } = e;
+            if (playerState === -1) setIsLightbox(true);
+          }}
           onReady={(e) => {
             ytTarget = e.target;
-            if (!inTranscript) ytRef.current.focus();
+            if (isLightbox) ytRef.current.focus();
           }}
         />
       </div>
     );
 
     setYTElem(elem);
-    if (!inTranscript) setWasMuted(isMuted);
-    if (!isMuted && !inTranscript) {
+    if (isLightbox) setWasMuted(isMuted);
+    if (!isMuted && isLightbox) {
       dispatchMute(true);
     }
     return () => {
       setYTElem(null);
-      if (!inTranscript) {
+      if (isLightbox) {
         dispatchMute(wasMuted);
       }
     };
-  }, []);
+  }, [isLightbox]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      dispatchKeepAlive();
+      if (isLightbox) dispatchKeepAlive();
     }, 10000);
     return () => clearInterval(interval);
   });
 
-  if (inTranscript === true) return <div ref={containerRef}>{YTElem}</div>;
+  if (isLightbox === false) {
+    return <div ref={containerRef}>{YTElem}</div>;
+  }
 
   return (
     <div ref={containerRef} className={`${className} ${fadeOut === true ? 'fade' : ''}`} key={videoId}>
@@ -141,6 +159,7 @@ Video.propTypes = {
   dispatchHideCards: PropTypes.func.isRequired,
   inTranscript: PropTypes.bool,
   dispatchKeepAlive: PropTypes.func.isRequired,
+  activeCards: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
 Video.defaultProps = {
@@ -149,6 +168,7 @@ Video.defaultProps = {
 
 const mapStateToProps = ({ sm }) => ({
   isMuted: sm.isMuted,
+  activeCards: sm.activeCards,
 });
 
 const mapDispatchToProps = (dispatch) => ({
