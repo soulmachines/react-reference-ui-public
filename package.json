@@ -11,6 +11,7 @@
     "deploy:gcp": "npm run build && gcloud app deploy --project ui-test-persona-nhyv app.yaml --stop-previous-version --promote --version baseline --quiet"
   },
   "dependencies": {
+    "@juggle/resize-observer": "^3.3.1",
     "@reduxjs/toolkit": "^1.6.0",
     "@soulmachines/smwebsdk": "^14.0.0-rc.0",
     "@testing-library/jest-dom": "^5.14.1",
