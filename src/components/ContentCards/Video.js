@@ -97,7 +97,7 @@ const Video = ({
           }}
           onReady={(e) => {
             ytTarget = e.target;
-            if (!isLightbox) ytRef.current.focus();
+            if (isLightbox) ytRef.current.focus();
           }}
         />
       </div>
