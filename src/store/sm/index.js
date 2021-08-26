@@ -236,7 +236,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
             break;
           }
           case ('close'): {
-            console.warn('@close not implemented yet!');
+            thunk.dispatch(disconnect());
             break;
           }
           case ('marker'): {
