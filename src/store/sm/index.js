@@ -181,6 +181,8 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
       // handles output from NLP (what DP is saying)
       case ('personaResponse'): {
         const { currentSpeech } = message.body;
+        const { cardsAreStale } = thunk.getState().sm;
+        if (cardsAreStale === true) thunk.dispatch(actions.setActiveCards({}));
         thunk.dispatch(actions.addConversationResult({
           source: 'persona',
           text: currentSpeech,
