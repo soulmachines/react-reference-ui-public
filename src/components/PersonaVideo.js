@@ -53,7 +53,7 @@ const PersonaVideo = ({
           ? (
             // we display captions as an overlay. this functionality is critical and
             // should not be removed in derrivative custom UI's!!
-            <video ref={videoRef} autoPlay playsInline className="persona-video" id="personavideo" />
+            <video ref={videoRef} autoPlay playsInline className="persona-video" id="personavideo" data-sm-video />
           )
           : null
       }

@@ -38,8 +38,9 @@ const ContentCardSwitch = ({
       removeOnClick: false,
     },
   };
+
   if (card === undefined) return returnCardError('unknown content card name! did you make a typo in @showCards()?');
-  const { component: componentName, data } = card;
+  const { component: componentName, data, id } = card;
   if (componentName in componentMap === false) return returnCardError(`component ${componentName} not found in componentMap!`);
   const { element: Element, removeOnClick } = componentMap[componentName];
 
@@ -66,7 +67,7 @@ const ContentCardSwitch = ({
     >
       {/* elements that are interactive but shouldn't be removed immediately
          can use triggerRemoval to have the card removed */}
-      <Element data={data} triggerRemoval={removeElem} inTranscript={inTranscript} />
+      <Element data={{id, ...data}} triggerRemoval={removeElem} inTranscript={inTranscript} />
     </div>
   );
   return elem;
