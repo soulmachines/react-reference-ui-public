@@ -87,6 +87,8 @@ const mapStateToProps = ({ sm }) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   dispatchActiveCards: (activeCards) => dispatch(
+    // the next time the persona speaks, if the cards are stale, it will clear them.
+    // if this value isn't desired, don't set this value to true.
     setActiveCards({ activeCards, cardsAreStale: true }),
   ),
   dispatchAnimateCamera: (options, duration = 1) => dispatch(animateCamera({ options, duration })),
