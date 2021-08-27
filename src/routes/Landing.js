@@ -11,7 +11,7 @@ import {
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import Header from '../components/Header';
-import { headerHeight, landingBackground } from '../config';
+import { headerHeight, landingBackgroundImage, landingBackgroundColor } from '../config';
 import { setTOS } from '../store/sm/index';
 import eula from '../eula';
 
@@ -115,8 +115,7 @@ const StyledLanding = styled(Landing)`
   .landing-wrapper {
     min-height: calc(100vh);
 
-    background-image: url(${landingBackground});
-    background-color: rgb(247, 232, 219);
+    background: ${landingBackgroundImage ? `url(${landingBackgroundImage})` : ''} ${landingBackgroundColor ? `${landingBackgroundColor};` : ''};
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center bottom;

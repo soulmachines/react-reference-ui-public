@@ -9,7 +9,7 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import { createScene } from '../store/sm';
 import Header from '../components/Header';
-import { headerHeight, landingBackground } from '../config';
+import { headerHeight, landingBackgroundImage, landingBackgroundColor } from '../config';
 import breakpoints from '../utils/breakpoints';
 
 const Loading = ({
@@ -296,8 +296,7 @@ Loading.defaultProps = {
 };
 
 const StyledLoading = styled(Loading)`
-  background-image: url(${landingBackground});
-  background-color: rgb(247, 232, 219);
+  background: ${landingBackgroundImage ? `url(${landingBackgroundImage})` : ''} ${landingBackgroundColor ? `${landingBackgroundColor};` : ''};
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center bottom;
