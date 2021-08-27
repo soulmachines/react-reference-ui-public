@@ -60,7 +60,7 @@ const Controls = ({
 
   let timeout;
   useEffect(() => {
-    setHideInputDisplay(false);
+    if (userSpeaking === true || lastUserUtterance.length > 0) setHideInputDisplay(false);
     const createTimeout = () => setTimeout(() => {
       if (userSpeaking === false) setHideInputDisplay(true);
       else createTimeout();
