@@ -67,7 +67,7 @@ const ContentCardSwitch = ({
     >
       {/* elements that are interactive but shouldn't be removed immediately
          can use triggerRemoval to have the card removed */}
-      <Element data={{id, ...data}} triggerRemoval={removeElem} inTranscript={inTranscript} />
+      <Element data={{ id, ...data }} triggerRemoval={removeElem} inTranscript={inTranscript} />
     </div>
   );
   return elem;
