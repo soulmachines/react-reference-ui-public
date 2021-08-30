@@ -99,12 +99,13 @@ let scene = null;
 export const animateCamera = createAsyncThunk('sm/animateCamera', ({ options, duration }) => {
   if (!scene) console.error('cannot animate camera, scene not initiated!');
 
-  scene.sendRequest('animateToNamedCamera', {
-    cameraName: CAMERA_ID,
-    personaId: PERSONA_ID,
-    time: duration || 1,
-    ...options,
-  });
+  console.warn('manual camera animations are disabled while CUE implementation is in progress');
+  // scene.sendRequest('animateToNamedCamera', {
+  //   cameraName: CAMERA_ID,
+  //   personaId: PERSONA_ID,
+  //   time: duration || 1,
+  //   ...options,
+  // });
 });
 
 // tells persona to stop listening to mic input
