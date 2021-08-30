@@ -152,9 +152,15 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
   } catch (e) {
     console.error(e);
   }
+
   /* BIND HANDLERS */
   scene.onDisconnected = () => thunk.dispatch(disconnect());
+  // store a ref to the smwebsdk onmessage so that we can
+  // use the callback while also calling the internal version
+  const smwebsdkOnMessage = scene.onMessage.bind(scene);
   scene.onMessage = (message) => {
+    // removing this will break smwebsdk eventing, call smwebsdk's message handler
+    smwebsdkOnMessage(message);
     switch (message.name) {
       // handles output from TTS (what user said)
       case ('recognizeResults'): {
