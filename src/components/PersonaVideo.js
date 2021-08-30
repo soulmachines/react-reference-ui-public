@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import * as actions from '../store/sm';
 import proxyVideo from '../proxyVideo';
+import { headerHeight, transparentHeader } from '../config';
 
 const PersonaVideo = ({
   loading, connected, setVideoDimensions, className,
@@ -25,9 +26,10 @@ const PersonaVideo = ({
       // needs to be aware of the video target dimensions to render a propperly sized video
       const videoWidth = containerRef.current.clientWidth;
       const videoHeight = containerRef.current.clientHeight;
+      console.log({ ...containerRef.current });
       setVideoDimensions(videoWidth, videoHeight);
       // constrain to inner window height so it fits on mobile
-      setHeight(window.innerHeight);
+      setHeight(`${videoHeight}`);
     }
   };
 
@@ -88,6 +90,7 @@ const StyledPersonaVideo = styled(PersonaVideo)`
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-top: ${transparentHeader ? '' : headerHeight};
   .persona-video {
     /* the video element will conform to the container dimensions, so keep this as it is */
     width: 100%;
