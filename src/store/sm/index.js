@@ -8,7 +8,8 @@ import { meatballString } from './meatball';
 const ORCHESTRATION_MODE = process.env.REACT_APP_ORCHESTRATION_MODE || false;
 const TOKEN_ISSUER = process.env.REACT_APP_TOKEN_URL;
 const PERSONA_ID = '1';
-const CAMERA_ID = 'CloseUp';
+// CAMERA_ID commented out because CUE manages camera
+// const CAMERA_ID = 'CloseUp';
 
 const initialState = {
   tosAccepted: false,
@@ -96,7 +97,8 @@ let scene = null;
  *   panDeg: 0,
  * }
  */
-export const animateCamera = createAsyncThunk('sm/animateCamera', ({ options, duration }) => {
+// export const animateCamera = createAsyncThunk('sm/animateCamera', ({ options, duration }) => {
+export const animateCamera = createAsyncThunk('sm/animateCamera', () => {
   if (!scene) console.error('cannot animate camera, scene not initiated!');
 
   console.warn('manual camera animations are disabled while CUE implementation is in progress');
