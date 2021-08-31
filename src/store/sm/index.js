@@ -8,7 +8,8 @@ import { meatballString } from './meatball';
 const ORCHESTRATION_MODE = process.env.REACT_APP_ORCHESTRATION_MODE || false;
 const TOKEN_ISSUER = process.env.REACT_APP_TOKEN_URL;
 const PERSONA_ID = '1';
-const CAMERA_ID = 'CloseUp';
+// CAMERA_ID commented out because CUE manages camera
+// const CAMERA_ID = 'CloseUp';
 
 const initialState = {
   tosAccepted: false,
@@ -96,15 +97,17 @@ let scene = null;
  *   panDeg: 0,
  * }
  */
-export const animateCamera = createAsyncThunk('sm/animateCamera', ({ options, duration }) => {
+// export const animateCamera = createAsyncThunk('sm/animateCamera', ({ options, duration }) => {
+export const animateCamera = createAsyncThunk('sm/animateCamera', () => {
   if (!scene) console.error('cannot animate camera, scene not initiated!');
 
-  scene.sendRequest('animateToNamedCamera', {
-    cameraName: CAMERA_ID,
-    personaId: PERSONA_ID,
-    time: duration || 1,
-    ...options,
-  });
+  console.warn('manual camera animations are disabled while CUE implementation is in progress');
+  // scene.sendRequest('animateToNamedCamera', {
+  //   cameraName: CAMERA_ID,
+  //   personaId: PERSONA_ID,
+  //   time: duration || 1,
+  //   ...options,
+  // });
 });
 
 // tells persona to stop listening to mic input
@@ -152,9 +155,15 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
   } catch (e) {
     console.error(e);
   }
+
   /* BIND HANDLERS */
   scene.onDisconnected = () => thunk.dispatch(disconnect());
+  // store a ref to the smwebsdk onmessage so that we can
+  // use the callback while also calling the internal version
+  const smwebsdkOnMessage = scene.onMessage.bind(scene);
   scene.onMessage = (message) => {
+    // removing this will break smwebsdk eventing, call smwebsdk's message handler
+    smwebsdkOnMessage(message);
     switch (message.name) {
       // handles output from TTS (what user said)
       case ('recognizeResults'): {
@@ -199,7 +208,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
             // if desired, multiple content cards can be displayed in one turn
             const oldCards = cardsAreStale ? [] : activeCards;
             // this will only ever be one card
-            const newCards = args.map((a) => contentCards[a]);
+            const newCards = args.map((a) => ({ id: a, ...contentCards[a] }));
             const newActiveCards = [...oldCards, ...newCards];
             thunk.dispatch(actions.setActiveCards({ activeCards: newActiveCards }));
             // send card to transcript as well
@@ -213,8 +222,11 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
             thunk.dispatch(actions.setActiveCards({}));
             break;
           }
+          case ('cinematic'): {
+            // fired when CUE changes camera angles
+            break;
+          }
           case ('feature'): {
-            console.log(message.body);
             const { arguments: featureArgs } = message.body;
             const feature = featureArgs[0];
             const featureState = featureArgs[1];
@@ -265,6 +277,16 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
         break;
       }
 
+      case ('updateContentAwareness'): {
+        // fired when content awareness changes
+        // eg an element w/ data-sm-content enters/exits DOM
+        break;
+      }
+      case ('conversationSend'): {
+        // fired when the user manually types in some input
+        // we handle this elsewhere so we don't need to handle this event
+        break;
+      }
       // pull out content card data from contexts
       case ('conversationResult'): {
         // get content cards from context

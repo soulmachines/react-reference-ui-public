@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import * as actions from '../store/sm';
 import proxyVideo from '../proxyVideo';
+import { headerHeight, transparentHeader } from '../config';
 
 const PersonaVideo = ({
   loading, connected, setVideoDimensions, className,
@@ -27,7 +28,7 @@ const PersonaVideo = ({
       const videoHeight = containerRef.current.clientHeight;
       setVideoDimensions(videoWidth, videoHeight);
       // constrain to inner window height so it fits on mobile
-      setHeight(window.innerHeight);
+      setHeight(`${videoHeight}`);
     }
   };
 
@@ -51,9 +52,7 @@ const PersonaVideo = ({
       {
         connected
           ? (
-            // we display captions as an overlay. this functionality is critical and
-            // should not be removed in derrivative custom UI's!!
-            <video ref={videoRef} autoPlay playsInline className="persona-video" id="personavideo" />
+            <video ref={videoRef} autoPlay playsInline className="persona-video" id="personavideo" data-sm-video />
           )
           : null
       }
@@ -90,6 +89,7 @@ const StyledPersonaVideo = styled(PersonaVideo)`
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-top: ${transparentHeader ? '' : headerHeight};
   .persona-video {
     /* the video element will conform to the container dimensions, so keep this as it is */
     width: 100%;
