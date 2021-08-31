@@ -64,10 +64,15 @@ const ContentCardSwitch = ({
       onClick={removeOnClick ? removeElem : null}
       onKeyPress={removeOnClick ? removeElem : null}
       className="m-2"
+      data-sm-content={id}
     >
       {/* elements that are interactive but shouldn't be removed immediately
          can use triggerRemoval to have the card removed */}
-      <Element data={{ id, ...data }} triggerRemoval={removeElem} inTranscript={inTranscript} />
+      <Element
+        data={{ id, ...data }}
+        triggerRemoval={removeElem}
+        inTranscript={inTranscript}
+      />
     </div>
   );
   return elem;

@@ -206,7 +206,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
             // if desired, multiple content cards can be displayed in one turn
             const oldCards = cardsAreStale ? [] : activeCards;
             // this will only ever be one card
-            const newCards = args.map((a) => contentCards[a]);
+            const newCards = args.map((a) => ({ id: a, ...contentCards[a] }));
             const newActiveCards = [...oldCards, ...newCards];
             thunk.dispatch(actions.setActiveCards({ activeCards: newActiveCards }));
             // send card to transcript as well
