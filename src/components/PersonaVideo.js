@@ -26,7 +26,6 @@ const PersonaVideo = ({
       // needs to be aware of the video target dimensions to render a propperly sized video
       const videoWidth = containerRef.current.clientWidth;
       const videoHeight = containerRef.current.clientHeight;
-      console.log({ ...containerRef.current });
       setVideoDimensions(videoWidth, videoHeight);
       // constrain to inner window height so it fits on mobile
       setHeight(`${videoHeight}`);
