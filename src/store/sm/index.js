@@ -222,8 +222,11 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
             thunk.dispatch(actions.setActiveCards({}));
             break;
           }
+          case ('cinematic'): {
+            // fired when CUE changes camera angles
+            break;
+          }
           case ('feature'): {
-            console.log(message.body);
             const { arguments: featureArgs } = message.body;
             const feature = featureArgs[0];
             const featureState = featureArgs[1];
@@ -274,6 +277,16 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
         break;
       }
 
+      case ('updateContentAwareness'): {
+        // fired when content awareness changes
+        // eg an element w/ data-sm-content enters/exits DOM
+        break;
+      }
+      case ('conversationSend'): {
+        // fired when the user manually types in some input
+        // we handle this elsewhere so we don't need to handle this event
+        break;
+      }
       // pull out content card data from contexts
       case ('conversationResult'): {
         // get content cards from context
