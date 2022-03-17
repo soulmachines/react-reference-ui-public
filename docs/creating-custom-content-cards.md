@@ -43,7 +43,7 @@ The `data` object contains whatever data payload you've defined in your corpus. 
 
 Text data can be sent to the NLP by dispatching events to the Redux store, which will interact with `smwebsdk`. `sendTextMessage` or `sendEvent` can be imported and the `connect` method from `react-redux` can be used to dispatch events to Redux. Here is a complete example of a minimal component that sends text and events when a button is pressed:
 
-```js
+```jsx
 import React from 'react';
 import { connect } from 'react-redux';
 import { sendTextMessage, sendEvent } from '../../store/sm/index';
@@ -73,7 +73,7 @@ export default connect(null, mapDispatchToProps)(CardThatSendsThings);
 
 The `ContentCardSwitch` component maps the component key of the card payload to the proper React component. To add your component, add a key to the `componentMap` object with an object defining the component handler. `ContentCardSwitch` can also automatically hide a card once it's been clicked on—in this case, we'll set the value of `removeOnClick` to `true`. Using the previous example, we'll render the example card when the `component` key of the content card payload is set to `demoCard`:
 
-```js
+```jsx
 import React from 'react';
 import CardThatSendsThings from './ContentCards/CardThatSendsThings';
 
