@@ -37,9 +37,13 @@ const DPChat = ({
   };
 
   const cleanup = () => {
-    console.log('cleanup function invoked!');
-    window.removeEventListener('resize', handleResize);
-    dispatchDisconnect();
+    if (Date.now() - startedAt < 1000) {
+      console.warn('cleanup function invoked less than 1 second after component mounted, ignoring!');
+    } else {
+      console.log('cleanup function invoked!');
+      window.removeEventListener('resize', handleResize);
+      dispatchDisconnect();
+    }
   };
 
   useEffect(() => {
