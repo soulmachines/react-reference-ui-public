@@ -29,6 +29,7 @@ const DPChat = ({
   const overlayRef = createRef();
   const [height, setHeight] = useState('100vh');
   const [largeViewport, setLargeViewport] = useState(false);
+  const [startedAt] = useState(Date.now());
 
   const handleResize = () => {
     setHeight(window.innerHeight);
