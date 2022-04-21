@@ -1,15 +1,19 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { smwebsdk } from '@soulmachines/smwebsdk';
+import { Scene, Persona, UserMedia } from '@soulmachines/smwebsdk';
 import to from 'await-to-js';
 import proxyVideo, { mediaStreamProxy } from '../../proxyVideo';
 import roundObject from '../../utils/roundObject';
 import { meatballString } from './meatball';
 
 const ORCHESTRATION_MODE = process.env.REACT_APP_ORCHESTRATION_MODE || false;
+const AUTH_MODE = parseInt(process.env.REACT_APP_PERSONA_AUTH_MODE, 10) || 0;
+const API_KEY = process.env.REACT_APP_API_KEY || '';
 const TOKEN_ISSUER = process.env.REACT_APP_TOKEN_URL;
 const PERSONA_ID = '1';
 // CAMERA_ID commented out because CUE manages camera
 // const CAMERA_ID = 'CloseUp';
+
+if (AUTH_MODE === 0 && API_KEY === '') throw new Error('REACT_APP_API_KEY not defined!');
 
 const initialState = {
   tosAccepted: false,
@@ -135,23 +139,25 @@ export const disconnect = createAsyncThunk('sm/disconnect', async (args, thunk) 
 
 export const createScene = createAsyncThunk('sm/createScene', async (typingOnly = false, thunk) => {
   /* CREATE SCENE */
-  if (scene instanceof smwebsdk.Scene) {
+  if (scene instanceof Scene) {
     return console.error('warning! you attempted to create a new scene, when one already exists!');
   }
   // request permissions from user and create instance of Scene and ask for webcam/mic permissions
-  const { microphone, microphoneAndCamera, none } = smwebsdk.userMedia;
+  const { microphone, microphoneAndCamera, none } = UserMedia;
   try {
-    scene = new smwebsdk.Scene(
-      proxyVideo,
+    const sceneOpts = {
+      videoElement: proxyVideo,
       // audio only toggle, but this is set automatically if user denies camera permissions.
       // change value if your application needs to have an explicit audio-only mode.
-      false,
+      audioOnly: false,
       // requested permissions
-      typingOnly ? none : microphoneAndCamera,
+      requestedMediaDevices: typingOnly ? none : microphoneAndCamera,
       // if user denies camera and mic permissions, smwebsdk will request mic only for us
       // required permissions
-      typingOnly ? none : microphone,
-    );
+      requiredMediaDevices: typingOnly ? none : microphone,
+    };
+    if (AUTH_MODE === 0) sceneOpts.apiKey = API_KEY;
+    scene = new Scene(sceneOpts);
   } catch (e) {
     console.error(e);
   }
@@ -404,14 +410,20 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
   };
 
   // create instance of Persona class w/ scene instance
-  persona = new smwebsdk.Persona(scene, PERSONA_ID);
+  persona = new Persona(scene, PERSONA_ID);
 
   /* CONNECT TO PERSONA */
   try {
     // get signed JWT from token server so we can connect to Persona server
-    const [tokenErr, tokenRes] = await to(fetch(TOKEN_ISSUER, { method: 'POST' }));
-    if (tokenErr) return thunk.rejectWithValue({ msg: 'error fetching token! is this endpoint CORS authorized?' });
-    const { url, jwt } = await tokenRes.json();
+    let jwt = null;
+    let url = null;
+    if (AUTH_MODE === 1) {
+      const [tokenErr, tokenRes] = await to(fetch(TOKEN_ISSUER, { method: 'POST' }));
+      if (tokenErr) return thunk.rejectWithValue({ msg: 'error fetching token! is this endpoint CORS authorized?' });
+      const res = await tokenRes.json();
+      jwt = res.jwt;
+      url = res.url;
+    }
 
     // connect to Persona server
     const retryOptions = {
