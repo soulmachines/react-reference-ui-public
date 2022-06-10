@@ -3,6 +3,7 @@ import breakpoints from './utils/breakpoints';
 
 const buttonSidePadding = '0.8rem';
 const buttonVerticalPadding = '0.4rem';
+const primaryAccent = 'blue';
 
 export default createGlobalStyle`
   svg {
@@ -22,5 +23,10 @@ export default createGlobalStyle`
     @media (min-width: ${breakpoints.md}px) {
       font-size: 1.8rem;
     }
+  }
+  .btn.primary-accent {
+    border: 1px solid ${primaryAccent};
+    background: ${primaryAccent};
+    color: #FFF;
   }
 `;

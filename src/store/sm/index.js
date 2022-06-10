@@ -82,6 +82,10 @@ const initialState = {
   cameraWidth: 1,
   cameraHeight: 1,
   showTranscript: false,
+  // enable and disable features for each new session
+  config: {
+    autoClearCards: false,
+  },
 };
 
 // host actions object since we need the types to be available for
@@ -167,6 +171,19 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
   // store a ref to the smwebsdk onmessage so that we can
   // use the callback while also calling the internal version
   const smwebsdkOnMessage = scene.onMessage.bind(scene);
+
+  const { sm } = thunk.getState();
+  const { autoClearCards } = sm.config;
+  scene.conversation.autoClearCards = autoClearCards;
+  // handle content cards that come in via content card API
+  scene.conversation.onCardChanged.addListener((activeCards) => {
+    thunk.dispatch(actions.setActiveCards({ activeCards }));
+    thunk.dispatch(actions.addConversationResult({
+      source: 'persona',
+      card: activeCards[0],
+    }));
+  });
+
   scene.onMessage = (message) => {
     // removing this will break smwebsdk eventing, call smwebsdk's message handler
     smwebsdkOnMessage(message);
@@ -209,21 +226,8 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
       case ('speechMarker'): {
         const { name: speechMarkerName, arguments: args } = message.body;
         switch (speechMarkerName) {
-          case ('showcards'): {
-            const { activeCards, contentCards, cardsAreStale } = thunk.getState().sm;
-            // if desired, multiple content cards can be displayed in one turn
-            const oldCards = cardsAreStale ? [] : activeCards;
-            // this will only ever be one card
-            const newCards = args.map((a) => ({ id: a, ...contentCards[a] }));
-            const newActiveCards = [...oldCards, ...newCards];
-            thunk.dispatch(actions.setActiveCards({ activeCards: newActiveCards }));
-            // send card to transcript as well
-            thunk.dispatch(actions.addConversationResult({
-              source: 'persona',
-              card: newCards[0],
-            }));
-            break;
-          }
+          // @showCards() no longer triggers a speech marker
+          // cards come in through the content card API
           case ('hidecards'): {
             thunk.dispatch(actions.setActiveCards({}));
             break;

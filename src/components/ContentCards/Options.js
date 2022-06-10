@@ -6,12 +6,12 @@ import { sendTextMessage } from '../../store/sm/index';
 const Options = ({ data, dispatchTextFromData }) => {
   const { options } = data;
   const optionsDisplay = options.map(({ label, value }) => (
-    <button type="button" className="list-group-item list-group-item-action" data-trigger-text={value} onClick={dispatchTextFromData} key={JSON.stringify({ label, value })}>
+    <button type="button" className="btn primary-accent" data-trigger-text={value} onClick={dispatchTextFromData} key={JSON.stringify({ label, value })}>
       {label}
     </button>
   ));
   return (
-    <div className="list-group">
+    <div className="d-grid gap-2">
       {optionsDisplay}
     </div>
   );
@@ -19,7 +19,10 @@ const Options = ({ data, dispatchTextFromData }) => {
 
 Options.propTypes = {
   data: PropTypes.shape({
-    options: PropTypes.arrayOf([PropTypes.object]),
+    options: PropTypes.arrayOf(PropTypes.shape({
+      label: PropTypes.string,
+      value: PropTypes.string,
+    })),
   }).isRequired,
   dispatchTextFromData: PropTypes.func.isRequired,
 };
