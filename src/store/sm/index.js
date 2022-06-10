@@ -219,15 +219,10 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
 
       // handle speech markers
       case ('speechMarker'): {
-        const { name: speechMarkerName, arguments: args } = message.body;
+        const { name: speechMarkerName } = message.body;
         switch (speechMarkerName) {
-          // @showCards() no longer triggers a speech marker
-          // cards come in through the content card API
-          case ('hidecards'): {
-            console.log(args);
-            thunk.dispatch(actions.setActiveCards({}));
-            break;
-          }
+          // @showCards() and @hideCards() no longer triggers a speech marker
+          // not needed w/ content card API
           case ('cinematic'): {
             // fired when CUE changes camera angles
             break;
