@@ -272,7 +272,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
             break;
           }
           default: {
-            console.warn(`unregonized speech marker: ${speechMarkerName}`);
+            console.warn(`unrecognized speech marker: ${speechMarkerName}`);
           }
         }
         break;
