@@ -27,9 +27,6 @@ const initialState = {
   videoWidth: window.innerWidth,
   transcript: [],
   activeCards: [],
-  // lets us keep track of whether the content cards were added in this turn
-  cardsAreStale: false,
-  contentCards: {},
   speechState: 'idle',
   // NLP gives us results as it processes final user utterance
   intermediateUserUtterance: '',
@@ -213,8 +210,6 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
       // handles output from NLP (what DP is saying)
       case ('personaResponse'): {
         const { currentSpeech } = message.body;
-        const { cardsAreStale } = thunk.getState().sm;
-        if (cardsAreStale === true) thunk.dispatch(actions.setActiveCards({}));
         thunk.dispatch(actions.addConversationResult({
           source: 'persona',
           text: currentSpeech,
@@ -229,6 +224,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
           // @showCards() no longer triggers a speech marker
           // cards come in through the content card API
           case ('hidecards'): {
+            console.log(args);
             thunk.dispatch(actions.setActiveCards({}));
             break;
           }
@@ -297,35 +293,6 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
         // we handle this elsewhere so we don't need to handle this event
         break;
       }
-      // pull out content card data from contexts
-      case ('conversationResult'): {
-        // get content cards from context
-        const { context } = message.body.output;
-        // filter out $cardName.original, we just want values for $cardName
-        const relevantKeys = Object.keys(context).filter((k) => /\.original/gm.test(k) === false);
-        let contentCards = {};
-        relevantKeys.forEach((k) => {
-          // remove public- prefix from key
-          const cardKey = k.match(/public-(.*)/m)[1];
-          try {
-            contentCards[cardKey] = JSON.parse(context[k]);
-          } catch {
-            console.error(`invalid JSON in content card payload for ${k}!`);
-          }
-        });
-        // also consume DF custom payload
-        const fulfillmentMessages = message
-          .body?.provider?.meta?.dialogflow?.queryResult?.fulfillmentMessages;
-        if (fulfillmentMessages) {
-          fulfillmentMessages.forEach((m) => {
-            if ('payload' in m && 'soulmachines' in m.payload) {
-              contentCards = { ...contentCards, ...m.payload.soulmachines };
-            }
-          });
-        }
-        thunk.dispatch(actions.addContentCards({ contentCards }));
-        break;
-      }
 
       // state messages contain a lot of things, including user emotions,
       // call stats, and persona state
@@ -338,11 +305,6 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
           if ('speechState' in personaState) {
             const { speechState } = personaState;
             const action = actions.setSpeechState({ speechState });
-            // when DP starts idling ie its turn ends, set contentCardsStale to true
-            if (speechState === 'idle') {
-              const { activeCards } = thunk.getState().sm;
-              thunk.dispatch(actions.setActiveCards({ activeCards, cardsAreStale: true }));
-            }
             thunk.dispatch(action);
           }
 
@@ -532,13 +494,6 @@ const smSlice = createSlice({
     setActiveCards: (state, { payload }) => ({
       ...state,
       activeCards: payload.activeCards || [],
-      cardsAreStale: payload.cardsAreStale || false,
-    }),
-    // content cards with the same key may get overwritten, so when the card is called
-    // in @showCards(), we copy to transcript: [] and activeCards: []
-    addContentCards: (state, { payload }) => ({
-      ...state,
-      contentCards: { ...state.contentCards, ...payload.contentCards },
     }),
     stopSpeaking: (state) => {
       if (persona) persona.stopSpeaking();
