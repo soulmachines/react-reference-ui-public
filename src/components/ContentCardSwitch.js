@@ -40,7 +40,8 @@ const ContentCardSwitch = ({
   };
 
   if (card === undefined) return returnCardError('unknown content card name! did you make a typo in @showCards()?');
-  const { component: componentName, data, id } = card;
+  const { data, id, type: componentName } = card;
+
   if (componentName in componentMap === false) return returnCardError(`component ${componentName} not found in componentMap!`);
   const { element: Element, removeOnClick } = componentMap[componentName];
 
@@ -79,7 +80,11 @@ const ContentCardSwitch = ({
 };
 
 ContentCardSwitch.propTypes = {
-  activeCards: PropTypes.arrayOf(PropTypes.object).isRequired,
+  activeCards: PropTypes.arrayOf(PropTypes.shape({
+    type: PropTypes.string,
+    // eslint-disable-next-line react/forbid-prop-types
+    data: PropTypes.object,
+  })).isRequired,
   dispatchActiveCards: PropTypes.func.isRequired,
   dispatchAnimateCamera: PropTypes.func.isRequired,
   videoWidth: PropTypes.number.isRequired,
