@@ -12,9 +12,9 @@ import Header from '../components/Header';
 import { headerHeight, landingBackgroundImage, landingBackgroundColor } from '../config';
 import breakpoints from '../utils/breakpoints';
 
-const Loading = ({
+function Loading({
   className, connected, loading, dispatchCreateScene, error, tosAccepted,
-}) => {
+}) {
   // pull querystring to see if we are displaying an error
   // (app can redirect to /loading on fatal err)
   const useQuery = () => new URLSearchParams(useLocation().search);
@@ -277,7 +277,7 @@ const Loading = ({
       </div>
     </div>
   );
-};
+}
 
 Loading.propTypes = {
   className: PropTypes.string.isRequired,

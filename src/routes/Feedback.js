@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import { headerHeight } from '../config';
 
-const Feedback = ({ className }) => {
+function Feedback({ className }) {
   const [display, setDisplay] = useState(null);
   return (
     <div className={className}>
@@ -41,7 +41,7 @@ const Feedback = ({ className }) => {
       </div>
     </div>
   );
-};
+}
 
 Feedback.propTypes = {
   className: PropTypes.string.isRequired,

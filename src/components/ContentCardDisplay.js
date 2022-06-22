@@ -8,9 +8,9 @@ import Transcript from './ContentCards/Transcript';
 import ContentCardSwitch from './ContentCardSwitch';
 import breakpoints from '../utils/breakpoints';
 
-const ContentCardDisplay = ({
+function ContentCardDisplay({
   activeCards, dispatchAnimateCamera, videoWidth, videoHeight, showTranscript, className, connected,
-}) => {
+}) {
   if (!activeCards) return null;
   const CardDisplay = activeCards.map((c, index) => (
     <div className="mb-2" key={JSON.stringify(c)}>
@@ -40,7 +40,7 @@ const ContentCardDisplay = ({
       { showTranscript ? <Transcript /> : CardDisplay }
     </div>
   );
-};
+}
 
 ContentCardDisplay.propTypes = {
   activeCards: PropTypes.arrayOf(PropTypes.object).isRequired,

@@ -17,7 +17,7 @@ import {
 import CameraPreview from '../components/CameraPreview';
 import breakpoints from '../utils/breakpoints';
 
-const DPChat = ({
+function DPChat({
   className,
   connected,
   disconnected,
@@ -25,7 +25,7 @@ const DPChat = ({
   error,
   tosAccepted,
   cameraOn,
-}) => {
+}) {
   const overlayRef = createRef();
   const [height, setHeight] = useState('100vh');
   const [largeViewport, setLargeViewport] = useState(false);
@@ -126,7 +126,7 @@ const DPChat = ({
     }
     </div>
   );
-};
+}
 
 DPChat.propTypes = {
   className: PropTypes.string.isRequired,

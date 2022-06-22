@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { ArrowUpRightSquare } from 'react-bootstrap-icons';
 
-const Link = ({ data, className }) => {
+function Link({ data, className }) {
   const {
     title, url, imageUrl, description, imageAltText,
   } = data;
@@ -27,7 +27,7 @@ const Link = ({ data, className }) => {
       </div>
     </div>
   );
-};
+}
 
 Link.propTypes = {
   data: PropTypes.objectOf({

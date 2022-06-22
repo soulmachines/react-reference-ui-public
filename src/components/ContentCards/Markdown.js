@@ -2,7 +2,7 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import PropTypes from 'prop-types';
 
-const Markdown = ({ data }) => {
+function Markdown({ data }) {
   const { text } = data;
   return (
     <div className="card">
@@ -11,7 +11,7 @@ const Markdown = ({ data }) => {
       </div>
     </div>
   );
-};
+}
 
 Markdown.propTypes = {
   data: PropTypes.shape({
