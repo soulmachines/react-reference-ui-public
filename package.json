@@ -2,7 +2,7 @@
   "name": "react-reference-ui",
   "version": "1.0.0",
   "engines": {
-    "node": "<15"
+    "node": ">15"
   },
   "private": true,
   "scripts": {
@@ -31,7 +31,7 @@
     "react-markdown": "^6.0.2",
     "react-redux": "^7.2.4",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "5.0.0",
+    "react-scripts": "5.0.1",
     "react-tooltip": "^4.2.21",
     "react-youtube": "^7.13.1",
     "redux": "^4.1.0",
