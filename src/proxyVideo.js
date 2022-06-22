@@ -22,7 +22,7 @@ class UserMediaStream {
   // should be called before setUserMediaStream so we can tell the store the stream's dimensions
   passDispatch = (dispatch) => {
     this.dispatch = dispatch;
-  }
+  };
 
   setUserMediaStream = (stream, audioOnly = false) => {
     this.videoOff = !audioOnly;
@@ -40,7 +40,7 @@ class UserMediaStream {
     } catch {
       this.dispatch(setCameraState({ cameraOn: false }));
     }
-  }
+  };
 
   getUserMediaStream = () => this.userMediaStream;
 
@@ -48,7 +48,7 @@ class UserMediaStream {
   // if we toggle video, we need to provide scene w/ the new feed
   enableToggle = (scene) => {
     this.scene = scene;
-  }
+  };
 
   // NOTE: renders emotional recognition nonfunctional, not recommended for use as of 7/14/21
   toggleVideo = async () => {
@@ -75,7 +75,7 @@ class UserMediaStream {
         this.dispatch(setCameraState({ cameraOn: true }));
       }
     }
-  }
+  };
 }
 
 export const mediaStreamProxy = new UserMediaStream();

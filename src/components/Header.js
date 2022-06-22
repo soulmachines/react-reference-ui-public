@@ -10,9 +10,9 @@ import {
   disconnect,
 } from '../store/sm/index';
 
-const Header = ({
+function Header({
   className, connected, loading, dispatchDisconnect,
-}) => {
+}) {
   const { pathname } = useLocation();
   return (
     <div className={`${className}`}>
@@ -39,7 +39,7 @@ const Header = ({
       </div>
     </div>
   );
-};
+}
 Header.propTypes = {
   className: PropTypes.string.isRequired,
   connected: PropTypes.bool.isRequired,

@@ -4,9 +4,9 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { syllable } from 'syllable';
 
-const Captions = ({
+function Captions({
   speechState, lastPersonaUtterance, className, connected,
-}) => {
+}) {
   const [showCaptions, setShowCaptions] = useState(false);
   // if we have a very long response, we need to cycle the displayed content
   const [captionText, setCaptionText] = useState('');
@@ -77,7 +77,7 @@ const Captions = ({
       </div>
     </div>
   );
-};
+}
 
 Captions.propTypes = {
   speechState: PropTypes.string.isRequired,

@@ -15,86 +15,88 @@ import { headerHeight, landingBackgroundImage, landingBackgroundColor } from '..
 import { setTOS } from '../store/sm/index';
 import eula from '../eula';
 
-const Landing = ({ className, dispatchAcceptTOS }) => (
-  <div className={className}>
-    <div className="landing-wrapper">
-      <Header />
-      <div className="container landing-container">
-        <div className="card col-lg-6 p-3 mb-2">
-          <div className="card-body">
-            <h2 className="header-with-bottom-border">
-              <CheckSquare />
-              {' '}
-              First things first
-            </h2>
-
-            <h5>Before we get started:</h5>
-            <div className="mb-3">
-              <div className="mx-4 mt-2">
-                <FileEarmarkMedical />
+function Landing({ className, dispatchAcceptTOS }) {
+  return (
+    <div className={className}>
+      <div className="landing-wrapper">
+        <Header />
+        <div className="container landing-container">
+          <div className="card col-lg-6 p-3 mb-2">
+            <div className="card-body">
+              <h2 className="header-with-bottom-border">
+                <CheckSquare />
                 {' '}
-                <a href="https://www.soulmachines.com/privacy-policy/" target="_blank" rel="noreferrer">Privacy Policy</a>
-              </div>
-              {/* EULA modal */}
-              <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div className="modal-dialog modal-xl">
-                  <div className="modal-content">
-                    <div className="modal-header">
-                      <h5 className="modal-title" id="exampleModalLabel">End User License Agreement</h5>
-                      <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" />
-                    </div>
-                    <div className="modal-body">
-                      {eula}
+                First things first
+              </h2>
+
+              <h5>Before we get started:</h5>
+              <div className="mb-3">
+                <div className="mx-4 mt-2">
+                  <FileEarmarkMedical />
+                  {' '}
+                  <a href="https://www.soulmachines.com/privacy-policy/" target="_blank" rel="noreferrer">Privacy Policy</a>
+                </div>
+                {/* EULA modal */}
+                <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                  <div className="modal-dialog modal-xl">
+                    <div className="modal-content">
+                      <div className="modal-header">
+                        <h5 className="modal-title" id="exampleModalLabel">End User License Agreement</h5>
+                        <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+                      </div>
+                      <div className="modal-body">
+                        {eula}
+                      </div>
                     </div>
                   </div>
                 </div>
+                <div className="mx-4">
+                  <FileEarmarkMedical />
+                  {' '}
+                  <button type="button" className="link-primary link-button" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                    EULA
+                  </button>
+                </div>
+                <div className="mx-4">
+                  <i className="bi bi-camera-video" />
+                  <CameraVideo />
+                  {' '}
+                  My camera and microphone will be used
+                </div>
+                <div className="mx-4">
+                  <GraphUp />
+                  {' '}
+                  Anonymized usage data will be captured
+                </div>
               </div>
-              <div className="mx-4">
-                <FileEarmarkMedical />
-                {' '}
-                <button type="button" className="link-primary link-button" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                  EULA
-                </button>
-              </div>
-              <div className="mx-4">
-                <i className="bi bi-camera-video" />
-                <CameraVideo />
-                {' '}
-                My camera and microphone will be used
-              </div>
-              <div className="mx-4">
-                <GraphUp />
-                {' '}
-                Anonymized usage data will be captured
-              </div>
-            </div>
 
-            <h4 className="header-with-bottom-border">
-              What information are we collecting?
-            </h4>
-            <p>
-              We will be collecting information about your facial features, expressions
-              and voice characteristics when you are interacting with the Digital Human.
-              If you want to find out more information and how we collect and use your
-              information please see our Privacy Policy, found here:
+              <h4 className="header-with-bottom-border">
+                What information are we collecting?
+              </h4>
+              <p>
+                We will be collecting information about your facial features, expressions
+                and voice characteristics when you are interacting with the Digital Human.
+                If you want to find out more information and how we collect and use your
+                information please see our Privacy Policy, found here:
+                {' '}
+                <a href="https://www.soulmachines.com/privacy-policy/" target="_blank" rel="noreferrer">https://www.soulmachines.com/privacy-policy/</a>
+                .
+              </p>
+              <p>
+                If you are happy to proceed on this basis, please confirm your acceptance.
+              </p>
+            </div>
+            <Link to="loading" className="btn btn-success btn-lg action-btn" onClick={() => dispatchAcceptTOS(true)}>
+              I accept Privacy Notice and EULA
               {' '}
-              <a href="https://www.soulmachines.com/privacy-policy/" target="_blank" rel="noreferrer">https://www.soulmachines.com/privacy-policy/</a>
-              .
-            </p>
-            <p>
-              If you are happy to proceed on this basis, please confirm your acceptance.
-            </p>
+              <ArrowRightCircleFill />
+            </Link>
           </div>
-          <Link to="loading" className="btn btn-success btn-lg action-btn" onClick={() => dispatchAcceptTOS(true)}>
-            I accept Privacy Notice and EULA
-            {' '}
-            <ArrowRightCircleFill />
-          </Link>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+}
 
 Landing.propTypes = {
   className: PropTypes.string.isRequired,

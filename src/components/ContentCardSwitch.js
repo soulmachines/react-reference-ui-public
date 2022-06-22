@@ -13,9 +13,9 @@ const returnCardError = (errMsg) => {
   return <div className="alert alert-danger" key={Math.random()}>{errMsg}</div>;
 };
 
-const ContentCardSwitch = ({
+function ContentCardSwitch({
   activeCards, dispatchActiveCards, card, index, inTranscript,
-}) => {
+}) {
   const componentMap = {
     options: {
       element: Options,
@@ -77,7 +77,7 @@ const ContentCardSwitch = ({
     </div>
   );
   return elem;
-};
+}
 
 ContentCardSwitch.propTypes = {
   activeCards: PropTypes.arrayOf(PropTypes.shape({

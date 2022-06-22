@@ -7,9 +7,9 @@ import * as actions from '../store/sm';
 import proxyVideo from '../proxyVideo';
 import { headerHeight, transparentHeader } from '../config';
 
-const PersonaVideo = ({
+function PersonaVideo({
   loading, connected, setVideoDimensions, className,
-}) => {
+}) {
   // video elem ref used to link proxy video element to displayed video
   const videoRef = createRef();
   // we need the container dimensions to render the right size video in the persona server
@@ -70,7 +70,7 @@ const PersonaVideo = ({
       }
     </div>
   );
-};
+}
 
 PersonaVideo.propTypes = {
   setVideoDimensions: PropTypes.func.isRequired,

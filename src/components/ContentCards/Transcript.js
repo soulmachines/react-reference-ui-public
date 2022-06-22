@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import ContentCardSwitch from '../ContentCardSwitch';
 
-const Transcript = ({ className, transcript }) => {
+function Transcript({ className, transcript }) {
   const transcriptDisplay = transcript.map(({
     source, text, card, timestamp,
   }) => {
@@ -50,7 +50,7 @@ const Transcript = ({ className, transcript }) => {
       </div>
     </div>
   );
-};
+}
 
 Transcript.propTypes = {
   className: PropTypes.string.isRequired,

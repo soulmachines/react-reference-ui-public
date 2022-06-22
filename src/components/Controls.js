@@ -19,7 +19,7 @@ const volumeMeterMultiplier = 1.2;
 const smallHeight = volumeMeterHeight;
 const largeHeight = volumeMeterHeight * volumeMeterMultiplier;
 
-const Controls = ({
+function Controls({
   className,
   intermediateUserUtterance,
   lastUserUtterance,
@@ -35,7 +35,7 @@ const Controls = ({
   videoWidth,
   connected,
   typingOnly,
-}) => {
+}) {
   const [inputValue, setInputValue] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
   const [volume, setVolume] = useState(0);
@@ -272,7 +272,7 @@ const Controls = ({
       </div>
     </div>
   );
-};
+}
 
 Controls.propTypes = {
   className: PropTypes.string.isRequired,

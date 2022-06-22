@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 // import { CameraVideoOff } from 'react-bootstrap-icons';
 import { mediaStreamProxy } from '../proxyVideo';
 
-const CameraPreview = ({ connected, className, cameraOn }) => {
+function CameraPreview({ connected, className, cameraOn }) {
   const videoRef = React.createRef();
   const stream = mediaStreamProxy.getUserMediaStream();
 
@@ -37,7 +37,7 @@ const CameraPreview = ({ connected, className, cameraOn }) => {
       </div>
     </div>
   );
-};
+}
 
 CameraPreview.propTypes = {
   connected: PropTypes.bool.isRequired,

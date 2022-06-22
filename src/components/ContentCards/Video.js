@@ -7,7 +7,7 @@ import {
   mute, sendTextMessage, setActiveCards, keepAlive,
 } from '../../store/sm/index';
 
-const Video = ({
+function Video({
   data,
   className,
   isMuted,
@@ -17,7 +17,7 @@ const Video = ({
   inTranscript,
   dispatchKeepAlive,
   activeCards,
-}) => {
+}) {
   const { videoId, autoplay } = data;
   const containerRef = React.createRef();
   const [YTElem, setYTElem] = useState();
@@ -145,7 +145,7 @@ const Video = ({
       </div>
     </div>
   );
-};
+}
 
 Video.propTypes = {
   data: PropTypes.shape({

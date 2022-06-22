@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { sendTextMessage } from '../../store/sm/index';
 
-const Options = ({ data, dispatchTextFromData }) => {
+function Options({ data, dispatchTextFromData }) {
   const { options } = data;
   const optionsDisplay = options.map(({ label, value }) => (
     <button type="button" className="btn primary-accent" data-trigger-text={value} onClick={dispatchTextFromData} key={JSON.stringify({ label, value })}>
@@ -15,7 +15,7 @@ const Options = ({ data, dispatchTextFromData }) => {
       {optionsDisplay}
     </div>
   );
-};
+}
 
 Options.propTypes = {
   data: PropTypes.shape({
