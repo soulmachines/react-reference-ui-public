@@ -140,7 +140,7 @@ export const disconnect = createAsyncThunk('sm/disconnect', async (args, thunk) 
 
 export const createScene = createAsyncThunk('sm/createScene', async (typingOnly = false, thunk) => {
   /* CREATE SCENE */
-  if (scene instanceof Scene) {
+  if (scene !== null) {
     return console.error('warning! you attempted to create a new scene, when one already exists!');
   }
   // request permissions from user and create instance of Scene and ask for webcam/mic permissions
