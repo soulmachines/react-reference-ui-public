@@ -20,8 +20,9 @@ module.exports = {
     '@typescript-eslint',
   ],
   rules: {
-    'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx'] }],
-    'no-console': [0, { extensions: ['.js', '.jsx'] }],
+    'react/jsx-filename-extension': 0,
+    'no-console': 0,
+    'default-param-last': 0,
     'linebreak-style': ['error', process.platform === 'win32' ? 'windows' : 'unix'],
   },
 };
