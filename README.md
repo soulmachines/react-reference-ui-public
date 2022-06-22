@@ -6,10 +6,14 @@ This template serves as "opinionated documentation," in that it contains most of
 
 ## Setup
 
-You need a token server to authenticate the UI session with the Soul Machines Persona server. Either Soul Machines will provide an endpoint, or you will have to spin up an instance of [express-token-server](https://github.com/soulmachines/express-token-server) with your credentials from DDNA Studio.
+In order to run this application, you'll either need an API key or a token server. Most projects will use an API key--token servers are only necessary when interfacing with a non-native NLP through a orchestration server.
 
 ### Copy `.env.example` contents into `.env`
-Create an empty text file called `.env` and copy the contents of `.env.example` into it. These environment variables are required for the UI to run. Set the value of `REACT_APP_TOKEN_URL` to the endpoint of your token server. Optionally, if you're using an orchestration server, set the value of
+Create an empty text file called `.env` and copy the contents of `.env.example` into it. These environment variables are required for the UI to run.
+
+If using an API key, set `REACT_APP_PERSONA_AUTH_MODE` to `0` and populate `REACT_APP_TOKEN_URL` with your key.
+
+If using an orchestration server, set `REACT_APP_PERSONA_AUTH_MODE` to `1` and populate `REACT_APP_TOKEN_URL` with your token server endpoint and set `REACT_APP_TOKEN_URL` to `true`.
 
 ### `npm install`
 Run to install the project's dependencies.
