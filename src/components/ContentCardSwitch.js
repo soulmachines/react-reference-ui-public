@@ -86,11 +86,10 @@ ContentCardSwitch.propTypes = {
     data: PropTypes.object,
   })).isRequired,
   dispatchActiveCards: PropTypes.func.isRequired,
-  dispatchAnimateCamera: PropTypes.func.isRequired,
-  videoWidth: PropTypes.number.isRequired,
-  videoHeight: PropTypes.number.isRequired,
-  showTranscript: PropTypes.bool.isRequired,
   inTranscript: PropTypes.bool,
+  // eslint-disable-next-line react/forbid-prop-types
+  card: PropTypes.object.isRequired,
+  index: PropTypes.number.isRequired,
 };
 
 ContentCardSwitch.defaultProps = {

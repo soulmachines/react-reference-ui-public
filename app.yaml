@@ -1,5 +1,5 @@
 # [START appengine_websockets_yaml]
-runtime: nodejs14
+runtime: nodejs16
 service: default
 
 # Use only a single instance, so that this local-memory-only chat app will work

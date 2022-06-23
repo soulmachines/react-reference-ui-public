@@ -286,7 +286,10 @@ Controls.propTypes = {
   dispatchStopSpeaking: PropTypes.func.isRequired,
   showTranscript: PropTypes.bool.isRequired,
   dispatchToggleShowTranscript: PropTypes.func.isRequired,
-  transcript: PropTypes.arrayOf(PropTypes.object).isRequired,
+  transcript: PropTypes.arrayOf(PropTypes.shape({
+    source: PropTypes.string,
+    text: PropTypes.string,
+  })).isRequired,
   videoWidth: PropTypes.number.isRequired,
   connected: PropTypes.bool.isRequired,
   typingOnly: PropTypes.bool.isRequired,
