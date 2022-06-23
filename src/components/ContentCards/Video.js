@@ -159,6 +159,7 @@ Video.propTypes = {
   dispatchHideCards: PropTypes.func.isRequired,
   inTranscript: PropTypes.bool,
   dispatchKeepAlive: PropTypes.func.isRequired,
+  // eslint-disable-next-line react/forbid-prop-types
   activeCards: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 

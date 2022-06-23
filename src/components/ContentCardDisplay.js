@@ -43,6 +43,7 @@ function ContentCardDisplay({
 }
 
 ContentCardDisplay.propTypes = {
+  // eslint-disable-next-line react/forbid-prop-types
   activeCards: PropTypes.arrayOf(PropTypes.object).isRequired,
   dispatchAnimateCamera: PropTypes.func.isRequired,
   videoWidth: PropTypes.number.isRequired,
