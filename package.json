@@ -2,7 +2,7 @@
   "name": "react-reference-ui",
   "version": "1.0.0",
   "engines": {
-    "node": ">15"
+    "node": ">=16"
   },
   "private": true,
   "scripts": {
