@@ -106,7 +106,7 @@ let scene = null;
 export const animateCamera = createAsyncThunk('sm/animateCamera', () => {
   if (!scene) console.error('cannot animate camera, scene not initiated!');
 
-  console.warn('manual camera animations are disabled while CUE implementation is in progress');
+  console.warn('presuming autonomous animation is active, manual camera animations are disabled');
   // scene.sendRequest('animateToNamedCamera', {
   //   cameraName: CAMERA_ID,
   //   personaId: PERSONA_ID,

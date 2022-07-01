@@ -1,7 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import Color from 'color';
 import breakpoints from '../utils/breakpoints';
 import Header from '../components/Header';
@@ -116,4 +115,3 @@ export default styled(Landing)`
     }
   }
 `;
-
