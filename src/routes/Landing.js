@@ -1,31 +1,23 @@
 import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import {
-  ArrowRightCircleFill,
-  CameraVideo,
-  CheckSquare,
-  GraphUp,
-  FileEarmarkMedical,
-} from 'react-bootstrap-icons';
-import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
+import Color from 'color';
+import breakpoints from '../utils/breakpoints';
 import Header from '../components/Header';
-import { headerHeight, landingBackgroundImage, landingBackgroundColor } from '../config';
-import { setTOS } from '../store/sm/index';
-import eula from '../eula';
+import { landingBackgroundImage, landingBackgroundColor } from '../config';
 
-function Landing({ className, dispatchAcceptTOS }) {
+function Landing({ className }) {
   return (
     <div className={className}>
       <div className="landing-wrapper">
         <Header />
-        <div className="container landing-container d-flex align-items-center">
-          <div className="row">
-            <div className="col">
+        <div className="container">
+          <div className="landing-container">
+            <div className="col-12 col-lg-6">
               <div className="row">
                 <div>
-                  <h1 className="fw-bold">
+                  <h1 className="fw-bol">
                     Meet Digital Person A.
                   </h1>
                 </div>
@@ -41,9 +33,9 @@ function Landing({ className, dispatchAcceptTOS }) {
               <div className="row">
                 <div>
                   <div className="form-check form-switch">
-                    <label className="form-check-label" htmlFor="micPermSwitch">
-                      <span>Use your microphone so I can hear you.</span>
-                      <input className="form-check-input" type="checkbox" role="switch" id="micPermSwitch" />
+                    <label className="form-check-label" htmlFor="flexSwitchCheckDefault">
+                      <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" />
+                      Use your microphone so I can hear you.
                     </label>
                   </div>
                 </div>
@@ -51,9 +43,9 @@ function Landing({ className, dispatchAcceptTOS }) {
               <div className="row">
                 <div>
                   <div className="form-check form-switch">
-                    <label className="form-check-label" htmlFor="camPermSwitch">
-                      <span>Use your camera so we can chat face-to-face.</span>
-                      <input className="form-check-input" type="checkbox" role="switch" id="camPermSwitch" />
+                    <label className="form-check-label" htmlFor="flexSwitchCheckDefault">
+                      <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" />
+                      Use your camera so we can chat face-to-face.
                     </label>
                   </div>
                 </div>
@@ -77,8 +69,8 @@ function Landing({ className, dispatchAcceptTOS }) {
                   .
                 </div>
               </div>
+              <div className="col" />
             </div>
-            <div className="col" />
           </div>
         </div>
       </div>
@@ -88,36 +80,40 @@ function Landing({ className, dispatchAcceptTOS }) {
 
 Landing.propTypes = {
   className: PropTypes.string.isRequired,
-  dispatchAcceptTOS: PropTypes.func.isRequired,
 };
 
-const StyledLanding = styled(Landing)`
+export default styled(Landing)`
   .landing-wrapper {
+    min-height: 100vh;
+
     background: ${landingBackgroundImage ? `url(${landingBackgroundImage})` : ''} ${landingBackgroundColor ? `${landingBackgroundColor};` : ''};
-    background-size: auto 60%;
+    background-size: 90% auto;
     background-repeat: no-repeat;
-    background-position: right bottom;
+    background-position: center bottom;
+
+    @media (min-width: ${breakpoints.lg}px) {
+      background-size: 70% auto;
+      background-position: right bottom;
+    }
   }
   .landing-container {
-    min-height: calc(100vh - ${headerHeight});
+    padding-top: 1rem;
+    display: flex;
+
+    &>div {
+      background-color: ${Color(landingBackgroundColor).alpha(0.8)};
+      border: 1px solid ${Color(landingBackgroundColor).darken(0.12)};
+      padding: 1rem;
+      border-radius: 5px;
+
+      @media (min-width: ${breakpoints.lg}px) {
+        border: none;
+      }
+    }
+
     .row {
       margin-bottom: 1rem;
     }
   }
-  label>span {
-    font-size: 1.2rem;
-    position: relative;
-    top: 0.2rem;
-  }
-  .form-check-input {
-    margin-right: 0.5rem;
-    height: 2rem;
-    width: calc(4rem);
-    border-radius: 5rem;
-  }
 `;
-const mapDispatchToProps = (dispatch) => ({
-  dispatchAcceptTOS: (accepted) => dispatch(setTOS({ accepted })),
-});
 
-export default connect(null, mapDispatchToProps)(StyledLanding);
