@@ -2,11 +2,17 @@ import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import Color from 'color';
+import { useDispatch, useSelector } from 'react-redux';
 import breakpoints from '../utils/breakpoints';
 import Header from '../components/Header';
 import { landingBackgroundImage, landingBackgroundColor } from '../config';
+import { setRequestedMediaPerms } from '../store/sm';
+import { Link } from 'react-router-dom';
 
 function Landing({ className }) {
+  const { mic, camera } = useSelector(({ sm }) => sm.requestedMediaPerms);
+  const dispatch = useDispatch();
+
   return (
     <div className={className}>
       <div className="landing-wrapper">
@@ -32,8 +38,15 @@ function Landing({ className }) {
               <div className="row">
                 <div>
                   <div className="form-check form-switch">
-                    <label className="form-check-label" htmlFor="flexSwitchCheckDefault">
-                      <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" />
+                    <label className="form-check-label" htmlFor="micPermSwitch">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        id="micPermSwitch"
+                        onChange={() => dispatch(setRequestedMediaPerms({ mic: !mic }))}
+                        checked={mic}
+                      />
                       Use your microphone so I can hear you.
                     </label>
                   </div>
@@ -42,8 +55,15 @@ function Landing({ className }) {
               <div className="row">
                 <div>
                   <div className="form-check form-switch">
-                    <label className="form-check-label" htmlFor="flexSwitchCheckDefault">
-                      <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" />
+                    <label className="form-check-label" htmlFor="cameraPermSwitch">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        id="micPermSwitch"
+                        onChange={() => dispatch(setRequestedMediaPerms({ camera: !camera }))}
+                        checked={camera}
+                      />
                       Use your camera so we can chat face-to-face.
                     </label>
                   </div>
@@ -51,9 +71,9 @@ function Landing({ className }) {
               </div>
               <div className="row">
                 <div>
-                  <button className="btn btn-primary" type="button">
+                  <Link to="/loading" className="btn btn-primary" type="button">
                     Chat with Digital Person A
-                  </button>
+                  </Link>
                 </div>
               </div>
               <div className="row">

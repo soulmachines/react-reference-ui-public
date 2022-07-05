@@ -16,13 +16,16 @@ const PERSONA_ID = '1';
 if (AUTH_MODE === 0 && API_KEY === '') throw new Error('REACT_APP_API_KEY not defined!');
 
 const initialState = {
+  requestedMediaPerms: {
+    mic: true,
+    camera: true,
+  },
   tosAccepted: false,
   connected: false,
   disconnected: false,
   loading: false,
   error: null,
   isMuted: false,
-  typingOnly: false,
   videoHeight: window.innerHeight,
   videoWidth: window.innerWidth,
   transcript: [],
@@ -138,13 +141,22 @@ export const disconnect = createAsyncThunk('sm/disconnect', async (args, thunk) 
   }, 500);
 });
 
-export const createScene = createAsyncThunk('sm/createScene', async (typingOnly = false, thunk) => {
+export const createScene = createAsyncThunk('sm/createScene', async (thunk) => {
   /* CREATE SCENE */
   if (scene !== null) {
     return console.error('warning! you attempted to create a new scene, when one already exists!');
   }
   // request permissions from user and create instance of Scene and ask for webcam/mic permissions
   const { microphone, microphoneAndCamera, none } = UserMedia;
+
+  const { requestedMediaPerms } = thunk.getState().sm;
+  const { mic, camera } = requestedMediaPerms;
+
+  let requestedMediaDevices;
+  if (mic && camera) requestedMediaDevices = microphoneAndCamera;
+  else if (mic) requestedMediaDevices = microphone;
+  else requestedMediaDevices = none;
+
   try {
     const sceneOpts = {
       videoElement: proxyVideo,
@@ -152,10 +164,10 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
       // change value if your application needs to have an explicit audio-only mode.
       audioOnly: false,
       // requested permissions
-      requestedMediaDevices: typingOnly ? none : microphoneAndCamera,
+      requestedMediaDevices,
       // if user denies camera and mic permissions, smwebsdk will request mic only for us
       // required permissions
-      requiredMediaDevices: typingOnly ? none : microphone,
+      requiredMediaDevices: none,
     };
     if (AUTH_MODE === 0) sceneOpts.apiKey = API_KEY;
     scene = new Scene(sceneOpts);
@@ -421,11 +433,10 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
     // we use an external proxy for video streams
     const { userMediaStream: stream } = scene.session();
     // detect if we're running audio-only
-    const videoEnabled = typingOnly === false
+    const videoEnabled = requestedMediaPerms.camera
       && stream !== undefined
       && stream.getVideoTracks().length > 0;
     if (videoEnabled === false) thunk.dispatch(actions.setCameraState({ cameraOn: false }));
-    if (typingOnly === true) thunk.dispatch(actions.setTypingOnly());
     // pass dispatch before calling setUserMediaStream so proxy can send dimensions to store
     mediaStreamProxy.passDispatch(thunk.dispatch);
     mediaStreamProxy.setUserMediaStream(stream, videoEnabled);
@@ -476,9 +487,12 @@ const smSlice = createSlice({
       ...state,
       showTranscript: payload?.showTranscript || !state.showTranscript,
     }),
-    setTypingOnly: (state) => ({
+    setRequestedMediaPerms: (state, { payload }) => ({
       ...state,
-      typingOnly: true,
+      requestedMediaPerms: {
+        camera: 'camera' in payload? payload.camera : state.requestedMediaPerms.camera,
+        mic: 'mic' in payload? payload.mic : state.requestedMediaPerms.mic,
+      },
     }),
     setCameraState: (state, { payload }) => ({
       ...state,
@@ -616,6 +630,7 @@ export const {
   setCameraState,
   setShowTranscript,
   setTOS,
+  setRequestedMediaPerms
 } = smSlice.actions;
 
 export default smSlice.reducer;
