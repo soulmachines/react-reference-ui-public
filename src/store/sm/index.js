@@ -490,8 +490,8 @@ const smSlice = createSlice({
     setRequestedMediaPerms: (state, { payload }) => ({
       ...state,
       requestedMediaPerms: {
-        camera: 'camera' in payload? payload.camera : state.requestedMediaPerms.camera,
-        mic: 'mic' in payload? payload.mic : state.requestedMediaPerms.mic,
+        camera: 'camera' in payload ? payload.camera : state.requestedMediaPerms.camera,
+        mic: 'mic' in payload ? payload.mic : state.requestedMediaPerms.mic,
       },
     }),
     setCameraState: (state, { payload }) => ({
@@ -630,7 +630,7 @@ export const {
   setCameraState,
   setShowTranscript,
   setTOS,
-  setRequestedMediaPerms
+  setRequestedMediaPerms,
 } = smSlice.actions;
 
 export default smSlice.reducer;

@@ -3,11 +3,11 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import Color from 'color';
 import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import breakpoints from '../utils/breakpoints';
 import Header from '../components/Header';
 import { landingBackgroundImage, landingBackgroundColor } from '../config';
 import { setRequestedMediaPerms } from '../store/sm';
-import { Link } from 'react-router-dom';
 
 function Landing({ className }) {
   const { mic, camera } = useSelector(({ sm }) => sm.requestedMediaPerms);
