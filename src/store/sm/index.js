@@ -141,7 +141,7 @@ export const disconnect = createAsyncThunk('sm/disconnect', async (args, thunk) 
   }, 500);
 });
 
-export const createScene = createAsyncThunk('sm/createScene', async (thunk) => {
+export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) => {
   /* CREATE SCENE */
   if (scene !== null) {
     return console.error('warning! you attempted to create a new scene, when one already exists!');
@@ -604,7 +604,11 @@ const smSlice = createSlice({
       error: null,
     }),
     [createScene.rejected]: (state, { payload }) => {
-      scene.disconnect();
+      try {
+        scene.disconnect();
+      } catch {
+        console.error('no scene to disconnect! continuing...');
+      }
       // if we call this immediately the disconnect call might not complete
       setTimeout(() => {
         scene = null;
