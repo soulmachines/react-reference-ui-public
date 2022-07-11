@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { MicFill } from 'react-bootstrap-icons';
 import { createScene } from '../store/sm';
@@ -18,10 +18,10 @@ function Loading({
   } = useSelector(({ sm }) => (sm));
   const dispatch = useDispatch();
 
-  // pull querystring to see if we are displaying an error
-  // (app can redirect to /loading on fatal err)
-  const useQuery = () => new URLSearchParams(useLocation().search);
-  const query = useQuery();
+  // // pull querystring to see if we are displaying an error
+  // // (app can redirect to /loading on fatal err)
+  // const useQuery = () => new URLSearchParams(useLocation().search);
+  // const query = useQuery();
 
   // create persona scene on button press on on mount, depending on device size
   const createSceneIfNotStarted = () => {
