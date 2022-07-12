@@ -72,7 +72,8 @@ function DPChat({
       history.push(disconnectRoute);
     } else history.push('/');
   }
-  if (connected !== true) history.push('/loading');
+  // usually this will be triggered when the user refreshes
+  if (connected !== true) history.push('/');
 
   return (
     <div className={className}>
