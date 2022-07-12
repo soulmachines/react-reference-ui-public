@@ -1,7 +1,7 @@
 import React, { createRef, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import PersonaVideo from '../components/PersonaVideo';
 import Captions from '../components/Captions';
@@ -19,13 +19,16 @@ import breakpoints from '../utils/breakpoints';
 
 function DPChat({
   className,
-  connected,
-  disconnected,
-  dispatchDisconnect,
-  error,
-  tosAccepted,
-  cameraOn,
 }) {
+  const {
+    connected,
+    disconnected,
+    error,
+    cameraOn,
+  } = useSelector(({ sm }) => ({ ...sm }));
+  const dispatch = useDispatch();
+  const dispatchDisconnect = () => dispatch(disconnect());
+
   const overlayRef = createRef();
   const [height, setHeight] = useState('100vh');
   const [largeViewport, setLargeViewport] = useState(false);
@@ -63,16 +66,13 @@ function DPChat({
   useEffect(() => {
     if (error !== null) history.push('/loading?error=true');
   }, [error]);
-  // if TOS hasn't been accepted, send to /
-  if (tosAccepted === false && disconnected === false) {
-    cleanup();
-    history.push('/');
-  }
+
   if (disconnected === true) {
     if (disconnectPage) {
       history.push(disconnectRoute);
     } else history.push('/');
   }
+  if (connected !== true) history.push('/loading');
 
   return (
     <div className={className}>
@@ -130,22 +130,9 @@ function DPChat({
 
 DPChat.propTypes = {
   className: PropTypes.string.isRequired,
-  dispatchDisconnect: PropTypes.func.isRequired,
-  connected: PropTypes.bool.isRequired,
-  disconnected: PropTypes.bool.isRequired,
-  error: PropTypes.shape({
-    msg: PropTypes.string,
-    err: PropTypes.objectOf(PropTypes.string),
-  }),
-  tosAccepted: PropTypes.bool.isRequired,
-  cameraOn: PropTypes.bool.isRequired,
 };
 
-DPChat.defaultProps = {
-  error: null,
-};
-
-const StyledDPChat = styled(DPChat)`
+export default styled(DPChat)`
   .video-overlay {
     position: absolute;
     top: 0;
@@ -180,18 +167,3 @@ const StyledDPChat = styled(DPChat)`
 
   }
 `;
-
-const mapStateToProps = ({ sm }) => ({
-  connected: sm.connected,
-  disconnected: sm.disconnected,
-  loading: sm.loading,
-  error: sm.error,
-  tosAccepted: sm.tosAccepted,
-  cameraOn: sm.cameraOn,
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  dispatchDisconnect: () => dispatch(disconnect()),
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(StyledDPChat);

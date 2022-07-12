@@ -1,5 +1,5 @@
 import React, { createRef, useEffect, useState } from 'react';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import {
@@ -21,21 +21,27 @@ const largeHeight = volumeMeterHeight * volumeMeterMultiplier;
 
 function Controls({
   className,
-  intermediateUserUtterance,
-  lastUserUtterance,
-  userSpeaking,
-  dispatchText,
-  dispatchMute,
-  isMuted,
-  speechState,
-  dispatchStopSpeaking,
-  dispatchToggleShowTranscript,
-  showTranscript,
-  transcript,
-  videoWidth,
-  connected,
-  typingOnly,
 }) {
+  const {
+    intermediateUserUtterance,
+    lastUserUtterance,
+    userSpeaking,
+    connected,
+    isMuted,
+    speechState,
+    showTranscript,
+    transcript,
+    videoWidth,
+    requestedMediaPerms,
+  } = useSelector((state) => ({ ...state.sm }));
+  const typingOnly = requestedMediaPerms.mic !== true;
+
+  const dispatch = useDispatch();
+  const dispatchText = (text) => dispatch(sendTextMessage({ text }));
+  const dispatchMute = (muteState) => dispatch(mute(muteState));
+  const dispatchStopSpeaking = () => dispatch(stopSpeaking());
+  const dispatchToggleShowTranscript = () => dispatch(setShowTranscript());
+
   const [inputValue, setInputValue] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
   const [volume, setVolume] = useState(0);
@@ -274,30 +280,9 @@ function Controls({
   );
 }
 
-Controls.propTypes = {
-  className: PropTypes.string.isRequired,
-  intermediateUserUtterance: PropTypes.string.isRequired,
-  lastUserUtterance: PropTypes.string.isRequired,
-  userSpeaking: PropTypes.bool.isRequired,
-  dispatchText: PropTypes.func.isRequired,
-  dispatchMute: PropTypes.func.isRequired,
-  isMuted: PropTypes.bool.isRequired,
-  speechState: PropTypes.string.isRequired,
-  dispatchStopSpeaking: PropTypes.func.isRequired,
-  showTranscript: PropTypes.bool.isRequired,
-  dispatchToggleShowTranscript: PropTypes.func.isRequired,
-  transcript: PropTypes.arrayOf(PropTypes.shape({
-    source: PropTypes.string,
-    text: PropTypes.string,
-  })).isRequired,
-  videoWidth: PropTypes.number.isRequired,
-  connected: PropTypes.bool.isRequired,
-  typingOnly: PropTypes.bool.isRequired,
-};
+Controls.propTypes = { className: PropTypes.string.isRequired };
 
-const StyledControls = styled(Controls)`
-  display: ${(props) => (props.connected ? '' : 'none')};
-
+export default styled(Controls)`
   .form-control {
     opacity: 0.8;
     &:focus {
@@ -372,25 +357,3 @@ const StyledControls = styled(Controls)`
   }
 
 `;
-
-const mapStateToProps = (state) => ({
-  intermediateUserUtterance: state.sm.intermediateUserUtterance,
-  lastUserUtterance: state.sm.lastUserUtterance,
-  userSpeaking: state.sm.userSpeaking,
-  connected: state.sm.connected,
-  isMuted: state.sm.isMuted,
-  speechState: state.sm.speechState,
-  showTranscript: state.sm.showTranscript,
-  transcript: state.sm.transcript,
-  videoWidth: state.sm.videoWidth,
-  typingOnly: state.sm.typingOnly,
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  dispatchText: (text) => dispatch(sendTextMessage({ text })),
-  dispatchMute: (muteState) => dispatch(mute(muteState)),
-  dispatchStopSpeaking: () => dispatch(stopSpeaking()),
-  dispatchToggleShowTranscript: () => dispatch(setShowTranscript()),
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(StyledControls);
