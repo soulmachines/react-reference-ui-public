@@ -16,7 +16,7 @@ const PERSONA_ID = '1';
 if (AUTH_MODE === 0 && API_KEY === '') throw new Error('REACT_APP_API_KEY not defined!');
 
 const initialState = {
-  requestedMediaPerms: {
+  requestedMediaPerms: JSON.parse(localStorage.getItem('requestedMediaPerms')) || {
     mic: true,
     camera: true,
   },
@@ -147,15 +147,19 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
     return console.error('warning! you attempted to create a new scene, when one already exists!');
   }
   // request permissions from user and create instance of Scene and ask for webcam/mic permissions
-  const { microphone, microphoneAndCamera, none } = UserMedia;
+  const {
+    Microphone, Camera, MicrophoneAndCamera, None,
+  } = UserMedia;
 
   const { requestedMediaPerms } = thunk.getState().sm;
   const { mic, camera } = requestedMediaPerms;
 
   let requestedMediaDevices;
-  if (mic && camera) requestedMediaDevices = microphoneAndCamera;
-  else if (mic) requestedMediaDevices = microphone;
-  else requestedMediaDevices = none;
+
+  if (mic === true && camera === true) requestedMediaDevices = UserMedia[MicrophoneAndCamera];
+  else if (mic === true && camera === false) requestedMediaDevices = UserMedia[Microphone];
+  else if (mic === false && camera === true) requestedMediaDevices = UserMedia[Camera];
+  else requestedMediaDevices = UserMedia[None];
 
   try {
     const sceneOpts = {
@@ -167,7 +171,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
       requestedMediaDevices,
       // if user denies camera and mic permissions, smwebsdk will request mic only for us
       // required permissions
-      requiredMediaDevices: none,
+      requiredMediaDevices: UserMedia[None],
     };
     if (AUTH_MODE === 0) sceneOpts.apiKey = API_KEY;
     scene = new Scene(sceneOpts);
@@ -487,13 +491,17 @@ const smSlice = createSlice({
       ...state,
       showTranscript: payload?.showTranscript || !state.showTranscript,
     }),
-    setRequestedMediaPerms: (state, { payload }) => ({
-      ...state,
-      requestedMediaPerms: {
+    setRequestedMediaPerms: (state, { payload }) => {
+      const requestedMediaPerms = {
         camera: 'camera' in payload ? payload.camera : state.requestedMediaPerms.camera,
         mic: 'mic' in payload ? payload.mic : state.requestedMediaPerms.mic,
-      },
-    }),
+      };
+      localStorage.setItem('requestedMediaPerms', JSON.stringify(requestedMediaPerms));
+      return ({
+        ...state,
+        requestedMediaPerms,
+      });
+    },
     setCameraState: (state, { payload }) => ({
       ...state,
       cameraOn: payload.cameraOn,
