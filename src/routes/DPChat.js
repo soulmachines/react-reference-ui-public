@@ -16,6 +16,7 @@ import {
 } from '../config';
 import CameraPreview from '../components/CameraPreview';
 import breakpoints from '../utils/breakpoints';
+import TextInput from '../components/TextInput';
 
 function DPChat({
   className,
@@ -24,6 +25,8 @@ function DPChat({
     connected,
     disconnected,
     error,
+    showTranscript,
+    micOn,
     cameraOn,
   } = useSelector(({ sm }) => ({ ...sm }));
 
@@ -108,6 +111,17 @@ function DPChat({
             <Captions />
           </div>
         </div>
+        {
+          showTranscript || micOn === false
+            ? (
+              <div className="row justify-content-center">
+                <div className="col-8 pb-3">
+                  <TextInput />
+                </div>
+              </div>
+            )
+            : null
+        }
       </div>
       {
         connected ? <PersonaVideo /> : null

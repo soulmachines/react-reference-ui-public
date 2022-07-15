@@ -57,7 +57,6 @@ function Controls({
   const [inputFocused, setInputFocused] = useState(false);
   const [volume, setVolume] = useState(0);
   const [hideInputDisplay, setHideInputDisplay] = useState(true);
-  const [showTextInput, setShowTextInput] = useState(!micOn);
   const isLarger = videoWidth >= breakpoints.md ? largeHeight : smallHeight;
   const [responsiveVolumeHeight, setResponsiveVolumeHeight] = useState(isLarger);
 
@@ -144,9 +143,8 @@ function Controls({
   // bind transcrpt open and mute func to each other, so that
   // when we open the transcript we mute the mic
   const toggleKeyboardInput = () => {
-    const toggledTextInput = !showTextInput;
-    dispatch(setMicOn({ micOn: !toggledTextInput }));
-    setShowTextInput(toggledTextInput);
+    dispatch(setShowTranscript({ showTranscript: !showTranscript }));
+    dispatch(setMicOn({ micOn: showTranscript }));
   };
 
   useEffect(() => {
@@ -225,7 +223,7 @@ function Controls({
             onClick={toggleKeyboardInput}
             disabled={transcript.length === 0}
           >
-            <ChatLeftText size={iconSize} />
+            <ChatLeftText size={iconSize} color={ showTranscript ? primaryAccent : ''} />
           </button>
         </div>
         <div>
