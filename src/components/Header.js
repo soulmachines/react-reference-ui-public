@@ -9,6 +9,7 @@ import {
 import {
   disconnect,
 } from '../store/sm/index';
+import Controls from './Controls';
 
 function Header({
   className, connected, loading, dispatchDisconnect,
@@ -30,9 +31,10 @@ function Header({
             </div>
             <div>
               {/* right align */}
-              <button type="button" disabled={!connected} className={`btn btn-outline-danger ${connected && !loading && pathname === '/video' ? '' : 'd-none'}`} onClick={dispatchDisconnect} data-tip="Disconnect" data-place="bottom">
-                Exit
-              </button>
+              <Controls />
+              <div className={`${connected && !loading && pathname === '/video' ? '' : 'd-none'}`}>
+                {/* controls go here when we're done working */}
+              </div>
             </div>
           </div>
         </div>
