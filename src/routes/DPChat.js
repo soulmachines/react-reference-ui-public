@@ -26,29 +26,27 @@ function DPChat({
     error,
     cameraOn,
   } = useSelector(({ sm }) => ({ ...sm }));
+
   const dispatch = useDispatch();
-  const dispatchDisconnect = () => dispatch(disconnect());
+
+  const handleResize = () => {
+    setHeight(window.innerHeight);
+  };
+
+  const [startedAt] = useState(Date.now());
+  const cleanup = () => {
+    // if (Date.now() - startedAt < 1000) {
+    //   console.warn('cleanup function invoked less than 1 second after component mounted, ignoring!');
+    // } else {
+    //   console.log('cleanup function invoked!');
+    //   window.removeEventListener('resize', handleResize);
+    //   dispatch(disconnect());
+    // }
+  };
 
   const overlayRef = createRef();
   const [height, setHeight] = useState('100vh');
   const [largeViewport, setLargeViewport] = useState(false);
-  const [startedAt] = useState(Date.now());
-
-  const handleResize = () => {
-    setHeight(window.innerHeight);
-    if (window.innerWidth >= breakpoints.md) setLargeViewport(true);
-    else setLargeViewport(false);
-  };
-
-  const cleanup = () => {
-    if (Date.now() - startedAt < 1000) {
-      console.warn('cleanup function invoked less than 1 second after component mounted, ignoring!');
-    } else {
-      console.log('cleanup function invoked!');
-      window.removeEventListener('resize', handleResize);
-      dispatchDisconnect();
-    }
-  };
 
   useEffect(() => {
     handleResize();
@@ -73,15 +71,15 @@ function DPChat({
     } else history.push('/');
   }
   // usually this will be triggered when the user refreshes
-  if (connected !== true) history.push('/');
+  // if (connected !== true) history.push('/');
 
   return (
     <div className={className}>
-      <div className="video-overlay" ref={overlayRef} style={{ height }}>
+      {/* <div className="video-overlay" ref={overlayRef} style={{ height }} /> */}
+      {/* top row */}
+      <div className="row d-flex">
         <Header />
-        {/* top row */}
-        <div className="container d-flex flex-column">
-          {
+        {
               cameraOn
                 ? (
                   <div className="row d-flex justify-content-end">
@@ -94,37 +92,26 @@ function DPChat({
                 )
                 : <div />
             }
-          {/* middle row */}
-          <div className="vertical-fit-container col-md-5">
-            {/* on larger devices, show cards next to DP */}
-            <div className="d-md-block d-none">
-              {largeViewport === true ? <ContentCardDisplay /> : null}
-            </div>
+      </div>
+      {/* middle row */}
+      <div className="row justify-content-end align-items-center flex-grow-1 p-3">
+        <div className="vertical-fit-container col-md-5 align-items-center">
+          <div className="d-block">
+            <ContentCardDisplay />
           </div>
-          {/* bottom row */}
-          <div>
-            {/* on smaller devices, show the cards over the DP, centered */}
-            <div className="row">
-              <div className="d-block d-md-none">
-                {largeViewport === false ? <ContentCardDisplay /> : null}
-              </div>
-            </div>
-            <div className="row">
-              <div className="col text-center">
-                <Captions />
-              </div>
-            </div>
-            <div className="row">
-              <div className="col">
-                <Controls />
-              </div>
-            </div>
+        </div>
+      </div>
+      {/* bottom row */}
+      <div>
+        <div className="row">
+          <div className="col text-center">
+            <Captions />
           </div>
         </div>
       </div>
       {
-      connected ? <PersonaVideo /> : null
-    }
+        connected ? <PersonaVideo /> : null
+      }
     </div>
   );
 }
@@ -134,6 +121,10 @@ DPChat.propTypes = {
 };
 
 export default styled(DPChat)`
+  height: calc(100vh);
+  display: flex;
+  flex-direction: column;
+
   .video-overlay {
     position: absolute;
     top: 0;
@@ -143,28 +134,14 @@ export default styled(DPChat)`
 
     width: 100%;
 
-    .container {
-      height: calc(100% - ${headerHeight});
+
+  }
+  .vertical-fit-container {
+    overflow-y: scroll;
+
+    scrollbar-width: none; /* Firefox 64 */
+    &::-webkit-scrollbar {
+      display: none;
     }
-
-    .vertical-fit-container {
-      flex: 1 1 auto;
-      overflow-y: scroll;
-
-      scrollbar-width: none; /* Firefox 64 */
-      &::-webkit-scrollbar {
-        display: none;
-      }
-
-      @media (min-width: ${breakpoints.md}px) {
-        display: flex;
-        align-items: center;
-      }
-    }
-    .loading-container {
-      flex: 1 1 auto;
-      text-align: center;
-    }
-
   }
 `;
