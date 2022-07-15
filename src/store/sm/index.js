@@ -30,9 +30,7 @@ const initialState = {
   outputAudioMuted: false,
   videoHeight: window.innerHeight,
   videoWidth: window.innerWidth,
-  transcript: [
-    { source: 'persona', timestamp: new Date().toISOString(), text: 'Hello, world!' },
-  ],
+  transcript: [],
   activeCards: [],
   speechState: 'idle',
   // NLP gives us results as it processes final user utterance
@@ -455,14 +453,15 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
 // send plain text to the persona.
 // usually used for typed input or UI elems that trigger a certain phrase
 export const sendTextMessage = createAsyncThunk('sm/sendTextMessage', async ({ text }, thunk) => {
-  if (scene && persona) {
+  if (text === '') return thunk.rejectWithValue('submitted empty string!');
+  if (scene !== null && persona !== null) {
     if (ORCHESTRATION_MODE === true) scene.sendUserText(text);
     else persona.conversationSend(text);
-    thunk.dispatch(actions.addConversationResult({
+    return thunk.dispatch(actions.addConversationResult({
       source: 'user',
       text,
     }));
-  } else thunk.rejectWithValue('not connected to persona!');
+  } return thunk.rejectWithValue('not connected to persona!');
 });
 
 const smSlice = createSlice({
@@ -613,9 +612,9 @@ const smSlice = createSlice({
       scene.keepAlive();
     },
     sendEvent: (state, { payload }) => {
-      const { eventName, payload: eventPayload } = payload;
+      const { eventName, payload: eventPayload, kind } = payload;
       if (scene && persona) {
-        persona.conversationSend(eventName, eventPayload || {}, { kind: 'event' });
+        persona.conversationSend(eventName, eventPayload || {}, { kind: kind || 'event' });
         console.log(`dispatched ${eventName}`, eventPayload);
       }
     },

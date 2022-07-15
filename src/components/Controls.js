@@ -3,9 +3,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import {
-  CameraFill,
+  CameraVideoFill,
+  CameraVideoOffFill,
   ChatLeftText,
   MicFill,
+  MicMuteFill,
   SkipEndFill,
   ThreeDotsVertical,
   VolumeMuteFill,
@@ -221,32 +223,51 @@ function Controls({
             aria-label="Toggle Transcript"
             data-tip="Toggle Transcript"
             onClick={toggleKeyboardInput}
-            disabled={transcript.length === 0}
+            disabled={transcript.length <= 0}
           >
-            <ChatLeftText size={iconSize} color={ showTranscript ? primaryAccent : ''} />
+            <ChatLeftText size={iconSize} color={showTranscript ? primaryAccent : ''} />
           </button>
         </div>
-        <div>
-          {/* toggle user mic */}
-          <button
-            type="button"
-            className="control-icon"
-            disabled={requestedMediaPerms.mic === false}
-            onClick={() => dispatch(setMicOn({ micOn: !micOn }))}
-          >
-            <MicFill size={iconSize} />
-          </button>
-        </div>
+        {
+          requestedMediaPerms.mic === true
+            ? (
+              <div>
+                {/* toggle user mic */}
+                <button
+                  type="button"
+                  className="control-icon"
+                  onClick={() => dispatch(setMicOn({ micOn: !micOn }))}
+                >
+                  {
+                    micOn
+                      ? <MicFill size={iconSize} color={primaryAccent} />
+                      : <MicMuteFill size={iconSize} />
+                  }
+                </button>
+              </div>
+            )
+            : null
+        }
         <div>
           {/* toggle user camera */}
-          <button
-            type="button"
-            className="control-icon"
-            disabled={requestedMediaPerms.camera === false}
-            onClick={() => dispatch(setCameraOn({ cameraOn: !cameraOn }))}
-          >
-            <CameraFill size={iconSize} />
-          </button>
+          {
+            requestedMediaPerms.camera
+              ? (
+                <button
+                  type="button"
+                  className="control-icon"
+                  disabled={requestedMediaPerms.camera === false}
+                  onClick={() => dispatch(setCameraOn({ cameraOn: !cameraOn }))}
+                >
+                  {
+                    cameraOn
+                      ? <CameraVideoFill size={iconSize} color={primaryAccent} />
+                      : <CameraVideoOffFill size={iconSize} />
+                  }
+                </button>
+              )
+              : null
+          }
         </div>
         <div className="dropdown">
           <button

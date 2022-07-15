@@ -8,7 +8,7 @@ import Captions from '../components/Captions';
 import Controls from '../components/Controls';
 import ContentCardDisplay from '../components/ContentCardDisplay';
 import {
-  disconnect,
+  disconnect, sendEvent, setVideoDimensions,
 } from '../store/sm/index';
 import Header from '../components/Header';
 import {
@@ -33,25 +33,27 @@ function DPChat({
   const dispatch = useDispatch();
 
   const handleResize = () => {
-    setHeight(window.innerHeight);
+    dispatch(setVideoDimensions({
+      videoWidth: window.innerWidth,
+      videoHeight: window.innerHeight,
+    }));
   };
 
   const [startedAt] = useState(Date.now());
   const cleanup = () => {
-    // if (Date.now() - startedAt < 1000) {
-    //   console.warn('cleanup function invoked less than 1 second after component mounted, ignoring!');
-    // } else {
-    //   console.log('cleanup function invoked!');
-    //   window.removeEventListener('resize', handleResize);
-    //   dispatch(disconnect());
-    // }
+    if (Date.now() - startedAt < 1000) {
+      console.warn('cleanup function invoked less than 1 second after component mounted, ignoring!');
+    } else {
+      console.log('cleanup function invoked!');
+      window.removeEventListener('resize', handleResize);
+      dispatch(disconnect());
+    }
   };
 
-  const overlayRef = createRef();
-  const [height, setHeight] = useState('100vh');
-  const [largeViewport, setLargeViewport] = useState(false);
-
   useEffect(() => {
+    // send init event, since we will finish loading before we display the DP
+    dispatch(sendEvent({ eventName: '', payload: {}, kind: 'init' }));
+    // run resize once on mount, then add listener for future resize events
     handleResize();
     window.addEventListener('resize', handleResize);
     // run cleanup on unmount
@@ -78,11 +80,11 @@ function DPChat({
 
   return (
     <div className={className}>
-      {/* <div className="video-overlay" ref={overlayRef} style={{ height }} /> */}
-      {/* top row */}
-      <div className="row d-flex">
-        <Header />
-        {
+      <div className="video-overlay">
+        {/* top row */}
+        <div className="row">
+          <Header />
+          {/* {
               cameraOn
                 ? (
                   <div className="row d-flex justify-content-end">
@@ -94,34 +96,36 @@ function DPChat({
                   </div>
                 )
                 : <div />
-            }
-      </div>
-      {/* middle row */}
-      <div className="row justify-content-end align-items-center flex-grow-1 p-3">
-        <div className="vertical-fit-container col-md-5 align-items-center">
-          <div className="d-block">
+            } */}
+        </div>
+        {/* middle row */}
+        <div
+          className="row d-flex justify-content-end align-items-center flex-grow-1 p-3"
+          style={{ overflow: 'scroll' }}
+        >
+          <div className="col-6">
             <ContentCardDisplay />
           </div>
         </div>
-      </div>
-      {/* bottom row */}
-      <div>
-        <div className="row">
-          <div className="col text-center">
-            <Captions />
+        {/* bottom row */}
+        <div>
+          <div className="row">
+            <div className="col text-center">
+              <Captions />
+            </div>
           </div>
-        </div>
-        {
-          showTranscript || micOn === false
+          {
+          showTranscript === true || micOn === false
             ? (
               <div className="row justify-content-center">
-                <div className="col-8 pb-3">
+                <div className="col-md-8 col-lg-5 p-3">
                   <TextInput />
                 </div>
               </div>
             )
             : null
         }
+        </div>
       </div>
       {
         connected ? <PersonaVideo /> : null
@@ -135,22 +139,24 @@ DPChat.propTypes = {
 };
 
 export default styled(DPChat)`
-  height: calc(100vh);
-  display: flex;
-  flex-direction: column;
+  height: 100vh;
 
   .video-overlay {
     position: absolute;
     top: 0;
     right: 0;
     left: 0;
+
     z-index: 10;
 
     width: 100%;
-
-
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
   }
+
   .vertical-fit-container {
+    flex: 0 1 auto;
     overflow-y: scroll;
 
     scrollbar-width: none; /* Firefox 64 */
