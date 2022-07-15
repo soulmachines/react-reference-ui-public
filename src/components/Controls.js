@@ -1,18 +1,31 @@
-import React, { createRef, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import {
-  ChatSquareDotsFill, Keyboard, MicMuteFill, XOctagonFill,
+  CameraFill,
+  ChatLeftText,
+  MicFill,
+  SkipEndFill,
+  ThreeDotsVertical,
+  VolumeMuteFill,
+  VolumeUpFill,
 } from 'react-bootstrap-icons';
 import ReactTooltip from 'react-tooltip';
 import {
-  sendTextMessage, mute, stopSpeaking, setShowTranscript,
+  sendTextMessage,
+  stopSpeaking,
+  setShowTranscript,
+  disconnect,
+  setOutputMute,
+  setMicOn,
+  setCameraOn,
 } from '../store/sm/index';
 import mic from '../img/mic.svg';
 import micFill from '../img/mic-fill.svg';
 import breakpoints from '../utils/breakpoints';
 import { mediaStreamProxy } from '../proxyVideo';
+import { primaryAccent } from '../globalStyle';
 
 const volumeMeterHeight = 24;
 const volumeMeterMultiplier = 1.2;
@@ -27,7 +40,9 @@ function Controls({
     lastUserUtterance,
     userSpeaking,
     connected,
-    isMuted,
+    micOn,
+    cameraOn,
+    isOutputMuted,
     speechState,
     showTranscript,
     transcript,
@@ -37,16 +52,12 @@ function Controls({
   const typingOnly = requestedMediaPerms.mic !== true;
 
   const dispatch = useDispatch();
-  const dispatchText = (text) => dispatch(sendTextMessage({ text }));
-  const dispatchMute = (muteState) => dispatch(mute(muteState));
-  const dispatchStopSpeaking = () => dispatch(stopSpeaking());
-  const dispatchToggleShowTranscript = () => dispatch(setShowTranscript());
 
   const [inputValue, setInputValue] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
   const [volume, setVolume] = useState(0);
   const [hideInputDisplay, setHideInputDisplay] = useState(true);
-  const [showTextInput, setShowTextInput] = useState(isMuted || typingOnly);
+  const [showTextInput, setShowTextInput] = useState(!micOn);
   const isLarger = videoWidth >= breakpoints.md ? largeHeight : smallHeight;
   const [responsiveVolumeHeight, setResponsiveVolumeHeight] = useState(isLarger);
 
@@ -58,7 +69,7 @@ function Controls({
   const handleBlur = () => setInputFocused(false);
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatchText(inputValue);
+    dispatch(sendTextMessage({ text: inputValue }));
     setInputValue('');
   };
 
@@ -73,8 +84,9 @@ function Controls({
     }, 3000);
     timeout = createTimeout();
     return () => clearTimeout(timeout);
-  }, [userSpeaking, lastUserUtterance, isMuted]);
+  }, [userSpeaking, lastUserUtterance, micOn]);
 
+  // mic level visualizer
   useEffect(async () => {
     if (connected && typingOnly === false) {
       // credit: https://stackoverflow.com/a/64650826
@@ -129,26 +141,13 @@ function Controls({
     } return false;
   }, [connected]);
 
-  useEffect(() => {
-    // check window width, if larger display then increase mic indicator size
-    if (videoWidth >= breakpoints.md) setResponsiveVolumeHeight(largeHeight);
-    else setResponsiveVolumeHeight(smallHeight);
-  });
-
+  // bind transcrpt open and mute func to each other, so that
+  // when we open the transcript we mute the mic
   const toggleKeyboardInput = () => {
     const toggledTextInput = !showTextInput;
-    dispatchMute(toggledTextInput);
+    dispatch(setMicOn({ micOn: !toggledTextInput }));
     setShowTextInput(toggledTextInput);
   };
-  useEffect(() => {
-    if (isMuted !== showTextInput) setShowTextInput(isMuted || typingOnly);
-  }, [isMuted]);
-
-  // when we switch to keyboard input, capture focus
-  const textInput = createRef();
-  useEffect(() => {
-    if (showTextInput === true) textInput.current.focus();
-  }, [showTextInput]);
 
   useEffect(() => {
     ReactTooltip.rebuild();
@@ -156,26 +155,6 @@ function Controls({
 
   // clear placeholder text on reconnect, sometimes the state updates won't propagate
   const placeholder = intermediateUserUtterance === '' ? '' : intermediateUserUtterance;
-
-  const transcriptButton = (
-    <button
-      type="button"
-      className={`btn btn-${showTranscript ? '' : 'outline-'}secondary`}
-      aria-label="Toggle Transcript"
-      data-tip="Toggle Transcript"
-      data-place="top"
-      onClick={dispatchToggleShowTranscript}
-      disabled={transcript.length === 0}
-    >
-      <ChatSquareDotsFill />
-    </button>
-  );
-
-  const interruptButton = (
-    <button type="button" className="btn btn-outline-secondary" disabled={speechState !== 'speaking'} onClick={dispatchStopSpeaking} data-tip="Stop Speaking" data-place="top">
-      <XOctagonFill />
-    </button>
-  );
 
   const feedbackDisplay = (
     <span
@@ -205,75 +184,96 @@ function Controls({
     </span>
   );
 
+  const iconSize = 24;
+
   return (
     <div className={className}>
-      <div className="row">
-        <div className={`${showTextInput ? 'justify-content-md-start' : ''} col-md-10 offset-md-1 d-flex justify-content-center mb-2`}>
-          { feedbackDisplay }
-        </div>
-      </div>
-      <div className="row">
-        <div className={`d-${showTextInput ? 'flex' : 'none'} d-md-none justify-content-between align-items-end pb-2`}>
-          <div>{ transcriptButton }</div>
-          <div className={speechState === 'speaking' ? 'interrupt' : 'interrupt interrupt-active'}>{ interruptButton }</div>
-        </div>
-      </div>
-      <div className="row mb-3 display-flex justify-content-center">
-        <div className={`col-auto d-md-block d-${showTextInput ? 'none' : 'block'}`}>
-          { transcriptButton }
-        </div>
-        <form onSubmit={handleSubmit} className="col ">
-          <div className="input-group d-flex justify-content-center">
+      <div className="d-flex">
+        <div>
+          {/* mute dp sound */}
+          <button
+            type="button"
+            className="control-icon"
+            onClick={() => dispatch(setOutputMute({ isOutputMuted: !isOutputMuted }))}
+          >
             {
-              // hide mic indicator when in typing-only mode
-              typingOnly
-                ? null
-                : (
-                  <button type="button" className={`speaking-status btn btn-${isMuted ? 'outline-secondary' : 'secondary '}`} onClick={toggleKeyboardInput} data-tip="Toggle Microphone Input">
-                    <div>
-                      { isMuted ? <MicMuteFill />
-                        : (
-                          <div className="volume-display">
-                            {/* compute height as fraction of 127 so fill corresponds to volume */}
-                            <div style={{ height: `${responsiveVolumeHeight}px` }} className="meter-component meter-component-1" />
-                            <div style={{ height: `${(volume / 127) * responsiveVolumeHeight}px` }} className="meter-component meter-component-2" />
-                          </div>
-                        ) }
-                    </div>
-                  </button>
-                )
-}
-            <button
-              type="button"
-              className={`btn btn-${showTextInput ? 'secondary' : 'outline-secondary'}`}
-              aria-label="Toggle Keyboard Input"
-              data-tip="Toggle Keyboard Input"
-              data-place="top"
-              onClick={typingOnly ? null : toggleKeyboardInput}
-            >
-              <Keyboard />
-            </button>
-            {
-                showTextInput
-                  ? (
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={inputValue}
-                      onChange={handleInput}
-                      onFocus={handleFocus}
-                      onBlur={handleBlur}
-                      aria-label="Keyboard input"
-                      ref={textInput}
-                    />
-                  )
-                  : null
-              }
-
-          </div>
-        </form>
-        <div className={`col-auto d-md-block d-${showTextInput ? 'none' : 'block'}`}>
-          <div className={speechState === 'speaking' ? 'interrupt' : 'interrupt interrupt-active'}>{ interruptButton }</div>
+              (isOutputMuted)
+                ? <VolumeMuteFill size={iconSize} />
+                : <VolumeUpFill size={iconSize} color={primaryAccent} />
+            }
+          </button>
+        </div>
+        <div>
+          {/* skip through whatever dp is currently speaking */}
+          <button
+            type="button"
+            className="control-icon"
+            disabled={speechState !== 'speaking'}
+            onClick={() => dispatch(stopSpeaking())}
+            data-tip="Stop Speaking"
+          >
+            <SkipEndFill size={iconSize} />
+          </button>
+        </div>
+        <div>
+          {/* show transcript */}
+          <button
+            type="button"
+            className="control-icon"
+            aria-label="Toggle Transcript"
+            data-tip="Toggle Transcript"
+            onClick={toggleKeyboardInput}
+            disabled={transcript.length === 0}
+          >
+            <ChatLeftText size={iconSize} />
+          </button>
+        </div>
+        <div>
+          {/* toggle user mic */}
+          <button
+            type="button"
+            className="control-icon"
+            disabled={requestedMediaPerms.mic === false}
+            onClick={() => dispatch(setMicOn({ micOn: !micOn }))}
+          >
+            <MicFill size={iconSize} />
+          </button>
+        </div>
+        <div>
+          {/* toggle user camera */}
+          <button
+            type="button"
+            className="control-icon"
+            disabled={requestedMediaPerms.camera === false}
+            onClick={() => dispatch(setCameraOn({ cameraOn: !cameraOn }))}
+          >
+            <CameraFill size={iconSize} />
+          </button>
+        </div>
+        <div className="dropdown">
+          <button
+            className="control-icon"
+            type="button"
+            id="dpChatDropdown"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <ThreeDotsVertical size={iconSize} />
+          </button>
+          <ul className="dropdown-menu" aria-labelledby="dpChatDropdown">
+            <li>
+              <button
+                className="dropdown-item"
+                type="button"
+                disabled={!connected}
+                onClick={() => dispatch(disconnect())}
+                data-tip="Disconnect"
+                data-place="bottom"
+              >
+                Exit
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
@@ -283,6 +283,10 @@ function Controls({
 Controls.propTypes = { className: PropTypes.string.isRequired };
 
 export default styled(Controls)`
+  .control-icon {
+    border: none;
+    background: none;
+  }
   .form-control {
     opacity: 0.8;
     &:focus {

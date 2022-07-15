@@ -25,10 +25,14 @@ const initialState = {
   disconnected: false,
   loading: false,
   error: null,
-  isMuted: false,
+  micEnabled: true,
+  cameraEnabled: true,
+  outputAudioMuted: false,
   videoHeight: window.innerHeight,
   videoWidth: window.innerWidth,
-  transcript: [],
+  transcript: [
+    { source: 'persona', timestamp: new Date().toISOString(), text: 'Hello, world!' },
+  ],
   activeCards: [],
   speechState: 'idle',
   // NLP gives us results as it processes final user utterance
@@ -76,7 +80,6 @@ const initialState = {
       roundTripTime: null,
     },
   },
-  cameraOn: true,
   // default to 1 because these values are used to compute an aspect ratio,
   // so if for some reason the camera is disabled, it will default to a square (1:1)
   cameraWidth: 1,
@@ -105,39 +108,27 @@ let scene = null;
  *   panDeg: 0,
  * }
  */
-// export const animateCamera = createAsyncThunk('sm/animateCamera', ({ options, duration }) => {
-export const animateCamera = createAsyncThunk('sm/animateCamera', () => {
-  if (!scene) console.error('cannot animate camera, scene not initiated!');
+export const animateCamera = createAsyncThunk('sm/animateCamera', ({ options, duration }) => {
+  if (!scene) return console.error('cannot animate camera, scene not initiated!');
 
-  console.warn('presuming autonomous animation is active, manual camera animations are disabled');
-  // scene.sendRequest('animateToNamedCamera', {
-  //   cameraName: CAMERA_ID,
-  //   personaId: PERSONA_ID,
-  //   time: duration || 1,
-  //   ...options,
-  // });
-});
+  const serverControlledCameras = scene.hasServerControlledCameras();
+  if (serverControlledCameras) return console.error('autonomous animation is active, manual camera animations are disabled!');
 
-// tells persona to stop listening to mic input
-export const mute = createAsyncThunk('sm/mute', async (specifiedMuteState, thunk) => {
-  const { isMuted } = thunk.getState().sm;
-  if (scene) {
-    // if arg is a boolean use it, otherwise just toggle.
-    // sometimes events from button clicks are passed in, so we need to filter for that
-    const muteState = typeof specifiedMuteState === 'boolean' ? !!specifiedMuteState : !isMuted;
-    if (muteState === true) scene.stopRecognize();
-    else scene.startRecognize();
-    thunk.dispatch(actions.setMute({ isMuted: muteState }));
-  } else { console.warn('muting not possible, no active scene!'); }
+  const CAMERA_ID = 1;
+  return scene.sendRequest('animateToNamedCamera', {
+    cameraName: CAMERA_ID,
+    personaId: PERSONA_ID,
+    time: duration || 1,
+    ...options,
+  });
 });
 
 // handles both manual disconnect or automatic timeout due to inactivity
 export const disconnect = createAsyncThunk('sm/disconnect', async (args, thunk) => {
   if (scene) scene.disconnect();
+  // wait 500ms so dispatch logic has time to run and communicate w/ persona server
   setTimeout(() => {
     thunk.dispatch(actions.disconnect());
-    scene = null;
-    persona = null;
   }, 500);
 });
 
@@ -160,6 +151,8 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
   else if (mic === true && camera === false) requestedMediaDevices = UserMedia[Microphone];
   else if (mic === false && camera === true) requestedMediaDevices = UserMedia[Camera];
   else requestedMediaDevices = UserMedia[None];
+  // reflect mic and camera status in redux store
+  thunk.dispatch(actions.setMediaDevices({ micOn: mic, cameraOn: camera }));
 
   try {
     const sceneOpts = {
@@ -248,9 +241,15 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
             const feature = featureArgs[0];
             const featureState = featureArgs[1];
             switch (feature) {
+              case ('camera'): {
+                if (featureState === 'on') thunk.dispatch(actions.setCamera({ cameraOn: false }));
+                else if (featureState === 'off') thunk.dispatch(actions.setCamera({ cameraOn: true }));
+                else console.error(`state ${featureState} not supported by @feature(microphone)!`);
+                break;
+              }
               case ('microphone'): {
-                if (featureState === 'on') thunk.dispatch(mute(false));
-                else if (featureState === 'off') thunk.dispatch(mute(true));
+                if (featureState === 'on') thunk.dispatch(actions.setMic({ micOn: true }));
+                else if (featureState === 'off') thunk.dispatch(actions.setMic({ micOn: false }));
                 else console.error(`state ${featureState} not supported by @feature(microphone)!`);
                 break;
               }
@@ -466,19 +465,6 @@ export const sendTextMessage = createAsyncThunk('sm/sendTextMessage', async ({ t
   } else thunk.rejectWithValue('not connected to persona!');
 });
 
-export const sendEvent = createAsyncThunk('sm/sendEvent', async ({ payload, eventName }) => {
-  if (scene && persona) {
-    persona.conversationSend(eventName, payload || {}, { kind: 'event' });
-    console.log(`dispatched ${eventName}`, payload);
-  }
-});
-
-export const keepAlive = createAsyncThunk('sm/keepAlive', async () => {
-  if (scene) {
-    scene.keepAlive();
-  }
-});
-
 const smSlice = createSlice({
   name: 'sm',
   initialState,
@@ -513,13 +499,39 @@ const smSlice = createSlice({
       activeCards: payload.activeCards || [],
     }),
     stopSpeaking: (state) => {
-      if (persona) persona.stopSpeaking();
-      return { ...state };
+      if (!persona) return console.error('persona not initiated!');
+      persona.stopSpeaking();
     },
-    setMute: (state, { payload }) => ({
-      ...state,
-      isMuted: payload.isMuted,
-    }),
+    setMicOn: (state, { payload }) => {
+      if (!scene) return console.error('scene not initiated!');
+      const { micOn } = payload;
+      scene.setMediaDeviceActive({
+        microphone: micOn,
+      });
+      return ({ ...state, micOn });
+    },
+    setCameraOn: (state, { payload }) => {
+      if (!scene) return console.error('scene not initiated!');
+      const { cameraOn } = payload;
+      scene.setMediaDeviceActive({
+        camera: cameraOn,
+      });
+      return ({ ...state, cameraOn });
+    },
+    setMediaDevices: (state, { payload }) => {
+      if (!scene) return console.error('scene not initiated!');
+      const { cameraOn, micOn } = payload;
+      scene.setMediaDeviceActive({
+        camera: cameraOn,
+        mic: cameraOn,
+      });
+      return ({ ...state, cameraOn, micOn });
+    },
+    setOutputMute: (state, { payload }) => {
+      const { isOutputMuted } = payload;
+      proxyVideo.muted = isOutputMuted;
+      return ({ ...state, isOutputMuted });
+    },
     setIntermediateUserUtterance: (state, { payload }) => ({
       ...state,
       intermediateUserUtterance: payload.text,
@@ -597,6 +609,21 @@ const smSlice = createSlice({
         error,
       };
     },
+    keepAlive: () => {
+      scene.keepAlive();
+    },
+    sendEvent: (state, { payload }) => {
+      const { eventName, payload: eventPayload } = payload;
+      if (scene && persona) {
+        persona.conversationSend(eventName, eventPayload || {}, { kind: 'event' });
+        console.log(`dispatched ${eventName}`, eventPayload);
+      }
+    },
+    clearActiveCards: () => {
+      // we don't need to modify the state, since this will propagate through
+      // the scene instance and modify the active cards through the CC API
+      scene.clearActiveCards();
+    },
   },
   extraReducers: {
     [createScene.pending]: (state) => ({
@@ -640,9 +667,16 @@ export const {
   stopSpeaking,
   setActiveCards,
   setCameraState,
+  setMediaDevices,
+  setCameraOn,
+  setMicOn,
   setShowTranscript,
   setTOS,
   setRequestedMediaPerms,
+  setOutputMute,
+  keepAlive,
+  sendEvent,
+  clearActiveCards,
 } = smSlice.actions;
 
 export default smSlice.reducer;
