@@ -25,8 +25,8 @@ const initialState = {
   disconnected: false,
   loading: false,
   error: null,
-  micEnabled: true,
-  cameraEnabled: true,
+  micOn: true,
+  cameraOn: true,
   outputAudioMuted: false,
   videoHeight: window.innerHeight,
   videoWidth: window.innerWidth,
@@ -145,10 +145,10 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
 
   let requestedMediaDevices;
 
-  if (mic === true && camera === true) requestedMediaDevices = UserMedia[MicrophoneAndCamera];
-  else if (mic === true && camera === false) requestedMediaDevices = UserMedia[Microphone];
-  else if (mic === false && camera === true) requestedMediaDevices = UserMedia[Camera];
-  else requestedMediaDevices = UserMedia[None];
+  if (mic === true && camera === true) requestedMediaDevices = MicrophoneAndCamera;
+  else if (mic === true && camera === false) requestedMediaDevices = Microphone;
+  else if (mic === false && camera === true) requestedMediaDevices = Camera;
+  else requestedMediaDevices = None;
   // reflect mic and camera status in redux store
   thunk.dispatch(actions.setMediaDevices({ micOn: mic, cameraOn: camera }));
 
@@ -160,10 +160,10 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
       audioOnly: false,
       // requested permissions
       requestedMediaDevices,
-      // if user denies camera and mic permissions, smwebsdk will request mic only for us
-      // required permissions
-      requiredMediaDevices: UserMedia[None],
+      // required permissions—we can run in a typing only mode, so none is fine
+      requiredMediaDevices: None,
     };
+    console.log(sceneOpts);
     if (AUTH_MODE === 0) sceneOpts.apiKey = API_KEY;
     scene = new Scene(sceneOpts);
   } catch (e) {
@@ -436,6 +436,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
     // detect if we're running audio-only
     const videoEnabled = requestedMediaPerms.camera
       && stream !== undefined
+      && 'getVideoTracks' in stream
       && stream.getVideoTracks().length > 0;
     if (videoEnabled === false) thunk.dispatch(actions.setCameraState({ cameraOn: false }));
     // pass dispatch before calling setUserMediaStream so proxy can send dimensions to store
