@@ -498,9 +498,9 @@ const smSlice = createSlice({
       ...state,
       activeCards: payload.activeCards || [],
     }),
-    stopSpeaking: (state) => {
+    stopSpeaking: () => {
       if (!persona) return console.error('persona not initiated!');
-      persona.stopSpeaking();
+      return persona.stopSpeaking();
     },
     setMicOn: (state, { payload }) => {
       if (!scene) return console.error('scene not initiated!');
