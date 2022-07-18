@@ -31,9 +31,8 @@ function Header({
             </div>
             <div>
               {/* right align */}
-              <Controls />
               <div className={`${connected && !loading && pathname === '/video' ? '' : 'd-none'}`}>
-                {/* controls go here when we're done working */}
+                <Controls />
               </div>
             </div>
           </div>
