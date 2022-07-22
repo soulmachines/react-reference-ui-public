@@ -8,6 +8,8 @@ import breakpoints from '../utils/breakpoints';
 import Header from '../components/Header';
 import { landingBackgroundImage, landingBackgroundColor } from '../config';
 import { setRequestedMediaPerms } from '../store/sm';
+import micFill from '../img/mic-fill.svg';
+import videoFill from '../img/camera-video-fill.svg';
 
 function Landing({ className }) {
   const { mic, camera } = useSelector(({ sm }) => sm.requestedMediaPerms);
@@ -20,7 +22,7 @@ function Landing({ className }) {
         <div className="container">
           <div className="landing-container">
             <div className="col-12 col-lg-6">
-              <div className="row">
+              <div className="row" style={{ marginBottom: '9px' }}>
                 <div>
                   <h1 className="fw-bol">
                     Meet Digital Person A.
@@ -29,49 +31,49 @@ function Landing({ className }) {
               </div>
               <div className="row">
                 <div>
-                  <h3>
+                  <h4 className="fw-light" style={{ marginBottom: '31px' }}>
                     Aliquam dapibus malesuada dignissim. Aliquam eu tortor
                     eu arcu tincidunt vulputate.
-                  </h3>
+                  </h4>
                 </div>
               </div>
-              <div className="row">
+              <div className="row" style={{ marginBottom: '36px' }}>
                 <div>
                   <div className="form-check form-switch">
-                    <label className="form-check-label" htmlFor="micPermSwitch">
+                    <label className="form-check-label d-flex align-items-center" htmlFor="micPermSwitch">
                       <input
-                        className="form-check-input"
+                        className={`shadow form-check-input mic-switch switch ${mic ? 'status-checked' : 'status-unchecked'}`}
                         type="checkbox"
                         role="switch"
                         id="micPermSwitch"
                         onChange={() => dispatch(setRequestedMediaPerms({ mic: !mic }))}
                         checked={mic}
                       />
-                      Use your microphone so I can hear you.
+                      <div className="d-block ms-2">Use your microphone so I can hear you.</div>
                     </label>
                   </div>
                 </div>
               </div>
-              <div className="row">
+              <div className="row" style={{ marginBottom: '52px' }}>
                 <div>
                   <div className="form-check form-switch">
-                    <label className="form-check-label" htmlFor="cameraPermSwitch">
+                    <label className="form-check-label d-flex align-items-center" htmlFor="cameraPermSwitch">
                       <input
-                        className="form-check-input"
+                        className={`shadow form-check-input video-switch switch ${camera ? 'status-checked' : 'status-unchecked'}`}
                         type="checkbox"
                         role="switch"
                         id="micPermSwitch"
                         onChange={() => dispatch(setRequestedMediaPerms({ camera: !camera }))}
                         checked={camera}
                       />
-                      Use your camera so we can chat face-to-face.
+                      <div className='d-block ms-2'>Use your camera so we can chat face-to-face.</div>
                     </label>
                   </div>
                 </div>
               </div>
-              <div className="row">
+              <div className="row" style={{ marginBottom: '60px' }}>
                 <div>
-                  <Link to="/loading" className="btn btn-primary" type="button">
+                  <Link to="/loading" className="shadow btn primary-accent fs-3" type="button">
                     Chat with Digital Person A
                   </Link>
                 </div>
@@ -129,9 +131,71 @@ export default styled(Landing)`
         border: none;
       }
     }
+  }
+  .form-switch .form-check-input {
+    width: 7rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
-    .row {
-      margin-bottom: 1rem;
+
+    &.mic-switch::before, &.mic-switch.status-checked::after {
+        background-image: url(${micFill});
+    }
+    &.video-switch::before, &.video-switch.status-checked::after {
+        background-image: url(${videoFill});
+    }
+    &.mic-switch.status-checked::before, &.video-switch.status-checked::before {
+      background-image: none;
+    }
+
+    &.status-unchecked {
+      &::after {
+        content: 'OFF';
+        color: #000;
+        margin-right: 10%;
+      }
+      &::before {
+        background-size: 60%;
+        background-repeat: no-repeat;
+        background-color: rgb(220, 220, 220);
+        background-position: 45% center;
+        content: '';
+        display: block;
+
+        border-radius: 50%;
+
+        height: 90%;
+        margin-left: 2%;
+        aspect-ratio: 1;
+        float: right;
+      }
+    }
+
+    &.status-checked {
+      &::before {
+        content: 'ON';
+        color: #FFF;
+        margin-left: 10%;
+      }
+
+      &::after {
+        background-size: 60%;
+        background-repeat: no-repeat;
+        background-color: #FFF;
+        background-position: 55% center;
+        content: '';
+        display: block;
+
+        border-radius: 50%;
+
+        height: 90%;
+        margin-right: 2%;
+        aspect-ratio: 1;
+        float: right;
+      }
     }
   }
+
 `;
