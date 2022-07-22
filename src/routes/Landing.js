@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import Color from 'color';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { CameraVideoFill, MicFill } from 'react-bootstrap-icons';
 import breakpoints from '../utils/breakpoints';
 import Header from '../components/Header';
 import { landingBackgroundImage, landingBackgroundColor } from '../config';
@@ -19,9 +20,9 @@ function Landing({ className }) {
     <div className={className}>
       <div className="landing-wrapper">
         <Header />
-        <div className="container">
-          <div className="landing-container">
-            <div className="col-12 col-lg-6">
+        <div className="container d-flex">
+          <div className="landing-container flex-grow-1">
+            <div className="col-12 col-lg-8">
               <div className="row" style={{ marginBottom: '9px' }}>
                 <div>
                   <h1 className="fw-bol">
@@ -91,6 +92,20 @@ function Landing({ className }) {
                 </div>
               </div>
               <div className="col" />
+            </div>
+          </div>
+          <div className="d-none d-lg-block">
+            <div
+              className="d-flex align-items-center justify-content-center fs-4"
+            >
+              <CameraVideoFill size={26} />
+              <span className="ps-1">
+                +
+              </span>
+              <MicFill size={26} />
+            </div>
+            <div className="text-center fst-italic">
+              Enable your camera and mic to optimize our interaction.
             </div>
           </div>
         </div>
