@@ -55,17 +55,16 @@ const StyledHeader = styled(Header)`
   width: 100%;
   background-color: ${transparentHeader ? 'none' : '#FFFFFF'};
 
-  .position-relative {
-    position: relative;
-  }
-
   .row {
     height: ${headerHeight};
   }
   .logo {
+    margin-top: 20px;
+
     /* height constrain logo image */
     height: calc(0.6 * ${headerHeight});
     width: auto;
+
     // Medium devices (tablets, 768px and up)
     @media (min-width: 768px) {
       height: calc(0.8 * ${headerHeight});
