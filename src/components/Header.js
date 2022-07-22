@@ -1,20 +1,18 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { Link, useLocation } from 'react-router-dom';
 import {
   logo, logoAltText, transparentHeader, headerHeight, logoLink,
 } from '../config';
-import {
-  disconnect,
-} from '../store/sm/index';
 import Controls from './Controls';
 
 function Header({
-  className, connected, loading, dispatchDisconnect,
+  className,
 }) {
   const { pathname } = useLocation();
+  const { connected, loading } = useSelector(({ sm }) => ({ ...sm }));
   return (
     <div className={`${className}`}>
       <div className="container">
@@ -43,12 +41,9 @@ function Header({
 }
 Header.propTypes = {
   className: PropTypes.string.isRequired,
-  connected: PropTypes.bool.isRequired,
-  loading: PropTypes.bool.isRequired,
-  dispatchDisconnect: PropTypes.func.isRequired,
 };
 
-const StyledHeader = styled(Header)`
+export default styled(Header)`
   position: relative;
   z-index: 20;
   top: 0;
@@ -71,14 +66,3 @@ const StyledHeader = styled(Header)`
    }
   }
 `;
-
-const mapStateToProps = ({ sm }) => ({
-  connected: sm.connected,
-  loading: sm.loading,
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  dispatchDisconnect: () => dispatch(disconnect()),
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(StyledHeader);
