@@ -66,7 +66,7 @@ function Landing({ className }) {
                         onChange={() => dispatch(setRequestedMediaPerms({ camera: !camera }))}
                         checked={camera}
                       />
-                      <div className='d-block ms-2'>Use your camera so we can chat face-to-face.</div>
+                      <div className="d-block ms-2">Use your camera so we can chat face-to-face.</div>
                     </label>
                   </div>
                 </div>
