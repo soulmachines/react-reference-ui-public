@@ -14,9 +14,12 @@ export default createGlobalStyle`
     background: ${primaryAccent};
     color: #FFF;
   }
-
   .form-check-input:checked {
     background-color: ${primaryAccent};
     border-color: ${primaryAccent};
+  }
+  .btn-unstyled {
+    border: none;
+    background: none;
   }
 `;

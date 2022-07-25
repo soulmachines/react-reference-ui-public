@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import styled from 'styled-components';
-import { MicFill } from 'react-bootstrap-icons';
+import { ArrowLeftCircleFill, ArrowRightCircleFill, MicFill } from 'react-bootstrap-icons';
 import { createScene } from '../store/sm';
 import Header from '../components/Header';
 import { headerHeight, landingBackgroundColor, landingBackgroundImage } from '../config';
@@ -34,18 +34,25 @@ function Loading({
     createSceneIfNotStarted();
   }, []);
 
+  const iconSize = 66;
   const [page, setPage] = useState(0);
   const pages = [
     <div>
       <div className="row justify-content-center">
         <div className="tutorial-icon mb-2">
-          <MicFill size={62} />
+          <MicFill size={iconSize} />
         </div>
       </div>
       <div className="row">
-        <h4>
-          Before you begin.
-        </h4>
+        <div className="d-flex align-items-center justify-content-between">
+          <div />
+          <h4>
+            Before you begin.
+          </h4>
+          <button className="btn-unstyled" type="button" onClick={() => setPage(page + 1)}>
+            <ArrowRightCircleFill size={32} />
+          </button>
+        </div>
         <div className="mt-0 mb-2">
           The Digital Person works best in a quiet environment, when you&apos;re close to your
           microphone, and your camera is on. Speak clearly, and in short responses.
@@ -55,15 +62,23 @@ function Loading({
     <div>
       <div className="row justify-content-center">
         <div className="tutorial-icon mb-2">
-          <h4>
+          <div className="fs-4 fw-bold mt-2">
             &ldquo;hi, how are you?&rdquo;
-          </h4>
+          </div>
         </div>
       </div>
       <div className="row">
-        <h4>
-          What you do.
-        </h4>
+        <div className="d-flex align-items-center justify-content-between">
+          <button className="btn-unstyled" type="button" onClick={() => setPage(page - 1)}>
+            <ArrowLeftCircleFill size={32} />
+          </button>
+          <h4>
+            What you do.
+          </h4>
+          <button className="btn-unstyled" type="button" onClick={() => setPage(page + 1)}>
+            <ArrowRightCircleFill size={32} />
+          </button>
+        </div>
         <div className="mt-0 mb-2">
           Digital Person A will listen to whatever you say.
           Other options, like typing or choosing your responses, are also available.
@@ -75,9 +90,15 @@ function Loading({
         <div className="tutorial-icon tutorial-icon-dp mb-2" />
       </div>
       <div className="row">
-        <h4>
-          What you can talk about.
-        </h4>
+        <div className="d-flex align-items-center justify-content-between">
+          <button className="btn-unstyled" type="button" onClick={() => setPage(page - 1)}>
+            <ArrowLeftCircleFill size={32} />
+          </button>
+          <h4>
+            What you can talk about.
+          </h4>
+          <div />
+        </div>
         <div className="mt-0 mb-2">
           You can chat about dolor sit amet, consectetur adipiscing elit.
           Sed volutpat eu nulla ac suscipit. Sed vel rhoncus neque, et sollicitudin sem.
@@ -85,6 +106,15 @@ function Loading({
       </div>
     </div>,
   ];
+
+  const [skip, setSkip] = useState(false);
+  const redirectToVideoOnConnect = () => {
+    setSkip(true);
+  };
+  const history = useHistory();
+  useEffect(() => {
+    if (skip === true && connected === true) history.push('/video');
+  }, [connected]);
 
   return (
     <div className={className}>
@@ -96,7 +126,7 @@ function Loading({
               {pages[page]}
             </div>
             <div className="row justify-content-center">
-              <div className="d-grid col-5">
+              <div className="d-grid col-3">
                 {
                   page < pages.length - 1
                     ? (
@@ -114,29 +144,27 @@ function Loading({
             </div>
             <div className="row">
               <div>
-                {
-                  connected
+                <button
+                  className={`${connected ? 'btn btn-dark' : 'btn-unstyled'} m-2`}
+                  type="button"
+                  disabled={skip}
+                  onClick={redirectToVideoOnConnect}
+                >
+                  { connected ? 'Chat Now' : 'Skip' }
+                  { !connected && skip
                     ? (
-                      <Link
-                        to="/video"
-                        className={`btn btn${page < pages.length - 1 ? '-outline' : ''}-dark m-2`}
-                        type="button"
-                      >
-                        Chat Now
-                      </Link>
-                    )
-                    : (
-                      <div className="m-2 spinner-border" role="status">
+                      <div className="ms-1 spinner-border spinner-border-sm text-secondary" role="status">
                         <span className="visually-hidden">Loading...</span>
                       </div>
                     )
-                }
+                    : null }
+                </button>
               </div>
             </div>
             <div className="row justify-content-center">
               <div>
                 {/* eslint-disable-next-line react/no-array-index-key */}
-                {pages.map((_, i) => (<div key={`${i}-${i === page}`} className="d-inline p-1">{i === page ? '+' : 'o'}</div>))}
+                {pages.map((_, i) => (<div key={`${i}-${i === page}`} className="d-inline-block p-1">{i === page ? <div className="closed-dot" /> : <div className="open-dot" />}</div>))}
               </div>
             </div>
           </div>
@@ -158,13 +186,14 @@ export default styled(Loading)`
 
   width: 100vw;
   height: 100vh;
+  color: #3C3C3C;
 
   &>.container>.row {
     height: calc(100vh - ${headerHeight});
   }
 
   .tutorial-icon {
-    width: 8rem;
+    width: 180px;
     aspect-ratio: 1;
     border-radius: 50%;
 
@@ -172,11 +201,24 @@ export default styled(Loading)`
     align-items: center;
     justify-content: center;
 
-    background-color: lightgray;
+    background-color: #EAEAEA;
   }
   .tutorial-icon-dp {
     background-image: url(${landingBackgroundImage});
     background-size: cover;
     background-position: bottom center;
+  }
+  .open-dot {
+    border: 2px solid #3C3C3C;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .closed-dot {
+    border: 2px solid #3C3C3C;
+    background: #3C3C3C;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
   }
 `;
