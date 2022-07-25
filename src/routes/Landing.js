@@ -169,7 +169,7 @@ export default styled(Landing)`
       &::after {
         content: 'OFF';
         color: #000;
-        margin-right: 10%;
+        margin-right: 18%;
       }
       &::before {
         background-size: 60%;
@@ -181,8 +181,8 @@ export default styled(Landing)`
 
         border-radius: 50%;
 
-        height: 90%;
-        margin-left: 2%;
+        height: 80%;
+        margin-left: 5%;
         aspect-ratio: 1;
         float: right;
       }
@@ -192,7 +192,7 @@ export default styled(Landing)`
       &::before {
         content: 'ON';
         color: #FFF;
-        margin-left: 10%;
+        margin-left: 22%;
       }
 
       &::after {
@@ -205,8 +205,8 @@ export default styled(Landing)`
 
         border-radius: 50%;
 
-        height: 90%;
-        margin-right: 2%;
+        height: 80%;
+        margin-right: 5%;
         aspect-ratio: 1;
         float: right;
       }
