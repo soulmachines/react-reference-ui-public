@@ -114,7 +114,7 @@ function Loading({
   const history = useHistory();
   useEffect(() => {
     if (skip === true && connected === true) history.push('/video');
-  }, [connected]);
+  }, [connected, skip]);
 
   return (
     <div className={className}>
