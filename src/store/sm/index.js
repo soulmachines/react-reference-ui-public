@@ -27,7 +27,7 @@ const initialState = {
   error: null,
   micOn: true,
   cameraOn: true,
-  outputAudioMuted: false,
+  isOutputMuted: false,
   videoHeight: window.innerHeight,
   videoWidth: window.innerWidth,
   transcript: [],
@@ -529,7 +529,7 @@ const smSlice = createSlice({
     },
     setOutputMute: (state, { payload }) => {
       const { isOutputMuted } = payload;
-      proxyVideo.muted = isOutputMuted;
+      proxyVideo.muted = isOutputMuted ? 'muted' : null;
       return ({ ...state, isOutputMuted });
     },
     setIntermediateUserUtterance: (state, { payload }) => ({

@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/media-has-caption */
 import React, { createRef, useEffect, useState } from 'react';
-import { connect } from 'react-redux';
+import { connect, useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import * as actions from '../store/sm';
@@ -8,8 +8,13 @@ import proxyVideo from '../proxyVideo';
 import { headerHeight, transparentHeader } from '../config';
 
 function PersonaVideo({
-  loading, connected, setVideoDimensions, className,
+  className,
 }) {
+  const dispatch = useDispatch();
+  const setVideoDimensions = (videoWidth, videoHeight) => dispatch(
+    actions.setVideoDimensions({ videoWidth, videoHeight }),
+  );
+  const { isOutputMuted, loading, connected } = useSelector(({ sm }) => ({ ...sm }));
   // video elem ref used to link proxy video element to displayed video
   const videoRef = createRef();
   // we need the container dimensions to render the right size video in the persona server
@@ -45,14 +50,22 @@ function PersonaVideo({
     }
     // when component dismounts, remove resize listener
     return () => window.removeEventListener('resize', handleResize);
-  });
+  }, []);
 
   return (
     <div ref={containerRef} className={className} style={{ height }}>
       {
         connected
           ? (
-            <video ref={videoRef} autoPlay playsInline className="persona-video" id="personavideo" data-sm-video />
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              className="persona-video"
+              id="personavideo"
+              data-sm-video
+              muted={isOutputMuted}
+            />
           )
           : null
       }
@@ -73,13 +86,10 @@ function PersonaVideo({
 }
 
 PersonaVideo.propTypes = {
-  setVideoDimensions: PropTypes.func.isRequired,
-  loading: PropTypes.bool.isRequired,
-  connected: PropTypes.bool.isRequired,
   className: PropTypes.string.isRequired,
 };
 
-const StyledPersonaVideo = styled(PersonaVideo)`
+export default styled(PersonaVideo)`
   /* if you need the persona video to be different than the window dimensions, change these values */
   width: 100vw;
 
@@ -96,18 +106,3 @@ const StyledPersonaVideo = styled(PersonaVideo)`
     height: 100%;
   }
 `;
-
-const mapStateToProps = (state) => ({
-  loading: state.sm.loading,
-  connected: state.sm.connected,
-  width: state.sm.videoWidth,
-  height: state.sm.videoHeight,
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  setVideoDimensions: (videoWidth, videoHeight) => dispatch(
-    actions.setVideoDimensions({ videoWidth, videoHeight }),
-  ),
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(StyledPersonaVideo);

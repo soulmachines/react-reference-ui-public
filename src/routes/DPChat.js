@@ -76,7 +76,7 @@ function DPChat({
     } else history.push('/');
   }
   // usually this will be triggered when the user refreshes
-  // if (connected !== true) history.push('/');
+  if (connected !== true) history.push('/');
 
   return (
     <div className={className}>
