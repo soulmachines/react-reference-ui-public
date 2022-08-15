@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { Scene, Persona, UserMedia } from '@soulmachines/smwebsdk';
+import { Scene, Persona } from '@soulmachines/smwebsdk';
 import to from 'await-to-js';
 import proxyVideo, { mediaStreamProxy } from '../../proxyVideo';
 import roundObject from '../../utils/roundObject';
