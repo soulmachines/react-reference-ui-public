@@ -137,7 +137,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
   }
   // request permissions from user and create instance of Scene and ask for webcam/mic permissions
   const { requestedMediaPerms } = thunk.getState().sm;
-  const { mic: microphone, camera } = requestedMediaPerms;
+  const { mic, camera } = requestedMediaPerms;
   try {
     const sceneOpts = {
       videoElement: proxyVideo,
@@ -146,7 +146,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
       audioOnly: false,
       // requested permissions
       requestedMediaDevices: {
-        microphone,
+        microphone: mic,
         camera,
       },
       // required permissions. we can run in a typing only mode, so none is fine
