@@ -136,22 +136,8 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
     return console.error('warning! you attempted to create a new scene, when one already exists!');
   }
   // request permissions from user and create instance of Scene and ask for webcam/mic permissions
-  const {
-    Microphone, Camera, MicrophoneAndCamera, None,
-  } = UserMedia;
-
   const { requestedMediaPerms } = thunk.getState().sm;
-  const { mic, camera } = requestedMediaPerms;
-
-  let requestedMediaDevices;
-
-  if (mic === true && camera === true) requestedMediaDevices = MicrophoneAndCamera;
-  else if (mic === true && camera === false) requestedMediaDevices = Microphone;
-  else if (mic === false && camera === true) requestedMediaDevices = Camera;
-  else requestedMediaDevices = None;
-  // reflect mic and camera status in redux store
-  thunk.dispatch(actions.setMediaDevices({ micOn: mic, cameraOn: camera }));
-
+  const { mic: microphone, camera } = requestedMediaPerms;
   try {
     const sceneOpts = {
       videoElement: proxyVideo,
@@ -159,16 +145,24 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
       // change value if your application needs to have an explicit audio-only mode.
       audioOnly: false,
       // requested permissions
-      requestedMediaDevices,
-      // required permissions—we can run in a typing only mode, so none is fine
-      requiredMediaDevices: None,
+      requestedMediaDevices: {
+        microphone,
+        camera,
+      },
+      // required permissions. we can run in a typing only mode, so none is fine
+      requiredMediaDevices: {
+        microphone: false,
+        camera: false,
+      },
     };
     console.log(sceneOpts);
     if (AUTH_MODE === 0) sceneOpts.apiKey = API_KEY;
     scene = new Scene(sceneOpts);
   } catch (e) {
-    console.error(e);
+    return thunk.rejectWithValue(e);
   }
+  // reflect mic and camera status in redux store
+  thunk.dispatch(actions.setMediaDevices({ micOn: mic, cameraOn: camera }));
 
   /* BIND HANDLERS */
   scene.onDisconnected = () => thunk.dispatch(disconnect());
