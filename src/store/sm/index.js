@@ -16,9 +16,15 @@ const PERSONA_ID = '1';
 if (AUTH_MODE === 0 && API_KEY === '') throw new Error('REACT_APP_API_KEY not defined!');
 
 const initialState = {
-  requestedMediaPerms: JSON.parse(localStorage.getItem('requestedMediaPerms')) || {
+  requestedMediaPerms: {
+    ...JSON.parse(localStorage.getItem('requestedMediaPerms')),
+    cameraDenied: false,
+    micDenied: false,
+  } || {
     mic: true,
+    micDenied: false,
     camera: true,
+    cameraDenied: false,
   },
   tosAccepted: false,
   connected: false,
@@ -138,6 +144,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
   // request permissions from user and create instance of Scene and ask for webcam/mic permissions
   const { requestedMediaPerms } = thunk.getState().sm;
   const { mic, camera } = requestedMediaPerms;
+
   try {
     const sceneOpts = {
       videoElement: proxyVideo,
@@ -155,14 +162,40 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
         camera: false,
       },
     };
-    console.log(sceneOpts);
     if (AUTH_MODE === 0) sceneOpts.apiKey = API_KEY;
     scene = new Scene(sceneOpts);
   } catch (e) {
     return thunk.rejectWithValue(e);
   }
+
+  // check to see if user has denied permissions
+  // if so, proceed typing only but set mic/cameraDenied to true
+  let cameraDenied = false;
+  let micDenied = false;
+  try {
+    await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
+  } catch {
+    cameraDenied = true;
+  }
+  try {
+    await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  } catch {
+    micDenied = true;
+  }
+
+  console.log('HAHAHA', cameraDenied, micDenied)
+  thunk.dispatch(actions.setRequestedMediaPerms({
+    camera,
+    mic,
+    cameraDenied,
+    micDenied,
+  }));
+
   // reflect mic and camera status in redux store
-  thunk.dispatch(actions.setMediaDevices({ micOn: mic, cameraOn: camera }));
+  thunk.dispatch(actions.setMediaDevices({
+    micOn: micDenied ? false : mic,
+    cameraOn: cameraDenied ? false : camera,
+  }));
 
   /* BIND HANDLERS */
   scene.onDisconnected = () => thunk.dispatch(disconnect());
@@ -427,15 +460,11 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
     // since we can't store the userMediaStream in the store since it's not serializable,
     // we use an external proxy for video streams
     const { userMediaStream: stream } = scene.session();
-    // detect if we're running audio-only
-    const videoEnabled = requestedMediaPerms.camera
-      && stream !== undefined
-      && 'getVideoTracks' in stream
-      && stream.getVideoTracks().length > 0;
-    if (videoEnabled === false) thunk.dispatch(actions.setCameraState({ cameraOn: false }));
+
+    if (cameraDenied === false) thunk.dispatch(actions.setCameraState({ cameraOn: false }));
     // pass dispatch before calling setUserMediaStream so proxy can send dimensions to store
     mediaStreamProxy.passDispatch(thunk.dispatch);
-    mediaStreamProxy.setUserMediaStream(stream, videoEnabled);
+    mediaStreamProxy.setUserMediaStream(stream, cameraDenied);
     mediaStreamProxy.enableToggle(scene);
 
     // fulfill promise, reducer sets state to indicate loading and connection are complete
@@ -475,6 +504,8 @@ const smSlice = createSlice({
       const requestedMediaPerms = {
         camera: 'camera' in payload ? payload.camera : state.requestedMediaPerms.camera,
         mic: 'mic' in payload ? payload.mic : state.requestedMediaPerms.mic,
+        cameraDenied: 'cameraDenied' in payload ? payload.cameraDenied : state.requestedMediaPerms.cameraDenied,
+        micDenied: 'micDenied' in payload ? payload.micDenied : state.requestedMediaPerms.micDenied,
       };
       localStorage.setItem('requestedMediaPerms', JSON.stringify(requestedMediaPerms));
       return ({
@@ -514,7 +545,9 @@ const smSlice = createSlice({
     },
     setMediaDevices: (state, { payload }) => {
       if (!scene) return console.error('scene not initiated!');
-      const { cameraOn, micOn } = payload;
+      const {
+        cameraOn, micOn,
+      } = payload;
       scene.setMediaDeviceActive({
         camera: cameraOn,
         mic: cameraOn,
@@ -661,7 +694,6 @@ export const {
   stopSpeaking,
   setActiveCards,
   setCameraState,
-  setMediaDevices,
   setCameraOn,
   setMicOn,
   setShowTranscript,

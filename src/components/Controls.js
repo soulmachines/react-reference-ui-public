@@ -228,46 +228,35 @@ function Controls({
             <ChatLeftText size={iconSize} color={showTranscript ? primaryAccent : ''} />
           </button>
         </div>
-        {
-          requestedMediaPerms.mic === true
-            ? (
-              <div>
-                {/* toggle user mic */}
-                <button
-                  type="button"
-                  className="control-icon"
-                  onClick={() => dispatch(setMicOn({ micOn: !micOn }))}
-                >
-                  {
+        <div>
+          {/* toggle user mic */}
+          <button
+            type="button"
+            className="control-icon"
+            disabled={requestedMediaPerms.micDenied === true}
+            onClick={() => dispatch(setMicOn({ micOn: !micOn }))}
+          >
+            {
                     micOn
                       ? <MicFill size={iconSize} color={primaryAccent} />
                       : <MicMuteFill size={iconSize} />
                   }
-                </button>
-              </div>
-            )
-            : null
-        }
+          </button>
+        </div>
         <div>
           {/* toggle user camera */}
-          {
-            requestedMediaPerms.camera
-              ? (
-                <button
-                  type="button"
-                  className="control-icon"
-                  disabled={requestedMediaPerms.camera === false}
-                  onClick={() => dispatch(setCameraOn({ cameraOn: !cameraOn }))}
-                >
-                  {
+          <button
+            type="button"
+            className="control-icon"
+            disabled={requestedMediaPerms.cameraDenied === true}
+            onClick={() => dispatch(setCameraOn({ cameraOn: !cameraOn }))}
+          >
+            {
                     cameraOn
                       ? <CameraVideoFill size={iconSize} color={primaryAccent} />
                       : <CameraVideoOffFill size={iconSize} />
                   }
-                </button>
-              )
-              : null
-          }
+          </button>
         </div>
         <div className="dropdown">
           <button
