@@ -29,6 +29,19 @@ function DPChat({
 
   const dispatch = useDispatch();
 
+  const history = useHistory();
+  useEffect(() => {
+    if (error !== null) history.push('/loading?error=true');
+  }, [error]);
+
+  if (disconnected === true) {
+    if (disconnectPage) {
+      history.push(disconnectRoute);
+    } else history.push('/');
+  }
+  // usually this will be triggered when the user refreshes
+  if (connected !== true) history.push('/');
+
   const handleResize = () => {
     dispatch(setVideoDimensions({
       videoWidth: window.innerWidth,
@@ -62,18 +75,6 @@ function DPChat({
     cleanup();
   };
 
-  const history = useHistory();
-  useEffect(() => {
-    if (error !== null) history.push('/loading?error=true');
-  }, [error]);
-
-  if (disconnected === true) {
-    if (disconnectPage) {
-      history.push(disconnectRoute);
-    } else history.push('/');
-  }
-  // usually this will be triggered when the user refreshes
-  if (connected !== true) history.push('/');
 
   return (
     <div className={className}>
