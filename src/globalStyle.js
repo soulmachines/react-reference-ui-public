@@ -1,8 +1,5 @@
 import { createGlobalStyle } from 'styled-components';
-import breakpoints from './utils/breakpoints';
 
-const buttonSidePadding = '0.8rem';
-const buttonVerticalPadding = '0.4rem';
 export const primaryAccent = 'blue';
 
 export default createGlobalStyle`

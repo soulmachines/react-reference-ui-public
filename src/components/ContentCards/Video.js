@@ -2,9 +2,9 @@ import React, { createRef, useEffect, useState } from 'react';
 import YouTube from 'react-youtube';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { connect, useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
-  setMicOn, sendTextMessage, setActiveCards, keepAlive, clearActiveCards,
+  setMicOn, sendTextMessage, keepAlive, clearActiveCards,
 } from '../../store/sm/index';
 
 function Video({

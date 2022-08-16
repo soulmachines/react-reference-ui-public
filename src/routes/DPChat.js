@@ -1,21 +1,18 @@
-import React, { createRef, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import PersonaVideo from '../components/PersonaVideo';
 import Captions from '../components/Captions';
-import Controls from '../components/Controls';
 import ContentCardDisplay from '../components/ContentCardDisplay';
 import {
   disconnect, sendEvent, setVideoDimensions,
 } from '../store/sm/index';
 import Header from '../components/Header';
 import {
-  headerHeight, disconnectPage, disconnectRoute,
+  disconnectPage, disconnectRoute,
 } from '../config';
-import CameraPreview from '../components/CameraPreview';
-import breakpoints from '../utils/breakpoints';
 import TextInput from '../components/TextInput';
 
 function DPChat({
@@ -27,7 +24,6 @@ function DPChat({
     error,
     showTranscript,
     micOn,
-    cameraOn,
   } = useSelector(({ sm }) => ({ ...sm }));
 
   const dispatch = useDispatch();
@@ -85,6 +81,8 @@ function DPChat({
         <div className="row">
           <Header />
           {/* {
+            // consumers of the template can uncomment this block if they want a camera preview
+            // will need to add cameraOn to the values they get from the state
               cameraOn
                 ? (
                   <div className="row d-flex justify-content-end">
