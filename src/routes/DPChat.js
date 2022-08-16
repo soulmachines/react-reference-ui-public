@@ -24,6 +24,7 @@ function DPChat({
     error,
     showTranscript,
     micOn,
+    isOutputMuted,
   } = useSelector(({ sm }) => ({ ...sm }));
 
   const dispatch = useDispatch();
@@ -107,11 +108,17 @@ function DPChat({
         </div>
         {/* bottom row */}
         <div>
-          <div className="row">
-            <div className="col text-center">
-              <Captions />
-            </div>
-          </div>
+          {
+            isOutputMuted
+              ? (
+                <div className="row">
+                  <div className="col text-center">
+                    <Captions />
+                  </div>
+                </div>
+              )
+              : null
+          }
           {
           showTranscript === true || micOn === false
             ? (
