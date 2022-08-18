@@ -14,6 +14,7 @@ import {
   disconnectPage, disconnectRoute,
 } from '../config';
 import TextInput from '../components/TextInput';
+import STTFeedback from '../components/STTFeedback';
 
 function DPChat({
   className,
@@ -34,7 +35,7 @@ function DPChat({
     if (error !== null) history.push('/loading?error=true');
   }, [error]);
 
-  if (disconnected === true) {
+  if (disconnected === true || connected !== true) {
     if (disconnectPage) {
       history.push(disconnectRoute);
     } else history.push('/');
@@ -74,7 +75,6 @@ function DPChat({
     console.log('cleaning up');
     cleanup();
   };
-
 
   return (
     <div className={className}>
@@ -120,6 +120,11 @@ function DPChat({
               )
               : null
           }
+          <div className="row">
+            <div className="d-flex justify-content-center m-2">
+              <STTFeedback />
+            </div>
+          </div>
           {
           showTranscript === true || micOn === false
             ? (

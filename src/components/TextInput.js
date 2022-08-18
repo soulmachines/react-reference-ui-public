@@ -51,7 +51,7 @@ export default styled(TextInput)`
   .send-button {
     border: 1px solid #ced4da;
     border-left: none;
-    background: none;
+    background: #FFF;
     color: rgba(0,0,0,0.4);
   }
 `;

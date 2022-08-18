@@ -38,8 +38,6 @@ function Controls({
   className,
 }) {
   const {
-    intermediateUserUtterance,
-    lastUserUtterance,
     userSpeaking,
     connected,
     micOn,
@@ -54,40 +52,11 @@ function Controls({
   const typingOnly = requestedMediaPerms.mic !== true;
 
   const dispatch = useDispatch();
-
-  const [inputValue, setInputValue] = useState('');
-  const [inputFocused, setInputFocused] = useState(false);
-  const [volume, setVolume] = useState(0);
-  const [hideInputDisplay, setHideInputDisplay] = useState(true);
   const isLarger = videoWidth >= breakpoints.md ? largeHeight : smallHeight;
-  const [responsiveVolumeHeight, setResponsiveVolumeHeight] = useState(isLarger);
-
-  const handleInput = (e) => setInputValue(e.target.value);
-  const handleFocus = () => {
-    setInputFocused(true);
-    setInputValue('');
-  };
-  const handleBlur = () => setInputFocused(false);
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    dispatch(sendTextMessage({ text: inputValue }));
-    setInputValue('');
-  };
-
-  if (userSpeaking === true && inputValue !== '' && inputFocused === false) setInputValue('');
-
-  let timeout;
-  useEffect(() => {
-    if (userSpeaking === true || lastUserUtterance.length > 0) setHideInputDisplay(false);
-    const createTimeout = () => setTimeout(() => {
-      if (userSpeaking === false) setHideInputDisplay(true);
-      else createTimeout();
-    }, 3000);
-    timeout = createTimeout();
-    return () => clearTimeout(timeout);
-  }, [userSpeaking, lastUserUtterance, micOn]);
 
   // mic level visualizer
+  const [volume, setVolume] = useState(0);
+  const [responsiveVolumeHeight, setResponsiveVolumeHeight] = useState(isLarger);
   useEffect(async () => {
     if (connected && typingOnly === false) {
       // credit: https://stackoverflow.com/a/64650826
@@ -152,37 +121,6 @@ function Controls({
   useEffect(() => {
     ReactTooltip.rebuild();
   });
-
-  // clear placeholder text on reconnect, sometimes the state updates won't propagate
-  const placeholder = intermediateUserUtterance === '' ? '' : intermediateUserUtterance;
-
-  const feedbackDisplay = (
-    <span
-      className={`badge bg-light input-display
-              ${userSpeaking ? 'utterance-processing' : ''}
-              ${(transcript.length === 0 && intermediateUserUtterance === '') || hideInputDisplay ? 'hide-input' : 'show-input'}
-              `}
-    >
-      <div className="text-wrap text-start input-display">
-        { userSpeaking ? 'Listening: ' : 'I heard: '}
-        {placeholder || lastUserUtterance}
-        {
-                userSpeaking
-                  ? (
-                    <div>
-                      <div className="spinner-border ms-2 d-md-block d-none" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                      </div>
-                      <div className="spinner-border spinner-border-sm ms-1 d-block d-md-none" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                      </div>
-                    </div>
-                  )
-                  : null
-              }
-      </div>
-    </span>
-  );
 
   const iconSize = 24;
 
@@ -299,37 +237,6 @@ export default styled(Controls)`
     opacity: 0.8;
     &:focus {
       opacity: 1;
-    }
-  }
-  .badge {
-    font-size: 14pt;
-    font-weight: normal;
-    color: #000;
-  }
-  .utterance-processing {
-    opacity: 0.7;
-    font-style: italic;
-  }
-  .input-display {
-    transition: bottom 0.3s, opacity 0.3s;
-    height: auto;
-    display: flex;
-  }
-  .hide-input {
-    position: relative;
-    bottom: -2.5rem;
-    opacity: 0;
-  }
-  .show-input {
-    position: relative;
-    bottom: 0rem;
-    opacity: ${({ userSpeaking }) => (userSpeaking ? 0.7 : 1)};;
-  }
-
-  .speaking-status {
-    width: 47px;
-    @media (min-width: ${breakpoints.md}px) {
-      min-width: 56px;
     }
   }
 

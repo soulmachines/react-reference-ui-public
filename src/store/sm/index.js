@@ -116,15 +116,15 @@ export const animateCamera = createAsyncThunk('sm/animateCamera', ({ options, du
   if (!scene) return console.error('cannot animate camera, scene not initiated!');
 
   const serverControlledCameras = scene.hasServerControlledCameras();
-  if (serverControlledCameras) return console.error('autonomous animation is active, manual camera animations are disabled!');
+  if (serverControlledCameras) return console.warn('autonomous animation is active, manual camera animations are disabled!');
 
-  const CAMERA_ID = 1;
-  return scene.sendRequest('animateToNamedCamera', {
-    cameraName: CAMERA_ID,
-    personaId: PERSONA_ID,
-    time: duration || 1,
-    ...options,
-  });
+  // const CAMERA_ID = 1;
+  // return scene.sendRequest('animateToNamedCamera', {
+  //   cameraName: CAMERA_ID,
+  //   personaId: PERSONA_ID,
+  //   time: duration || 1,
+  //   ...options,
+  // });
 });
 
 // handles both manual disconnect or automatic timeout due to inactivity
@@ -183,7 +183,6 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
     micDenied = true;
   }
 
-  console.log('HAHAHA', cameraDenied, micDenied)
   thunk.dispatch(actions.setRequestedMediaPerms({
     camera,
     mic,
