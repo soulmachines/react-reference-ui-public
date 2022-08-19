@@ -29,6 +29,7 @@ const initialState = {
   tosAccepted: false,
   connected: false,
   disconnected: false,
+  presumeTimeout: false,
   loading: false,
   error: null,
   micOn: true,
@@ -629,11 +630,20 @@ const smSlice = createSlice({
       scene = null;
       persona = null;
       const { error } = state;
+      // pull last timestamp from transcript
+      // if over 5 minutes old (min timeout thresh.), presume the user timed out
+      const { transcript } = state;
+      // on disconnect the persona will add another entry to the transcript, get second to last
+      const lastTranscriptItem = transcript[transcript.length - 2];
+      const { timestamp } = lastTranscriptItem;
+      const timeDiff = new Date() - Date.parse(timestamp);
+      const presumeTimeout = timeDiff > 300000;
       return {
         // completely reset SM state on disconnect, except for errors
         ...initialState,
         disconnected: true,
         error,
+        presumeTimeout,
       };
     },
     keepAlive: () => {
