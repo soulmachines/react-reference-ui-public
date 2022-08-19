@@ -15,6 +15,7 @@ function Loading({
     connected,
     loading,
     error,
+    requestedMediaPerms,
   } = useSelector(({ sm }) => (sm));
   const dispatch = useDispatch();
 
@@ -54,8 +55,33 @@ function Loading({
           </button>
         </div>
         <div className="mt-0 mb-2">
-          The Digital Person works best in a quiet environment, when you&apos;re close to your
-          microphone, and your camera is on. Speak clearly, and in short responses.
+          {
+            // show different modal if mic is off or if mic perms are denied
+            requestedMediaPerms.mic === true && requestedMediaPerms.micDenied === false
+              ? (
+                <div>
+                  <p>
+                    The Digital Person works best in a quiet environment, when you&apos;re close to
+                    your microphone, and your camera is on.
+                  </p>
+                  <p>
+                    Speak clearly, and in short responses.
+                  </p>
+                </div>
+              )
+              : (
+                <div>
+                  <p>
+                    The Digital Person works best with your microphone on. Enable your microphone
+                    at any point during the experience by clicking the microphone icon & allowing
+                    the permissions.
+                  </p>
+                  <p>
+                    Remember to speak clearly, and in short responses.
+                  </p>
+                </div>
+              )
+          }
         </div>
       </div>
     </div>,
