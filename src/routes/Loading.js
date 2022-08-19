@@ -46,7 +46,7 @@ function Loading({
       </div>
       <div className="row">
         <div className="d-flex align-items-center justify-content-between">
-          <div />
+          <div style={{ width: '44px', height: '1px' }} />
           <h4>
             Before you begin.
           </h4>
@@ -123,7 +123,7 @@ function Loading({
           <h4>
             What you can talk about.
           </h4>
-          <div />
+          <div style={{ width: '44px', height: '1px' }} />
         </div>
         <div className="mt-0 mb-2">
           You can chat about dolor sit amet, consectetur adipiscing elit.
