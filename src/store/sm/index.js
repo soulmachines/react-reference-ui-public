@@ -112,12 +112,13 @@ let scene = null;
  *   panDeg: 0,
  * }
  */
-export const animateCamera = createAsyncThunk('sm/animateCamera', ({ options, duration }) => {
+export const animateCamera = createAsyncThunk('sm/animateCamera', (/* { options, duration } */) => {
   if (!scene) return console.error('cannot animate camera, scene not initiated!');
 
   const serverControlledCameras = scene.hasServerControlledCameras();
   if (serverControlledCameras) return console.warn('autonomous animation is active, manual camera animations are disabled!');
 
+  return false;
   // const CAMERA_ID = 1;
   // return scene.sendRequest('animateToNamedCamera', {
   //   cameraName: CAMERA_ID,
