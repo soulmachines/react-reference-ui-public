@@ -148,7 +148,7 @@ export default styled(Landing)`
     }
   }
   .form-switch .form-check-input {
-    width: 7rem;
+    min-width: 7rem;
     height: 3rem;
     display: flex;
     align-items: center;
