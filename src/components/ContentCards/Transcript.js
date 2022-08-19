@@ -20,6 +20,7 @@ function Transcript({ className, transcript }) {
         />
       );
     }
+    if (!text || text?.length === 0) return null;
     return (
       <div key={timestamp}>
         <div className={`transcript-entry ${source === 'user' ? 'transcript-entry-user' : 'transcript-entry-persona'}`}>
@@ -74,6 +75,8 @@ const StyledTranscript = styled(Transcript)`
 
   .transcript-list-group {
     flex-shrink: 1;
+    display: flex;
+    flex-direction: column;
     overflow-y: scroll;
     scrollbar-width: none;
 
@@ -83,7 +86,6 @@ const StyledTranscript = styled(Transcript)`
   }
 
   .transcript-entry {
-    clear: both;
     margin-bottom: 0.8rem;
     small {
       display: block;

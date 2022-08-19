@@ -103,7 +103,7 @@ function DPChat({
           className="row d-flex justify-content-end align-items-center flex-grow-1 p-3"
           style={{ overflow: 'scroll' }}
         >
-          <div className="col-6">
+          <div className="col col-md-5">
             <ContentCardDisplay />
           </div>
         </div>
