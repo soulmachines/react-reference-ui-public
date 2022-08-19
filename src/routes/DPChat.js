@@ -31,23 +31,22 @@ function DPChat({
   const dispatch = useDispatch();
 
   const history = useHistory();
-  useEffect(() => {
-    if (error !== null) history.push('/loading?error=true');
-  }, [error]);
 
-  if (disconnected === true || connected !== true) {
+  if (disconnected === true) {
     if (disconnectPage) {
       history.push(disconnectRoute);
     } else history.push('/');
-  }
+  } else if (error !== null) history.push('/loading?error=true');
   // usually this will be triggered when the user refreshes
-  if (connected !== true) history.push('/');
+  else if (connected !== true) history.push('/');
 
   const handleResize = () => {
-    dispatch(setVideoDimensions({
-      videoWidth: window.innerWidth,
-      videoHeight: window.innerHeight,
-    }));
+    if (connected) {
+      dispatch(setVideoDimensions({
+        videoWidth: window.innerWidth,
+        videoHeight: window.innerHeight,
+      }));
+    }
   };
 
   const [startedAt] = useState(Date.now());

@@ -2,15 +2,34 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import Header from '../components/Header';
 import { headerHeight } from '../config';
 
 function Feedback({ className }) {
+  const { presumeTimeout } = useSelector(({ sm }) => ({ ...sm }));
+
   const [display, setDisplay] = useState(null);
+
   return (
     <div className={className}>
       <Header />
-      <div className="container feedback-container d-flex justify-content-center align-items-center">
+      <div className="container feedback-container d-flex justify-content-center align-items-center flex-column">
+        {
+          presumeTimeout
+            ? (
+              <div className="alert alert-danger text-center">
+                <h4>
+                  Whoops!
+                </h4>
+                It looks like you timed out.
+                <div className="mt-2">
+                  <Link className="btn btn-danger" to="/loading">Reconnect</Link>
+                </div>
+              </div>
+            )
+            : null
+        }
         <div className="card">
           <div className="card-body">
             <div className="row">
@@ -33,7 +52,7 @@ function Feedback({ className }) {
             </div>
             <div className="row mt-3">
               <div className="col d-flex justify-content-center">
-                <Link to="/" className="btn btn-primary">Start Over</Link>
+                <Link to="/loading" className="btn btn-primary">Start Over</Link>
               </div>
             </div>
           </div>

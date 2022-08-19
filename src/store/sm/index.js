@@ -634,7 +634,8 @@ const smSlice = createSlice({
       // if over 5 minutes old (min timeout thresh.), presume the user timed out
       const { transcript } = state;
       // on disconnect the persona will add another entry to the transcript, get second to last
-      const lastTranscriptItem = transcript[transcript.length - 2];
+      const lastTranscriptItem = transcript[transcript.length - 2]
+       || { timestamp: new Date() };
       const { timestamp } = lastTranscriptItem;
       const timeDiff = new Date() - Date.parse(timestamp);
       const presumeTimeout = timeDiff > 300000;
