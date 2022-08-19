@@ -15,7 +15,6 @@ import {
 } from 'react-bootstrap-icons';
 import ReactTooltip from 'react-tooltip';
 import {
-  sendTextMessage,
   stopSpeaking,
   setShowTranscript,
   disconnect,
@@ -38,7 +37,6 @@ function Controls({
   className,
 }) {
   const {
-    userSpeaking,
     connected,
     micOn,
     cameraOn,
