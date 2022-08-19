@@ -91,7 +91,7 @@ const initialState = {
   showTranscript: false,
   // enable and disable features for each new session
   config: {
-    autoClearCards: false,
+    autoClearCards: true,
   },
 };
 
