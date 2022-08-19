@@ -8,13 +8,13 @@ import { primaryAccent } from '../../globalStyle';
 function Transcript({ className, transcript }) {
   const transcriptDisplay = transcript.map(({
     source, text, card, timestamp,
-  }) => {
+  }, index) => {
     // we don't want to wrap cards in a bubble, return as is w/ a key added
     if (card) {
       return (
         <ContentCardSwitch
           card={card}
-          index={null}
+          index={index}
           key={timestamp}
           inTranscript
         />
