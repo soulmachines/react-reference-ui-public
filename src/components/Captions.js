@@ -70,9 +70,11 @@ function Captions({
     }
   }, [speechState, connected]);
 
+  if (showCaptions === false) return null;
+
   return (
     <div className={className}>
-      <div className={`captions ${showCaptions ? '' : 'hide-captions'} text-center`}>
+      <div className="captions text-center">
         { showCaptions ? captionText : null }
       </div>
     </div>
@@ -91,12 +93,12 @@ const StyledCaptions = styled(Captions)`
   .captions {
     margin-bottom: .3rem;
 
-    padding-top: 0.2rem;
-    padding-bottom: 0.2rem;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+    padding-left: 0.6rem;
+    padding-right: 0.6rem;
 
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.7);
     color: #FFF;
 
     border-radius: 2px;
@@ -107,11 +109,6 @@ const StyledCaptions = styled(Captions)`
     min-height: 35px;
     transition: height 0.3s;
   }
-  .hide-captions {
-    min-height: 0 !important;
-    background-color: rgba(0,0,0,0);
-  }
-
 `;
 
 const mapStateToProps = (state) => ({

@@ -73,6 +73,7 @@ function ContentCardSwitch({
         data={{ id, ...data }}
         triggerRemoval={removeElem}
         inTranscript={inTranscript}
+        transcriptIndex={index}
       />
     </div>
   );

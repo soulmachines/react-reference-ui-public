@@ -3,26 +3,35 @@ import { connect } from 'react-redux';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import ContentCardSwitch from '../ContentCardSwitch';
+import { primaryAccent } from '../../globalStyle';
 
 function Transcript({ className, transcript }) {
   const transcriptDisplay = transcript.map(({
     source, text, card, timestamp,
-  }) => {
+  }, index) => {
     // we don't want to wrap cards in a bubble, return as is w/ a key added
     if (card) {
       return (
         <ContentCardSwitch
           card={card}
-          index={null}
+          index={index}
           key={timestamp}
           inTranscript
         />
       );
     }
+    if (!text || text?.length === 0) return null;
     return (
-      <div key={timestamp} className={`transcript-entry ${source === 'user' ? 'transcript-entry-user' : ''}`}>
-        <div className="transcript-entry-content">
-          {text || null}
+      <div key={timestamp}>
+        <div className={`transcript-entry ${source === 'user' ? 'transcript-entry-user' : 'transcript-entry-persona'}`}>
+          <div>
+            <small>
+              {source === 'user' ? 'You' : 'Digital Person A'}
+            </small>
+          </div>
+          <div className="transcript-entry-content">
+            {text || null}
+          </div>
         </div>
       </div>
     );
@@ -62,36 +71,58 @@ Transcript.propTypes = {
 };
 
 const StyledTranscript = styled(Transcript)`
-    width: 100%;
+  width: 100%;
+
   .transcript-list-group {
     flex-shrink: 1;
+    display: flex;
+    flex-direction: column;
     overflow-y: scroll;
     scrollbar-width: none;
+
     &::-webkit-scrollbar {
       display: none;
     }
   }
 
   .transcript-entry {
-    clear: both;
-    display: flex;
-    align-items: center;
     margin-bottom: 0.8rem;
+    small {
+      display: block;
+      color: #B2B2B2;
+      padding-bottom: 0.2rem;
+    }
   }
 
   .transcript-entry-content {
-    padding: 0.5rem 0.8rem 0.5rem 0.8rem;
-    width: fit-content;
-    background: #FFFFFF;
-    border-radius: 1.1rem;
+    padding: 24px 20px;
   }
 
+  .transcript-entry-persona {
+    float: left;
+
+    .transcript-entry-content {
+      border-top-right-radius: 1.1rem;
+      border-top-left-radius: 1.1rem;
+      border-bottom-right-radius: 1.1rem;
+
+      background: ${primaryAccent};
+      color: #FFF;
+    }
+  }
   .transcript-entry-user {
     float: right;
-    flex-direction:  row-reverse;
+
+    small {
+      text-align: right;
+    }
     .transcript-entry-content {
-      background: #0d6efd;
-      color: #FFFFFF;
+      border-top-right-radius: 1.1rem;
+      border-top-left-radius: 1.1rem;
+      border-bottom-left-radius: 1.1rem;
+
+      background: #FFF;
+      border: 1px solid rgba(0,0,0,0.3);
     }
   }
 `;

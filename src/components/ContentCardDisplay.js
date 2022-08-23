@@ -37,7 +37,11 @@ function ContentCardDisplay({
 
   return (
     <div className={className}>
-      { showTranscript ? <Transcript /> : CardDisplay }
+      { showTranscript ? (
+        <div data-sm-content>
+          <Transcript />
+        </div>
+      ) : CardDisplay }
     </div>
   );
 }

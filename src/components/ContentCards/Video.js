@@ -2,27 +2,23 @@ import React, { createRef, useEffect, useState } from 'react';
 import YouTube from 'react-youtube';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
-  mute, sendTextMessage, setActiveCards, keepAlive,
+  setMicOn, sendTextMessage, keepAlive, clearActiveCards,
 } from '../../store/sm/index';
 
 function Video({
   data,
   className,
-  isMuted,
-  dispatchMute,
-  dispatchTextMessage,
-  dispatchHideCards,
   inTranscript,
-  dispatchKeepAlive,
-  activeCards,
 }) {
+  const { activeCards, micOn } = useSelector(({ sm }) => ({ ...sm }));
+  const dispatch = useDispatch();
   const { videoId, autoplay } = data;
   const containerRef = React.createRef();
   const [YTElem, setYTElem] = useState();
   const [fadeOut, setFadeOut] = useState(false);
-  const [wasMuted, setWasMuted] = useState(isMuted);
+  const [micWasOn, setMicWasOn] = useState(micOn);
   // we display videos inline in the transcript, then when they're clicked on,
   //  we enter lightbox mode and mute the DP
   const [isLightbox, setIsLightbox] = useState(inTranscript ? !inTranscript : true);
@@ -37,8 +33,8 @@ function Video({
     setTimeout(() => {
       setIsLightbox(false);
       setFadeOut(false);
-      dispatchHideCards();
-      dispatchTextMessage('I\'m done watching');
+      dispatch(clearActiveCards());
+      dispatch(sendTextMessage({ text: 'I\'m done watching' }));
     }, 500);
   };
 
@@ -104,21 +100,21 @@ function Video({
     );
 
     setYTElem(elem);
-    if (isLightbox) setWasMuted(isMuted);
-    if (!isMuted && isLightbox) {
-      dispatchMute(true);
+    if (isLightbox) setMicWasOn(micWasOn);
+    if (!micWasOn && isLightbox) {
+      dispatch(setMicOn({ micOn: false }));
     }
     return () => {
       setYTElem(null);
       if (isLightbox) {
-        dispatchMute(wasMuted);
+        dispatch(setMicOn({ micOn: micWasOn }));
       }
     };
   }, [isLightbox]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (isLightbox) dispatchKeepAlive();
+      if (isLightbox) dispatch(keepAlive());
     }, 10000);
     return () => clearInterval(interval);
   });
@@ -153,35 +149,14 @@ Video.propTypes = {
     autoplay: PropTypes.string,
   }).isRequired,
   className: PropTypes.string.isRequired,
-  isMuted: PropTypes.bool.isRequired,
-  dispatchMute: PropTypes.func.isRequired,
-  dispatchTextMessage: PropTypes.func.isRequired,
-  dispatchHideCards: PropTypes.func.isRequired,
   inTranscript: PropTypes.bool,
-  dispatchKeepAlive: PropTypes.func.isRequired,
-  // eslint-disable-next-line react/forbid-prop-types
-  activeCards: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
 Video.defaultProps = {
   inTranscript: false,
 };
 
-const mapStateToProps = ({ sm }) => ({
-  isMuted: sm.isMuted,
-  activeCards: sm.activeCards,
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  dispatchMute: (muteValue) => dispatch(mute(muteValue)),
-  dispatchHideCards: () => dispatch(setActiveCards({})),
-  dispatchTextMessage: (text) => dispatch(sendTextMessage({ text })),
-  dispatchKeepAlive: () => dispatch(keepAlive()),
-});
-
-const ConnectedVideo = connect(mapStateToProps, mapDispatchToProps)(Video);
-
-export default styled(ConnectedVideo)`
+export default styled(Video)`
   position: absolute;
   z-index: 5000;
   left: 0;

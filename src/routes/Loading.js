@@ -1,278 +1,199 @@
-import React, { createRef, useEffect, useState } from 'react';
-import { connect } from 'react-redux';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Link, useHistory, useLocation } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import styled from 'styled-components';
-import {
-  ArrowRightCircleFill, CameraVideo, CameraVideoFill, LightningCharge, MicFill, Soundwave,
-} from 'react-bootstrap-icons';
-import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowLeftCircleFill, ArrowRightCircleFill, MicFill } from 'react-bootstrap-icons';
 import { createScene } from '../store/sm';
 import Header from '../components/Header';
-import { headerHeight, landingBackgroundImage, landingBackgroundColor } from '../config';
-import breakpoints from '../utils/breakpoints';
+import { headerHeight, landingBackgroundColor, landingBackgroundImage } from '../config';
 
 function Loading({
-  className, connected, loading, dispatchCreateScene, error, tosAccepted,
+  className,
 }) {
-  // pull querystring to see if we are displaying an error
-  // (app can redirect to /loading on fatal err)
-  const useQuery = () => new URLSearchParams(useLocation().search);
-  const query = useQuery();
+  const {
+    connected,
+    loading,
+    error,
+    requestedMediaPerms,
+  } = useSelector(({ sm }) => (sm));
+  const dispatch = useDispatch();
 
-  // on mobile, we break the cards down into three pages
-  const [displayedPage, setDisplayedPage] = useState(0);
+  // // pull querystring to see if we are displaying an error
+  // // (app can redirect to /loading on fatal err)
+  // const useQuery = () => new URLSearchParams(useLocation().search);
+  // const query = useQuery();
 
   // create persona scene on button press on on mount, depending on device size
   const createSceneIfNotStarted = () => {
     if (loading === false && connected === false && error === null) {
-      dispatchCreateScene();
+      dispatch(createScene());
     }
-  };
-  const createSceneAndIteratePage = () => {
-    // if we encounter a fatal error, app redirects to /loading to display
-    if (!connected && !loading && query.get('error') !== true) createSceneIfNotStarted();
-    setDisplayedPage(displayedPage + 1);
   };
 
   useEffect(() => {
-    if (window.innerWidth >= breakpoints.md && !loading) createSceneIfNotStarted();
-    window.addEventListener('resize', createSceneIfNotStarted);
-    return () => window.removeEventListener('resize', createSceneIfNotStarted);
-  }, [connected, loading]);
+    createSceneIfNotStarted();
+  }, []);
 
-  // use to reload page if user unblocks perms and presses "try again"
-  const history = useHistory();
-
-  // if TOS hasn't been accepted, send to /
-  if (tosAccepted === false) history.push('/');
-
-  const proceedButton = (
-    <Link to="/video" className={`btn  btn-lg ${connected ? 'btn-success' : 'btn-dark disabled'}`}>
-      {
-          connected
-            ? (
-              <div>
-                Proceed
-                {' '}
-                <ArrowRightCircleFill />
-              </div>
-            )
-            : (
-              <div>
-                Loading
-                {' '}
-                <div className="spinner-border" role="status">
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-              </div>
-            )
-        }
-    </Link>
-  );
-
+  const iconSize = 66;
+  const [page, setPage] = useState(0);
   const pages = [
-    <div className="card" key="page-1">
-      <div className="card-body">
-        <div className="text-center">
-          <CameraVideo color="#2222ff" size={42} />
+    <div>
+      <div className="row justify-content-center">
+        <div className="tutorial-icon mb-2">
+          <MicFill size={iconSize} />
         </div>
-        <hr />
-        <p>For me to work best, I need to be able to see you and hear your voice.</p>
-        <p>This will be just like a video call where we can talk face to face.</p>
-        <p>
-          <b>
-            If that sounds okay, please turn on access to your microphone and
-            camera when we request it.
-          </b>
-        </p>
-        <div className="d-grid gap-2 d-md-none d-block">
-          <button type="button" onClick={createSceneAndIteratePage} className="btn btn-primary">Next</button>
+      </div>
+      <div className="row">
+        <div className="d-flex align-items-center justify-content-between">
+          <div style={{ width: '44px', height: '1px' }} />
+          <h4>
+            Before you begin.
+          </h4>
+          <button className="btn-unstyled" type="button" onClick={() => setPage(page + 1)}>
+            <ArrowRightCircleFill size={32} />
+          </button>
+        </div>
+        <div className="mt-0 mb-2">
+          {
+            // show different modal if mic is off or if mic perms are denied
+            requestedMediaPerms.mic === true && requestedMediaPerms.micDenied === false
+              ? (
+                <div>
+                  <p>
+                    The Digital Person works best in a quiet environment, when you&apos;re close to
+                    your microphone, and your camera is on.
+                  </p>
+                  <p>
+                    Speak clearly, and in short responses.
+                  </p>
+                </div>
+              )
+              : (
+                <div>
+                  <p>
+                    The Digital Person works best with your microphone on. Enable your microphone
+                    at any point during the experience by clicking the microphone icon & allowing
+                    the permissions.
+                  </p>
+                  <p>
+                    Remember to speak clearly, and in short responses.
+                  </p>
+                </div>
+              )
+          }
         </div>
       </div>
     </div>,
-
-    <div className="card" key="page-2">
-      <div className="card-body">
-        <div className="text-center">
-          <LightningCharge color="#98980c" size={42} />
+    <div>
+      <div className="row justify-content-center">
+        <div className="tutorial-icon mb-2">
+          <div className="fs-4 fw-bold mt-2">
+            &ldquo;hi, how are you?&rdquo;
+          </div>
         </div>
-        <hr />
-        <p>
-          Also,
-          {' '}
-          <b>
-            the speed of your internet connection can have a big impact on picture
-            and audio quality during the call.
-          </b>
-        </p>
-        <p>
-          If you experience connectivity issues, the picture quality may
-          temporarily deteriorate or disappear entirely
-        </p>
-        <p>
-          If that happens, try finding a location with a better connection and try again.
-        </p>
-        <div className="d-grid gap-2 d-md-none d-block">
-          <button type="button" onClick={() => setDisplayedPage(displayedPage + 1)} className="btn btn-primary">Next</button>
+      </div>
+      <div className="row">
+        <div className="d-flex align-items-center justify-content-between">
+          <button className="btn-unstyled" type="button" onClick={() => setPage(page - 1)}>
+            <ArrowLeftCircleFill size={32} />
+          </button>
+          <h4>
+            What you do.
+          </h4>
+          <button className="btn-unstyled" type="button" onClick={() => setPage(page + 1)}>
+            <ArrowRightCircleFill size={32} />
+          </button>
+        </div>
+        <div className="mt-0 mb-2">
+          Digital Person A will listen to whatever you say.
+          Other options, like typing or choosing your responses, are also available.
         </div>
       </div>
     </div>,
-
-    <div className="card" key="page-3">
-      <div className="card-body">
-        <div className="text-center">
-          <Soundwave color="#da1d1d" size={42} />
+    <div>
+      <div className="row justify-content-center">
+        <div className="tutorial-icon tutorial-icon-dp mb-2" />
+      </div>
+      <div className="row">
+        <div className="d-flex align-items-center justify-content-between">
+          <button className="btn-unstyled" type="button" onClick={() => setPage(page - 1)}>
+            <ArrowLeftCircleFill size={32} />
+          </button>
+          <h4>
+            What you can talk about.
+          </h4>
+          <div style={{ width: '44px', height: '1px' }} />
         </div>
-        <hr />
-        <p><b>Finally, please find a quiet environment.</b></p>
-        <p>
-          I can find it hard to hear you when you&apos;re in a noisy room or
-          there is a lot of noise in the background.
-        </p>
-        <p>
-          Find a quiet place and let&apos;s keep this one-on-one for now.
-        </p>
-        <p className="d-md-none d-block">
-          <b>All ready?</b>
-        </p>
-        <div className="d-grid gap-2 d-md-none d-block">
-          {proceedButton}
+        <div className="mt-0 mb-2">
+          You can chat about dolor sit amet, consectetur adipiscing elit.
+          Sed volutpat eu nulla ac suscipit. Sed vel rhoncus neque, et sollicitudin sem.
         </div>
       </div>
     </div>,
   ];
 
-  const variants = {
-    enter: {
-      x: 1000,
-      opacity: 0,
-    },
-    center: {
-      x: 0,
-      opacity: 1,
-    },
-    exit: {
-      x: -1000,
-      opacity: 0,
-      position: 'absolute',
-    },
+  const [skip, setSkip] = useState(false);
+  const redirectToVideoOnConnect = () => {
+    setSkip(true);
   };
-
-  const overlayRef = createRef();
-  const [height, setHeight] = useState('100vh');
-
-  const handleResize = () => {
-    setHeight(window.innerHeight);
-  };
-
+  const history = useHistory();
   useEffect(() => {
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    // cleanup
-    return () => { window.removeEventListener('resize', handleResize); };
-  }, []);
+    if (skip === true && connected === true) history.push('/video');
+  }, [connected, skip]);
 
   return (
-    <div className={className} ref={overlayRef} style={{ minHeight: height }}>
+    <div className={className}>
       <Header />
       <div className="container">
-        <div className="loading-wrapper">
-          {
-          !error
-            ? (
-              <div>
-                <div className="m-1">
-                  <h1>
-                    Before we get started,
-                  </h1>
-                  <h5>there are some things we should go over.</h5>
-                </div>
-                <div className="d-md-block d-none">
-                  <div className="row">
-                    <div className="card-group">
-                      {pages}
-                    </div>
-                  </div>
-                  <div className="row">
-                    <div className="col d-flex justify-content-center m-3">
-                      { proceedButton }
-                    </div>
-                  </div>
-                </div>
-                <div className="d-md-none d-block">
-                  <AnimatePresence initial={false}>
-                    {pages.flatMap((p, i) => {
-                      if (i !== displayedPage) return null;
-                      return (
-                        <motion.div
-                        // using indexes as keys is fine since the pages are pre-defined and static
-                        // eslint-disable-next-line react/no-array-index-key
-                          key={i}
-                          variants={variants}
-                          initial="enter"
-                          animate="center"
-                          exit="exit"
-                          transition={{
-                            x: { type: 'spring', stiffness: 300, damping: 30 },
-                            opacity: { duration: 0.2 },
-                          }}
-                        >
-                          {p}
-                        </motion.div>
-                      );
-                    })}
-                  </AnimatePresence>
-                </div>
-              </div>
-            )
-            : (
-              <div className="alert alert-danger col-md-6 offset-md-3">
+        <div className="row justify-content-center align-items-center">
+          <div className="col-6 text-center">
+            <div className="row">
+              {pages[page]}
+            </div>
+            <div className="row justify-content-center">
+              <div className="d-grid col-3">
                 {
-                  // special error for webcam and mic denied permissions
-                  error.msg === 'permissionsDenied'
+                  page < pages.length - 1
                     ? (
-                      <div>
-                        <h4>
-                          <CameraVideoFill />
-                          {' / '}
-                          <MicFill />
-                          {' '}
-                          Permissions Denied
-                        </h4>
-                        <hr />
-                        <p>
-                          Looks like you’ve denied us access to your camera and microphone.
-                          If you&apos;d prefer, you can only enable the microphone.
-                          You can always change permissions in your browser settings and try again.
-                        </p>
-                        <div className="d-grid mb-3">
-                          <button onClick={() => history.go(0)} type="button" className="btn btn-primary">Reload</button>
-                        </div>
-                        <p>
-                          We can have the best conversation when I can see and hear you.
-                          However, if you prefer, you can also interact with me by typing only.
-                        </p>
-                        <div className="d-grid">
-                          <button type="button" className="btn btn-outline-primary" onClick={() => dispatchCreateScene(true)}>
-                            I prefer to type
-                          </button>
-                        </div>
-                      </div>
+                      <button
+                        className="btn primary-accent m-2"
+                        type="button"
+                        onClick={() => setPage(page + 1)}
+                      >
+                        Next
+                      </button>
                     )
-                    : (
-                      <div>
-                        <h4>Encountered fatal error!</h4>
-                        <hr />
-                        <pre>
-                          {JSON.stringify(error, null, '  ')}
-                        </pre>
-                      </div>
-                    )
+                    : null
                 }
               </div>
-            )
-        }
+            </div>
+            <div className="row">
+              <div>
+                <button
+                  className={`${connected ? 'btn btn-dark' : 'btn-unstyled'} m-2`}
+                  type="button"
+                  disabled={skip}
+                  onClick={redirectToVideoOnConnect}
+                >
+                  { connected ? 'Chat Now' : 'Skip' }
+                  { !connected && skip
+                    ? (
+                      <div className="ms-1 spinner-border spinner-border-sm text-secondary" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                    )
+                    : null }
+                </button>
+              </div>
+            </div>
+            <div className="row justify-content-center">
+              <div>
+                {/* eslint-disable-next-line react/no-array-index-key */}
+                {pages.map((_, i) => (<div key={`${i}-${i === page}`} className="d-inline-block p-1">{i === page ? <div className="closed-dot" /> : <div className="open-dot" />}</div>))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -281,64 +202,49 @@ function Loading({
 
 Loading.propTypes = {
   className: PropTypes.string.isRequired,
-  connected: PropTypes.bool.isRequired,
-  loading: PropTypes.bool.isRequired,
-  dispatchCreateScene: PropTypes.func.isRequired,
-  error: PropTypes.shape({
-    msg: PropTypes.string,
-    err: PropTypes.objectOf(PropTypes.string),
-  }),
-  tosAccepted: PropTypes.bool.isRequired,
 };
 
-Loading.defaultProps = {
-  error: null,
-};
-
-const StyledLoading = styled(Loading)`
-  background: ${landingBackgroundImage ? `url(${landingBackgroundImage})` : ''} ${landingBackgroundColor ? `${landingBackgroundColor};` : ''};
+export default styled(Loading)`
+  background: ${landingBackgroundColor};
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center bottom;
+
   width: 100vw;
+  height: 100vh;
+  color: #3C3C3C;
 
-  button.link-primary {
-    background: none;
-    border: none;
-    padding: 0;
+  &>.container>.row {
+    height: calc(100vh - ${headerHeight});
   }
 
-  .loading-wrapper {
-    padding-top: ${headerHeight};
-    min-height: calc(100vh - ${headerHeight});
+  .tutorial-icon {
+    width: 180px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    margin: 0;
+    align-items: center;
+    justify-content: center;
 
-    .loading-text {
-      font-size: 2rem;
-    }
+    background-color: #EAEAEA;
   }
-
-  .instructions-wrapper {
-    overflow-x: scroll;
+  .tutorial-icon-dp {
+    background-image: url(${landingBackgroundImage});
+    background-size: cover;
+    background-position: bottom center;
   }
-  .instructions-card {
-    display: inline-block;
-    width: 100%;
+  .open-dot {
+    border: 2px solid #3C3C3C;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .closed-dot {
+    border: 2px solid #3C3C3C;
+    background: #3C3C3C;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
   }
 `;
-
-const mapStateToProps = ({ sm }) => ({
-  connected: sm.connected,
-  loading: sm.loading,
-  error: sm.error,
-  tosAccepted: sm.tosAccepted,
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  dispatchCreateScene: (typingOnly = false) => dispatch(createScene(typingOnly)),
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(StyledLoading);

@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { Scene, Persona, UserMedia } from '@soulmachines/smwebsdk';
+import { Scene, Persona } from '@soulmachines/smwebsdk';
 import to from 'await-to-js';
 import proxyVideo, { mediaStreamProxy } from '../../proxyVideo';
 import roundObject from '../../utils/roundObject';
@@ -16,13 +16,25 @@ const PERSONA_ID = '1';
 if (AUTH_MODE === 0 && API_KEY === '') throw new Error('REACT_APP_API_KEY not defined!');
 
 const initialState = {
+  requestedMediaPerms: {
+    ...JSON.parse(localStorage.getItem('requestedMediaPerms')),
+    cameraDenied: false,
+    micDenied: false,
+  } || {
+    mic: true,
+    micDenied: false,
+    camera: true,
+    cameraDenied: false,
+  },
   tosAccepted: false,
   connected: false,
   disconnected: false,
+  presumeTimeout: false,
   loading: false,
   error: null,
-  isMuted: false,
-  typingOnly: false,
+  micOn: true,
+  cameraOn: true,
+  isOutputMuted: false,
   videoHeight: window.innerHeight,
   videoWidth: window.innerWidth,
   transcript: [],
@@ -73,7 +85,6 @@ const initialState = {
       roundTripTime: null,
     },
   },
-  cameraOn: true,
   // default to 1 because these values are used to compute an aspect ratio,
   // so if for some reason the camera is disabled, it will default to a square (1:1)
   cameraWidth: 1,
@@ -81,7 +92,7 @@ const initialState = {
   showTranscript: false,
   // enable and disable features for each new session
   config: {
-    autoClearCards: false,
+    autoClearCards: true,
   },
 };
 
@@ -102,12 +113,15 @@ let scene = null;
  *   panDeg: 0,
  * }
  */
-// export const animateCamera = createAsyncThunk('sm/animateCamera', ({ options, duration }) => {
-export const animateCamera = createAsyncThunk('sm/animateCamera', () => {
-  if (!scene) console.error('cannot animate camera, scene not initiated!');
+export const animateCamera = createAsyncThunk('sm/animateCamera', (/* { options, duration } */) => {
+  if (!scene) return console.error('cannot animate camera, scene not initiated!');
 
-  console.warn('manual camera animations are disabled while CUE implementation is in progress');
-  // scene.sendRequest('animateToNamedCamera', {
+  const serverControlledCameras = scene.hasServerControlledCameras();
+  if (serverControlledCameras) return console.warn('autonomous animation is active, manual camera animations are disabled!');
+
+  return false;
+  // const CAMERA_ID = 1;
+  // return scene.sendRequest('animateToNamedCamera', {
   //   cameraName: CAMERA_ID,
   //   personaId: PERSONA_ID,
   //   time: duration || 1,
@@ -115,36 +129,24 @@ export const animateCamera = createAsyncThunk('sm/animateCamera', () => {
   // });
 });
 
-// tells persona to stop listening to mic input
-export const mute = createAsyncThunk('sm/mute', async (specifiedMuteState, thunk) => {
-  const { isMuted } = thunk.getState().sm;
-  if (scene) {
-    // if arg is a boolean use it, otherwise just toggle.
-    // sometimes events from button clicks are passed in, so we need to filter for that
-    const muteState = typeof specifiedMuteState === 'boolean' ? !!specifiedMuteState : !isMuted;
-    if (muteState === true) scene.stopRecognize();
-    else scene.startRecognize();
-    thunk.dispatch(actions.setMute({ isMuted: muteState }));
-  } else { console.warn('muting not possible, no active scene!'); }
-});
-
 // handles both manual disconnect or automatic timeout due to inactivity
 export const disconnect = createAsyncThunk('sm/disconnect', async (args, thunk) => {
   if (scene) scene.disconnect();
+  // wait 500ms so dispatch logic has time to run and communicate w/ persona server
   setTimeout(() => {
     thunk.dispatch(actions.disconnect());
-    scene = null;
-    persona = null;
   }, 500);
 });
 
-export const createScene = createAsyncThunk('sm/createScene', async (typingOnly = false, thunk) => {
+export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) => {
   /* CREATE SCENE */
   if (scene !== null) {
     return console.error('warning! you attempted to create a new scene, when one already exists!');
   }
   // request permissions from user and create instance of Scene and ask for webcam/mic permissions
-  const { microphone, microphoneAndCamera, none } = UserMedia;
+  const { requestedMediaPerms } = thunk.getState().sm;
+  const { mic, camera } = requestedMediaPerms;
+
   try {
     const sceneOpts = {
       videoElement: proxyVideo,
@@ -152,16 +154,49 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
       // change value if your application needs to have an explicit audio-only mode.
       audioOnly: false,
       // requested permissions
-      requestedMediaDevices: typingOnly ? none : microphoneAndCamera,
-      // if user denies camera and mic permissions, smwebsdk will request mic only for us
-      // required permissions
-      requiredMediaDevices: typingOnly ? none : microphone,
+      requestedMediaDevices: {
+        microphone: mic,
+        camera,
+      },
+      // required permissions. we can run in a typing only mode, so none is fine
+      requiredMediaDevices: {
+        microphone: false,
+        camera: false,
+      },
     };
     if (AUTH_MODE === 0) sceneOpts.apiKey = API_KEY;
     scene = new Scene(sceneOpts);
   } catch (e) {
-    console.error(e);
+    return thunk.rejectWithValue(e);
   }
+
+  // check to see if user has denied permissions
+  // if so, proceed typing only but set mic/cameraDenied to true
+  let cameraDenied = false;
+  let micDenied = false;
+  try {
+    await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
+  } catch {
+    cameraDenied = true;
+  }
+  try {
+    await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  } catch {
+    micDenied = true;
+  }
+
+  thunk.dispatch(actions.setRequestedMediaPerms({
+    camera,
+    mic,
+    cameraDenied,
+    micDenied,
+  }));
+
+  // reflect mic and camera status in redux store
+  thunk.dispatch(actions.setMediaDevices({
+    micOn: micDenied ? false : mic,
+    cameraOn: cameraDenied ? false : camera,
+  }));
 
   /* BIND HANDLERS */
   scene.onDisconnected = () => thunk.dispatch(disconnect());
@@ -232,9 +267,15 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
             const feature = featureArgs[0];
             const featureState = featureArgs[1];
             switch (feature) {
+              case ('camera'): {
+                if (featureState === 'on') thunk.dispatch(actions.setCamera({ cameraOn: false }));
+                else if (featureState === 'off') thunk.dispatch(actions.setCamera({ cameraOn: true }));
+                else console.error(`state ${featureState} not supported by @feature(microphone)!`);
+                break;
+              }
               case ('microphone'): {
-                if (featureState === 'on') thunk.dispatch(mute(false));
-                else if (featureState === 'off') thunk.dispatch(mute(true));
+                if (featureState === 'on') thunk.dispatch(actions.setMic({ micOn: true }));
+                else if (featureState === 'off') thunk.dispatch(actions.setMic({ micOn: false }));
                 else console.error(`state ${featureState} not supported by @feature(microphone)!`);
                 break;
               }
@@ -420,15 +461,11 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
     // since we can't store the userMediaStream in the store since it's not serializable,
     // we use an external proxy for video streams
     const { userMediaStream: stream } = scene.session();
-    // detect if we're running audio-only
-    const videoEnabled = typingOnly === false
-      && stream !== undefined
-      && stream.getVideoTracks().length > 0;
-    if (videoEnabled === false) thunk.dispatch(actions.setCameraState({ cameraOn: false }));
-    if (typingOnly === true) thunk.dispatch(actions.setTypingOnly());
+
+    if (cameraDenied === false) thunk.dispatch(actions.setCameraState({ cameraOn: false }));
     // pass dispatch before calling setUserMediaStream so proxy can send dimensions to store
     mediaStreamProxy.passDispatch(thunk.dispatch);
-    mediaStreamProxy.setUserMediaStream(stream, videoEnabled);
+    mediaStreamProxy.setUserMediaStream(stream, cameraDenied);
     mediaStreamProxy.enableToggle(scene);
 
     // fulfill promise, reducer sets state to indicate loading and connection are complete
@@ -441,27 +478,15 @@ export const createScene = createAsyncThunk('sm/createScene', async (typingOnly 
 // send plain text to the persona.
 // usually used for typed input or UI elems that trigger a certain phrase
 export const sendTextMessage = createAsyncThunk('sm/sendTextMessage', async ({ text }, thunk) => {
-  if (scene && persona) {
+  if (text === '') return thunk.rejectWithValue('submitted empty string!');
+  if (scene !== null && persona !== null) {
     if (ORCHESTRATION_MODE === true) scene.sendUserText(text);
     else persona.conversationSend(text);
-    thunk.dispatch(actions.addConversationResult({
+    return thunk.dispatch(actions.addConversationResult({
       source: 'user',
       text,
     }));
-  } else thunk.rejectWithValue('not connected to persona!');
-});
-
-export const sendEvent = createAsyncThunk('sm/sendEvent', async ({ payload, eventName }) => {
-  if (scene && persona) {
-    persona.conversationSend(eventName, payload || {}, { kind: 'event' });
-    console.log(`dispatched ${eventName}`, payload);
-  }
-});
-
-export const keepAlive = createAsyncThunk('sm/keepAlive', async () => {
-  if (scene) {
-    scene.keepAlive();
-  }
+  } return thunk.rejectWithValue('not connected to persona!');
 });
 
 const smSlice = createSlice({
@@ -476,10 +501,19 @@ const smSlice = createSlice({
       ...state,
       showTranscript: payload?.showTranscript || !state.showTranscript,
     }),
-    setTypingOnly: (state) => ({
-      ...state,
-      typingOnly: true,
-    }),
+    setRequestedMediaPerms: (state, { payload }) => {
+      const requestedMediaPerms = {
+        camera: 'camera' in payload ? payload.camera : state.requestedMediaPerms.camera,
+        mic: 'mic' in payload ? payload.mic : state.requestedMediaPerms.mic,
+        cameraDenied: 'cameraDenied' in payload ? payload.cameraDenied : state.requestedMediaPerms.cameraDenied,
+        micDenied: 'micDenied' in payload ? payload.micDenied : state.requestedMediaPerms.micDenied,
+      };
+      localStorage.setItem('requestedMediaPerms', JSON.stringify(requestedMediaPerms));
+      return ({
+        ...state,
+        requestedMediaPerms,
+      });
+    },
     setCameraState: (state, { payload }) => ({
       ...state,
       cameraOn: payload.cameraOn,
@@ -490,14 +524,42 @@ const smSlice = createSlice({
       ...state,
       activeCards: payload.activeCards || [],
     }),
-    stopSpeaking: (state) => {
-      if (persona) persona.stopSpeaking();
-      return { ...state };
+    stopSpeaking: () => {
+      if (!persona) console.error('persona not initiated!');
+      else persona.stopSpeaking();
     },
-    setMute: (state, { payload }) => ({
-      ...state,
-      isMuted: payload.isMuted,
-    }),
+    setMicOn: (state, { payload }) => {
+      if (!scene) return console.error('scene not initiated!');
+      const { micOn } = payload;
+      scene.setMediaDeviceActive({
+        microphone: micOn,
+      });
+      return ({ ...state, micOn });
+    },
+    setCameraOn: (state, { payload }) => {
+      if (!scene) return console.error('scene not initiated!');
+      const { cameraOn } = payload;
+      scene.setMediaDeviceActive({
+        camera: cameraOn,
+      });
+      return ({ ...state, cameraOn });
+    },
+    setMediaDevices: (state, { payload }) => {
+      if (!scene) return console.error('scene not initiated!');
+      const {
+        cameraOn, micOn,
+      } = payload;
+      scene.setMediaDeviceActive({
+        camera: cameraOn,
+        mic: cameraOn,
+      });
+      return ({ ...state, cameraOn, micOn });
+    },
+    setOutputMute: (state, { payload }) => {
+      const { isOutputMuted } = payload;
+      proxyVideo.muted = isOutputMuted ? 'muted' : null;
+      return ({ ...state, isOutputMuted });
+    },
     setIntermediateUserUtterance: (state, { payload }) => ({
       ...state,
       intermediateUserUtterance: payload.text,
@@ -568,12 +630,37 @@ const smSlice = createSlice({
       scene = null;
       persona = null;
       const { error } = state;
+      // pull last timestamp from transcript
+      // if over 5 minutes old (min timeout thresh.), presume the user timed out
+      const { transcript } = state;
+      // on disconnect the persona will add another entry to the transcript, get second to last
+      const lastTranscriptItem = transcript[transcript.length - 2]
+       || { timestamp: new Date() };
+      const { timestamp } = lastTranscriptItem;
+      const timeDiff = new Date() - Date.parse(timestamp);
+      const presumeTimeout = timeDiff > 300000;
       return {
         // completely reset SM state on disconnect, except for errors
         ...initialState,
         disconnected: true,
         error,
+        presumeTimeout,
       };
+    },
+    keepAlive: () => {
+      scene.keepAlive();
+    },
+    sendEvent: (state, { payload }) => {
+      const { eventName, payload: eventPayload, kind } = payload;
+      if (scene && persona) {
+        persona.conversationSend(eventName, eventPayload || {}, { kind: kind || 'event' });
+        console.log(`dispatched ${eventName}`, eventPayload);
+      }
+    },
+    clearActiveCards: () => {
+      // we don't need to modify the state, since this will propagate through
+      // the scene instance and modify the active cards through the CC API
+      scene.clearActiveCards();
     },
   },
   extraReducers: {
@@ -590,7 +677,11 @@ const smSlice = createSlice({
       error: null,
     }),
     [createScene.rejected]: (state, { payload }) => {
-      scene.disconnect();
+      try {
+        scene.disconnect();
+      } catch {
+        console.error('no scene to disconnect! continuing...');
+      }
       // if we call this immediately the disconnect call might not complete
       setTimeout(() => {
         scene = null;
@@ -614,8 +705,15 @@ export const {
   stopSpeaking,
   setActiveCards,
   setCameraState,
+  setCameraOn,
+  setMicOn,
   setShowTranscript,
   setTOS,
+  setRequestedMediaPerms,
+  setOutputMute,
+  keepAlive,
+  sendEvent,
+  clearActiveCards,
 } = smSlice.actions;
 
 export default smSlice.reducer;
