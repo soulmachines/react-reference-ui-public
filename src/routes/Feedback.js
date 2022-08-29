@@ -4,11 +4,10 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
-  Star, StarFill, X, XCircle,
+  Star, StarFill, XCircle,
 } from 'react-bootstrap-icons';
 import Header from '../components/Header';
-import { headerHeight, landingBackgroundColor, landingBackgroundImage } from '../config';
-import { primaryAccent } from '../globalStyle';
+import { headerHeight, landingBackgroundImage } from '../config';
 
 function Feedback({ className }) {
   const { presumeTimeout } = useSelector(({ sm }) => ({ ...sm }));
@@ -23,8 +22,8 @@ function Feedback({ className }) {
       if (!ratingSelected) setRating(i);
     };
     return (
-    // eslint-disable-next-line react/no-array-index-key
       <button
+        // eslint-disable-next-line react/no-array-index-key
         key={i}
         className="star-wrapper"
         type="button"
