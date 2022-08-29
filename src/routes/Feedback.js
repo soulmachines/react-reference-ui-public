@@ -3,10 +3,11 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { Star, StarFill } from 'react-bootstrap-icons';
+import {
+  Star, StarFill, XCircle,
+} from 'react-bootstrap-icons';
 import Header from '../components/Header';
-import { headerHeight, landingBackgroundColor, landingBackgroundImage } from '../config';
-import { primaryAccent } from '../globalStyle';
+import { headerHeight, landingBackgroundImage } from '../config';
 
 function Feedback({ className }) {
   const { presumeTimeout } = useSelector(({ sm }) => ({ ...sm }));
@@ -21,8 +22,8 @@ function Feedback({ className }) {
       if (!ratingSelected) setRating(i);
     };
     return (
-    // eslint-disable-next-line react/no-array-index-key
       <button
+        // eslint-disable-next-line react/no-array-index-key
         key={i}
         className="star-wrapper"
         type="button"
@@ -66,21 +67,38 @@ function Feedback({ className }) {
     }
   };
 
-  let alertModal = null;
+  const [alertModal, setAlertModal] = useState(null);
 
-  if (presumeTimeout) {
-    alertModal = (
-      <div className="alert alert-danger text-center">
-        <h4>
-          Whoops!
-        </h4>
-        It looks like you timed out.
-        <div className="mt-2">
-          <Link className="btn btn-danger" to="/loading">Reconnect</Link>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (presumeTimeout) {
+      setAlertModal(
+        <div className="alert-modal-card text-center">
+          <div className="d-flex justify-content-end">
+            <button type="button" style={{ border: 'none', background: 'none' }} onClick={() => setAlertModal(null)}>
+              <XCircle size={20} />
+            </button>
+          </div>
+          <h4 className="mb-3">
+            The session timed out due to inactivity.
+          </h4>
+          <p>
+            Please feel free to start again.
+            Or give us some feedback to help us improve this exciting new platform.
+          </p>
+          <div className="mt-2">
+            <Link className="btn primary-accent me-2" to="/loading">Start Again</Link>
+            <button
+              className="btn btn-outline-dark"
+              onClick={() => { setAlertModal(null); }}
+              type="button"
+            >
+              Provide Feedback
+            </button>
+          </div>
+        </div>,
+      );
+    }
+  }, [presumeTimeout]);
 
   const [submitted, setSubmitted] = useState(false);
   return (
@@ -286,6 +304,12 @@ export default styled(Feedback)`
     align-items: center;
     width: 100vw;
     min-height: 100vh;
-    background: rgba(0,0,0,0.2);
+    background: rgba(0,0,0,0.3);
+  }
+  .alert-modal-card {
+    background: #FFF;
+    padding: 1.3rem;
+    max-width: 25rem;
+    border-radius: 5px;
   }
 `;
