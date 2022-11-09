@@ -15,12 +15,13 @@ const PERSONA_ID = '1';
 
 if (AUTH_MODE === 0 && API_KEY === '') throw new Error('REACT_APP_API_KEY not defined!');
 
+const storedRequestedPerms = JSON.parse(localStorage.getItem('requestedMediaPerms'));
 const initialState = {
-  requestedMediaPerms: {
-    ...JSON.parse(localStorage.getItem('requestedMediaPerms')),
+  requestedMediaPerms: storedRequestedPerms !== undefined ? {
+    ...storedRequestedPerms,
     cameraDenied: false,
     micDenied: false,
-  } || {
+  } : {
     mic: true,
     micDenied: false,
     camera: true,
