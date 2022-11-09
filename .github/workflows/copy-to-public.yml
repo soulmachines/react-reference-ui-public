@@ -15,4 +15,5 @@ jobs:
       with:
         target_repo_url:
           git@github.com:soulmachines/react-reference-ui-public.git
-
+        ssh_private_key:
+          ${{ secrets.GH_SSH_SECRET }}
