@@ -16,6 +16,6 @@ jobs:
     - name: setup git ssh command
       run: "export GIT_SSH_COMMAND=\"ssh -v -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -l git\""
     - name: add public repo
-      run: "git remote add public https://github.com/soulmachines/react-reference-ui-public"
+      run: "git remote add public https://github.com/soulmachines/react-reference-ui-public.git"
     - name: push to public repo
       run: "git push public main:main"
