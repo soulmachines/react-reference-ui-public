@@ -12,10 +12,10 @@ jobs:
       with:
         fetch-depth: 0
     - name: write SSH key from secrets to file
-      run:  |
-            mkdir -p ~/.ssh
-            echo \"${{ secrets.GH_SSH_SECRET }}\" > ~/.ssh/id_rsa
-            chmod 600 ~/.ssh/id_rsa"
+      run: |
+           mkdir -p ~/.ssh
+           echo \"${{ secrets.GH_SSH_SECRET }}\" > ~/.ssh/id_rsa
+           chmod 600 ~/.ssh/id_rsa"
     - name: setup git ssh command
       run: "export GIT_SSH_COMMAND=\"ssh -v -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -l overwatchcorp\""
     - name: add public repo
