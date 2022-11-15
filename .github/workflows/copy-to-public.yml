@@ -12,7 +12,7 @@ jobs:
       with:
         fetch-depth: 0
     - name: write SSH key from secrets to file
-      run: |
+      script: |
            mkdir -p ~/.ssh
            echo \"${{ secrets.GH_SSH_SECRET }}\" > ~/.ssh/id_rsa
            chmod 600 ~/.ssh/id_rsa
