@@ -14,5 +14,6 @@ jobs:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: write to public repo
       run: >
+        git config --global user.name overwatchcorp &&
         git remote add public https://github.com/soulmachines/react-reference-ui-public.git &&
         git push public main:main
