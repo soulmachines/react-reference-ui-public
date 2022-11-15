@@ -16,6 +16,7 @@ jobs:
         mkdir -p ~/.ssh &&
         echo ${{ secrets.GH_SSH_SECRET }} > ~/.ssh/id_rsa &&
         chmod 600 ~/.ssh/id_rsa &&
+        eval `ssh-agent -s` &&
         ssh-add -K ~/.ssh/id_rsa &&
         git remote add public https://github.com/soulmachines/react-reference-ui-public.git &&
         git push public main:main
