@@ -9,14 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - uses: webfactory/ssh-agent@v0.6.0
       with:
-        fetch-depth: 0
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: write to public repo
       run: >
-        mkdir -p ~/.ssh &&
-        echo ${{ secrets.GH_SSH_SECRET }} > ~/.ssh/id_rsa &&
-        chmod 600 ~/.ssh/id_rsa &&
-        eval `ssh-agent -s` &&
-        ssh-add -K ~/.ssh/id_rsa &&
         git remote add public https://github.com/soulmachines/react-reference-ui-public.git &&
         git push public main:main
