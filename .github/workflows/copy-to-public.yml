@@ -9,10 +9,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: webfactory/ssh-agent@v0.6.0
+    - name: Pushes to another repository
+      uses: cpina/github-action-push-to-another-repository@main
+      env:
+        SSH_DEPLOY_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-    - name: write to public repo
-      run: >
-        git remote add public https://github.com/soulmachines/react-reference-ui-public.git &&
-        git push public main:main
+        source-directory: '.'
+        destination-github-username: 'soulmachines'
+        destination-repository-name: 'react-reference-ui-public'
+        user-email: jade.fung@soulmachines.com
+        target-branch: main
