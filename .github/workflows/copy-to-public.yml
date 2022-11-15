@@ -14,6 +14,5 @@ jobs:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: write to public repo
       run: >
-        export GIT_SSH_COMMAND="ssh -v -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -l github-actions" &&
         git remote add public https://github.com/soulmachines/react-reference-ui-public.git &&
         git push public main:main
