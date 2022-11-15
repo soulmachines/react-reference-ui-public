@@ -16,6 +16,6 @@ jobs:
         mkdir -p ~/.ssh &&
         echo ${{ secrets.GH_SSH_SECRET }} > ~/.ssh/id_rsa &&
         chmod 600 ~/.ssh/id_rsa &&
-        export GIT_SSH_COMMAND=\"ssh -v -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -l overwatchcorp\" &&
+        export GIT_SSH_COMMAND="ssh -v -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -l overwatchcorp" &&
         git remote add public https://github.com/soulmachines/react-reference-ui-public.git &&
         git push public main:main
