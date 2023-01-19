@@ -5,13 +5,15 @@ import PropTypes from 'prop-types';
 import {
   CameraVideoFill,
   CameraVideoOffFill,
-  ChatLeftText,
+  ChatSquareTextFill,
   MicFill,
   MicMuteFill,
   SkipEndFill,
   ThreeDotsVertical,
   VolumeMuteFill,
   VolumeUpFill,
+  BoxArrowRight,
+  Megaphone,
 } from 'react-bootstrap-icons';
 import ReactTooltip from 'react-tooltip';
 import {
@@ -25,8 +27,8 @@ import {
 import mic from '../img/mic.svg';
 import micFill from '../img/mic-fill.svg';
 import breakpoints from '../utils/breakpoints';
-import { mediaStreamProxy } from '../proxyVideo';
 import { primaryAccent } from '../globalStyle';
+import FeedbackModal from './FeedbackModal';
 
 const volumeMeterHeight = 24;
 const volumeMeterMultiplier = 1.2;
@@ -44,70 +46,70 @@ function Controls({
     speechState,
     showTranscript,
     transcript,
-    videoWidth,
     requestedMediaPerms,
   } = useSelector((state) => ({ ...state.sm }));
-  const typingOnly = requestedMediaPerms.mic !== true;
 
   const dispatch = useDispatch();
-  const isLarger = videoWidth >= breakpoints.md ? largeHeight : smallHeight;
+
+  const [showFeedback, setShowFeedback] = useState(false);
 
   // mic level visualizer
-  const [volume, setVolume] = useState(0);
-  const [responsiveVolumeHeight, setResponsiveVolumeHeight] = useState(isLarger);
-  useEffect(async () => {
-    if (connected && typingOnly === false) {
-      // credit: https://stackoverflow.com/a/64650826
-      let volumeCallback = null;
-      let audioStream;
-      let audioContext;
-      let audioSource;
-      let unmounted = false;
-      // Initialize
-      try {
-        audioStream = mediaStreamProxy.getUserMediaStream();
-        audioContext = new AudioContext();
-        audioSource = audioContext.createMediaStreamSource(audioStream);
-        const analyser = audioContext.createAnalyser();
-        analyser.fftSize = 512;
-        analyser.minDecibels = -127;
-        analyser.maxDecibels = 0;
-        analyser.smoothingTimeConstant = 0.4;
-        audioSource.connect(analyser);
-        const volumes = new Uint8Array(analyser.frequencyBinCount);
-        volumeCallback = () => {
-          analyser.getByteFrequencyData(volumes);
-          let volumeSum = 0;
-          volumes.forEach((v) => { volumeSum += v; });
-          // multiply value by 2 so the volume meter appears more responsive
-          // (otherwise the fill doesn't always show)
-          const averageVolume = (volumeSum / volumes.length) * 2;
-          // Value range: 127 = analyser.maxDecibels - analyser.minDecibels;
-          setVolume(averageVolume > 127 ? 127 : averageVolume);
-        };
-        // runs every time the window paints
-        const volumeDisplay = () => {
-          window.requestAnimationFrame(() => {
-            if (!unmounted) {
-              volumeCallback();
-              volumeDisplay();
-            }
-          });
-        };
-        volumeDisplay();
-      } catch (e) {
-        console.error('Failed to initialize volume visualizer!', e);
-      }
+  // TODO: fix this
+  // const typingOnly = requestedMediaPerms.mic !== true;
+  // const [volume, setVolume] = useState(0);
+  // useEffect(async () => {
+  //   if (connected && typingOnly === false) {
+  //     // credit: https://stackoverflow.com/a/64650826
+  //     let volumeCallback = null;
+  //     let audioStream;
+  //     let audioContext;
+  //     let audioSource;
+  //     let unmounted = false;
+  //     // Initialize
+  //     try {
+  //       audioStream = mediaStreamProxy.getUserMediaStream();
+  //       audioContext = new AudioContext();
+  //       audioSource = audioContext.createMediaStreamSource(audioStream);
+  //       const analyser = audioContext.createAnalyser();
+  //       analyser.fftSize = 512;
+  //       analyser.minDecibels = -127;
+  //       analyser.maxDecibels = 0;
+  //       analyser.smoothingTimeConstant = 0.4;
+  //       audioSource.connect(analyser);
+  //       const volumes = new Uint8Array(analyser.frequencyBinCount);
+  //       volumeCallback = () => {
+  //         analyser.getByteFrequencyData(volumes);
+  //         let volumeSum = 0;
+  //         volumes.forEach((v) => { volumeSum += v; });
+  //         // multiply value by 2 so the volume meter appears more responsive
+  //         // (otherwise the fill doesn't always show)
+  //         const averageVolume = (volumeSum / volumes.length) * 2;
+  //         // Value range: 127 = analyser.maxDecibels - analyser.minDecibels;
+  //         setVolume(averageVolume > 127 ? 127 : averageVolume);
+  //       };
+  //       // runs every time the window paints
+  //       const volumeDisplay = () => {
+  //         window.requestAnimationFrame(() => {
+  //           if (!unmounted) {
+  //             volumeCallback();
+  //             volumeDisplay();
+  //           }
+  //         });
+  //       };
+  //       volumeDisplay();
+  //     } catch (e) {
+  //       console.error('Failed to initialize volume visualizer!', e);
+  //     }
 
-      return () => {
-        console.log('closing down the audio stuff');
-        // FIXME: tracking #79
-        unmounted = true;
-        audioContext.close();
-        audioSource.close();
-      };
-    } return false;
-  }, [connected]);
+  //     return () => {
+  //       console.log('closing down the audio stuff');
+  //       // FIXME: tracking #79
+  //       unmounted = true;
+  //       audioContext.close();
+  //       audioSource.close();
+  //     };
+  //   } return false;
+  // }, [connected]);
 
   // bind transcrpt open and mute func to each other, so that
   // when we open the transcript we mute the mic
@@ -124,6 +126,17 @@ function Controls({
 
   return (
     <div className={className}>
+      {
+        showFeedback
+          ? (
+            <div className="alert-modal">
+              <div className="alert-modal-card container">
+                <FeedbackModal onClose={() => setShowFeedback(false)} closeText="Resume Conversation" />
+              </div>
+            </div>
+          )
+          : null
+      }
       <div className="d-flex">
         <div>
           {/* mute dp sound */}
@@ -161,7 +174,7 @@ function Controls({
             onClick={toggleKeyboardInput}
             disabled={transcript.length <= 0}
           >
-            <ChatLeftText size={iconSize} color={showTranscript ? primaryAccent : ''} />
+            <ChatSquareTextFill size={iconSize} color={showTranscript ? primaryAccent : '#B3B3B3'} />
           </button>
         </div>
         <div>
@@ -214,7 +227,17 @@ function Controls({
                 data-tip="Disconnect"
                 data-place="bottom"
               >
-                Exit
+                <BoxArrowRight size={18} color="black" style={{ marginRight: '10px' }} />
+                Exit Session
+              </button>
+              <hr style={{ margin: '5px' }} />
+              <button
+                className="dropdown-item"
+                type="button"
+                onClick={() => setShowFeedback(true)}
+              >
+                <Megaphone size={18} color="black" style={{ marginRight: '10px' }} />
+                Submit Feedback
               </button>
             </li>
           </ul>
@@ -272,5 +295,21 @@ export default styled(Controls)`
       z-index: 20;
     }
   }
-
+  .alert-modal {
+    position: absolute;
+    z-index: 1000;
+    display: flex;
+    top: 0;
+    left: 0;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    min-height: 100vh;
+    background: rgba(0,0,0,0.3);
+  }
+  .alert-modal-card {
+    background: #FFF;
+    padding: 1.3rem;
+    border-radius: 5px;
+  }
 `;

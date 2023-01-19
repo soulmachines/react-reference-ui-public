@@ -58,7 +58,6 @@ ContentCardDisplay.propTypes = {
 };
 
 const StyledContentCardDisplay = styled(ContentCardDisplay)`
-  max-height: 10rem;
   overflow-y: scroll;
   margin-bottom: 0.9rem;
 
@@ -67,12 +66,8 @@ const StyledContentCardDisplay = styled(ContentCardDisplay)`
     display: none;
   }
 
-  /* show translucent background if card showing on small device */
-  ${({ activeCards, showTranscript }) => (activeCards.length > 0 || showTranscript === true
-    ? `background: rgba(255, 255, 255, 0.3);
-    outline: 0.5rem solid rgba(255, 255, 255, 0.3);`
-    : '')}
-
+  // make this smaller 
+  max-height: 40vh;
   @media(min-width: ${breakpoints.md}px) {
     max-height: 100%;
     background: none;

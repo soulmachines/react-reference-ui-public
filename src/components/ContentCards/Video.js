@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  setMicOn, sendTextMessage, keepAlive, clearActiveCards,
+  setMicOn, sendTextMessage, keepAlive,
 } from '../../store/sm/index';
 
 function Video({
@@ -33,7 +33,6 @@ function Video({
     setTimeout(() => {
       setIsLightbox(false);
       setFadeOut(false);
-      dispatch(clearActiveCards());
       dispatch(sendTextMessage({ text: 'I\'m done watching' }));
     }, 500);
   };
@@ -101,7 +100,7 @@ function Video({
 
     setYTElem(elem);
     if (isLightbox) setMicWasOn(micWasOn);
-    if (!micWasOn && isLightbox) {
+    if (micWasOn && isLightbox) {
       dispatch(setMicOn({ micOn: false }));
     }
     return () => {

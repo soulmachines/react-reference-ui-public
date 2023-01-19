@@ -7,6 +7,7 @@ import Link from './ContentCards/Link';
 import Image from './ContentCards/Image';
 import Video from './ContentCards/Video';
 import { setActiveCards, animateCamera } from '../store/sm/index';
+import ImageCarousel from './ContentCards/ImageCarousel';
 
 const returnCardError = (errMsg) => {
   console.error(errMsg);
@@ -33,12 +34,17 @@ function ContentCardSwitch({
       element: Image,
       removeOnClick: false,
     },
+    imageCarousel: {
+      element: ImageCarousel,
+      removeOnClick: false,
+    },
     video: {
       element: Video,
       removeOnClick: false,
     },
   };
 
+  if ('type' in card === false) return returnCardError('payload missing type key! component key has been depreciated.');
   if (card === undefined) return returnCardError('unknown content card name! did you make a typo in @showCards()?');
   const { data, id, type: componentName } = card;
 
