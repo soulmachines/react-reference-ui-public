@@ -22,7 +22,7 @@ function Landing({ className }) {
         <Header />
         <div className="container d-flex">
           <div className="landing-container flex-grow-1">
-            <div className="col-12 col-lg-8">
+            <div className="col-12 col-lg-6">
               <div className="row" style={{ marginBottom: '9px' }}>
                 <div>
                   <h1 className="fw-bol">
@@ -94,7 +94,14 @@ function Landing({ className }) {
               <div className="col" />
             </div>
           </div>
-          <div className="d-none d-lg-block">
+          <div
+            className="d-none d-lg-block"
+            style={{
+              width: '250px',
+              position: 'fixed',
+              right: '20px',
+            }}
+          >
             <div
               className="d-flex align-items-center justify-content-center fs-4"
             >
@@ -123,12 +130,12 @@ export default styled(Landing)`
     min-height: 100vh;
 
     background: ${landingBackgroundImage ? `url(${landingBackgroundImage})` : ''} ${landingBackgroundColor ? `${landingBackgroundColor};` : ''};
-    background-size: 90% auto;
+    background-size: auto 50%;
     background-repeat: no-repeat;
     background-position: center bottom;
 
     @media (min-width: ${breakpoints.lg}px) {
-      background-size: 70% auto;
+      background-size: 60% auto;
       background-position: right bottom;
     }
   }
