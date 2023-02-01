@@ -99,7 +99,7 @@ function DPChat({
         </div>
         {/* middle row */}
         <div
-          className="row d-flex justify-content-end align-items-end flex-grow-1 ps-3 pe-3"
+          className="row d-flex justify-content-end align-items-center flex-grow-1 p-3"
           style={{ overflow: 'scroll' }}
         >
           <div className="col col-md-5">

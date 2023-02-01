@@ -50,7 +50,7 @@ export default styled(Header)`
   width: 100%;
   background-color: ${transparentHeader ? 'none' : '#FFFFFF'};
 
-  &>.row {
+  .row {
     height: ${headerHeight};
   }
   .logo {
