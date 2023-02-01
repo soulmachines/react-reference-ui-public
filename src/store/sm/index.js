@@ -5,6 +5,7 @@ import proxyVideo, { mediaStreamProxy } from '../../proxyVideo';
 import roundObject from '../../utils/roundObject';
 import { meatballString } from './meatball';
 
+const ORCHESTRATION_MODE = process.env.REACT_APP_ORCHESTRATION_MODE || false;
 const AUTH_MODE = parseInt(process.env.REACT_APP_PERSONA_AUTH_MODE, 10) || 0;
 const API_KEY = process.env.REACT_APP_API_KEY || '';
 const TOKEN_ISSUER = process.env.REACT_APP_TOKEN_URL;
@@ -12,37 +13,26 @@ const PERSONA_ID = '1';
 // CAMERA_ID commented out because CUE manages camera
 // const CAMERA_ID = 'CloseUp';
 
-let startupErr = null;
+if (AUTH_MODE === 0 && API_KEY === '') throw new Error('REACT_APP_API_KEY not defined!');
 
-if (AUTH_MODE === 0 && API_KEY === '') startupErr = { msg: 'REACT_APP_API_KEY not defined!' };
-
+const storedRequestedPerms = JSON.parse(localStorage.getItem('requestedMediaPerms'));
 const initialState = {
-  requestedMediaPerms: sessionStorage.getItem('requestedMediaPerms')
-    ? {
-      ...JSON.parse(sessionStorage.getItem('requestedMediaPerms')),
-      // media perms might have been altered before reload, so set false so we check again
-      cameraDenied: false,
-      micDenied: false,
-    }
-    : {
-      mic: true,
-      micDenied: false,
-      camera: true,
-      cameraDenied: false,
-    },
+  requestedMediaPerms: storedRequestedPerms !== undefined ? {
+    ...storedRequestedPerms,
+    cameraDenied: false,
+    micDenied: false,
+  } : {
+    mic: true,
+    micDenied: false,
+    camera: true,
+    cameraDenied: false,
+  },
   tosAccepted: false,
   connected: false,
   disconnected: false,
-  // use startedAt to measure if someone starts a session and then walks away
-  startedAt: Date.now(),
   presumeTimeout: false,
   loading: false,
-  connectionState: {
-    name: '',
-    percentageLoaded: 0,
-  },
-  // default value is null, this lets us catch stuff like missing API keys
-  error: startupErr,
+  error: null,
   micOn: true,
   cameraOn: true,
   isOutputMuted: false,
@@ -158,15 +148,6 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
   const { requestedMediaPerms } = thunk.getState().sm;
   const { mic, camera } = requestedMediaPerms;
 
-  // pull out logging config from environment variables
-  // we might want to set different values for dev and prod
-  const {
-    REACT_APP_SMWEBSDK_SESSION_LOGGING_ENABLED: sessionLoggingEnabled,
-    REACT_APP_SMWEBSDK_SESSION_LOGGING_LEVEL: sessionLoggingLevel,
-    REACT_APP_SMWEBSDK_CONTENT_AWARENESS_LOGGING_ENABLED: cueLoggingEnabled,
-    REACT_APP_SMWEBSDK_CONTENT_AWARENESS_LOGGING_LEVEL: cueLoggingLevel,
-  } = process.env;
-
   try {
     const sceneOpts = {
       videoElement: proxyVideo,
@@ -182,20 +163,6 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
       requiredMediaDevices: {
         microphone: false,
         camera: false,
-      },
-      loggingConfig: {
-        session: {
-          enabled: sessionLoggingEnabled || true,
-          minLogLevel: sessionLoggingLevel || 'debug',
-        },
-        contentAwareness: {
-          enabled: cueLoggingEnabled || true,
-          minLogLevel: cueLoggingLevel || 'debug',
-        },
-      },
-      sendMetadata: {
-        // send url updates for react app as PAGE_METADATA intents to NLP
-        pageUrl: true,
       },
     };
     if (AUTH_MODE === 0) sceneOpts.apiKey = API_KEY;
@@ -233,13 +200,6 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
   }));
 
   /* BIND HANDLERS */
-  // connection state /progress handler
-  scene.connectionState.onConnectionStateUpdated.addListener(
-    (connectionStateData) => {
-      thunk.dispatch(actions.setConnectionState({ ...connectionStateData }));
-    },
-  );
-  // disconnect handler
   scene.onDisconnected = () => thunk.dispatch(disconnect());
   // store a ref to the smwebsdk onmessage so that we can
   // use the callback while also calling the internal version
@@ -253,7 +213,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
     thunk.dispatch(actions.setActiveCards({ activeCards }));
     thunk.dispatch(actions.addConversationResult({
       source: 'persona',
-      card: activeCards[activeCards.length - 1],
+      card: activeCards[0],
     }));
   });
 
@@ -521,7 +481,8 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
 export const sendTextMessage = createAsyncThunk('sm/sendTextMessage', async ({ text }, thunk) => {
   if (text === '') return thunk.rejectWithValue('submitted empty string!');
   if (scene !== null && persona !== null) {
-    persona.conversationSend(text);
+    if (ORCHESTRATION_MODE === true) scene.sendUserText(text);
+    else persona.conversationSend(text);
     return thunk.dispatch(actions.addConversationResult({
       source: 'user',
       text,
@@ -533,12 +494,6 @@ const smSlice = createSlice({
   name: 'sm',
   initialState,
   reducers: {
-    setConnectionState: (state, { payload }) => ({
-      ...state,
-      connectionState: {
-        ...payload,
-      },
-    }),
     setTOS: (state, { payload }) => ({
       ...state,
       tosAccepted: payload.accepted,
@@ -554,7 +509,7 @@ const smSlice = createSlice({
         cameraDenied: 'cameraDenied' in payload ? payload.cameraDenied : state.requestedMediaPerms.cameraDenied,
         micDenied: 'micDenied' in payload ? payload.micDenied : state.requestedMediaPerms.micDenied,
       };
-      sessionStorage.setItem('requestedMediaPerms', JSON.stringify(requestedMediaPerms));
+      localStorage.setItem('requestedMediaPerms', JSON.stringify(requestedMediaPerms));
       return ({
         ...state,
         requestedMediaPerms,
@@ -615,7 +570,7 @@ const smSlice = createSlice({
       // we record both text and content cards in the transcript
       if (payload.text !== '' || 'card' in payload !== false) {
         const { source } = payload;
-        const newEntry = { source, timestamp: new Date(Date.now()).toISOString() };
+        const newEntry = { source, timestamp: new Date().toISOString() };
         // handle entering either text or card into transcript array
         if ('text' in payload) newEntry.text = payload.text;
         if ('card' in payload) newEntry.card = payload.card;
@@ -677,25 +632,20 @@ const smSlice = createSlice({
       persona = null;
       const { error } = state;
       // pull last timestamp from transcript
-      const { transcript, startedAt } = state;
-      // on disconnect the persona will add additional entries to the transcript.
-      // grab the time of the last user message.
-      const lastUserMessage = transcript.filter((item) => item.source === 'user');
-      const lastTranscriptItem = lastUserMessage[lastUserMessage.length - 1];
-      const timestamp = lastTranscriptItem?.timestamp || new Date(startedAt);
-      const timeDiff = new Date(Date.now()) - Date.parse(timestamp);
-      // if over 4 minutes old (min timeout thresh. is 5), presume the user timed out
-      const presumeTimeout = timeDiff > 240000;
-      console.log({
-        presumeTimeout, startedAt, timeDiff, timestamp, lastUserMessage, transcript,
-      });
+      // if over 5 minutes old (min timeout thresh.), presume the user timed out
+      const { transcript } = state;
+      // on disconnect the persona will add another entry to the transcript, get second to last
+      const lastTranscriptItem = transcript[transcript.length - 2]
+       || { timestamp: new Date() };
+      const { timestamp } = lastTranscriptItem;
+      const timeDiff = new Date() - Date.parse(timestamp);
+      const presumeTimeout = timeDiff > 300000;
       return {
         // completely reset SM state on disconnect, except for errors
         ...initialState,
         disconnected: true,
         error,
         presumeTimeout,
-        startedAt,
       };
     },
     keepAlive: () => {
@@ -725,10 +675,9 @@ const smSlice = createSlice({
       ...state,
       loading: false,
       connected: true,
-      startedAt: Date.now(),
       error: null,
     }),
-    [createScene.rejected]: (state, { error }) => {
+    [createScene.rejected]: (state, { payload }) => {
       try {
         scene.disconnect();
       } catch {
@@ -743,7 +692,7 @@ const smSlice = createSlice({
         ...state,
         loading: false,
         connected: false,
-        error: { msg: error.message },
+        error: { ...payload },
       });
     },
   },

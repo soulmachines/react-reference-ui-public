@@ -9,6 +9,7 @@ function STTFeedback({ className }) {
     userSpeaking,
     lastUserUtterance,
     transcript,
+    micOn,
   } = useSelector(({ sm }) => ({ ...sm }));
   const [hideInputDisplay, setHideInputDisplay] = useState(false);
 
@@ -23,18 +24,17 @@ function STTFeedback({ className }) {
     }, 3000);
     timeout = createTimeout();
     return () => clearTimeout(timeout);
-  }, [userSpeaking, lastUserUtterance]);
+  }, [userSpeaking, lastUserUtterance, micOn]);
 
-  const transcriptOnlyText = transcript.filter((t) => 'text' in t);
   const feedbackDisplay = (
     <span
       className={`badge bg-light input-display
         ${userSpeaking ? 'utterance-processing' : ''}
-        ${(transcriptOnlyText.length < 1 && intermediateUserUtterance === '') || hideInputDisplay ? 'hide-input' : 'show-input'}
+        ${(transcript.length === 0 && intermediateUserUtterance === '') || hideInputDisplay ? 'hide-input' : 'show-input'}
         `}
     >
       <div className="text-wrap text-start input-display">
-        {userSpeaking ? 'Listening: ' : 'DP heard: '}
+        {userSpeaking ? 'Listening: ' : 'I heard: '}
         {placeholder || lastUserUtterance}
         {
           userSpeaking

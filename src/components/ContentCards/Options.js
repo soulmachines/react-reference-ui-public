@@ -10,54 +10,48 @@ function Options({
   const { options, title } = data;
   const { transcript } = useSelector(({ sm }) => ({ ...sm }));
 
-  if (options?.length <= 0 || options === undefined) return 'missing values for options!';
-
   const isStaleOptionsCardInTranscript = inTranscript === true
    && transcriptIndex < transcript.length - 1;
 
-  try {
-    const optionsDisplay = options.map(({ label, value }) => {
-      const isLink = value?.indexOf('://') > -1;
-      if (isLink) {
-        return (
-          <a
-            href={value}
-            className="btn primary-accent me-2 mb-2"
-            key={JSON.stringify({ label, value })}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {label}
-            <BoxArrowUpRight className="ms-2" size={18} />
-          </a>
-        );
-      }
+  const optionsDisplay = options.map(({ label, value }) => {
+    const isLink = value.indexOf('://') > -1;
+    if (isLink) {
       return (
-        <button
-          type="button"
-          className="btn primary-accent me-2 mb-2"
-          data-trigger-text={value}
-          onClick={dispatchTextFromData}
+        <a
+          href={value}
+          className="btn primary-accent"
           key={JSON.stringify({ label, value })}
-          disabled={isStaleOptionsCardInTranscript}
+          target="_blank"
+          rel="noreferrer"
         >
           {label}
-        </button>
+          <BoxArrowUpRight className="ms-2" size={18} />
+        </a>
       );
-    });
+    }
     return (
-      <div>
-        {
-          title ? <h3 className="text-center">{title}</h3> : null
-        }
-        <div>
-          {optionsDisplay}
-        </div>
-      </div>
+      <button
+        type="button"
+        className="btn primary-accent"
+        data-trigger-text={value}
+        onClick={dispatchTextFromData}
+        key={JSON.stringify({ label, value })}
+        disabled={isStaleOptionsCardInTranscript}
+      >
+        {label}
+      </button>
     );
-  } catch {
-    return 'options card error—check console for more info!';
-  }
+  });
+  return (
+    <div>
+      {
+        title ? <h3 className="text-center">{title}</h3> : null
+      }
+      <div className="d-grid gap-2">
+        {optionsDisplay}
+      </div>
+    </div>
+  );
 }
 
 Options.propTypes = {

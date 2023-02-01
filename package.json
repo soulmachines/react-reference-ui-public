@@ -16,7 +16,7 @@
   "dependencies": {
     "@juggle/resize-observer": "^3.3.1",
     "@reduxjs/toolkit": "^1.6.0",
-    "@soulmachines/smwebsdk": "15.2.0",
+    "@soulmachines/smwebsdk": "14.3.1",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",

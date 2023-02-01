@@ -30,22 +30,19 @@ function Transcript({ className, transcript }) {
             </small>
           </div>
           <div className="transcript-entry-content">
-            {text}
+            {text || null}
           </div>
         </div>
       </div>
     );
   });
 
+  // scroll to bottom of transcript whenever it updates
   let scrollRef;
   const [isMounting, setIsMounting] = useState(true);
   useEffect(() => {
+    scrollRef.scrollIntoView({ behavior: isMounting ? 'instant' : 'smooth' });
     setIsMounting(false);
-    return () => setIsMounting(true);
-  });
-  // scroll to bottom of transcript whenever it updates
-  useEffect(() => {
-    scrollRef.scrollIntoView({ behavior: isMounting ? 'auto' : 'smooth' });
   }, [transcript]);
 
   return (
@@ -58,7 +55,7 @@ function Transcript({ className, transcript }) {
               No items to show, say something!
             </li>
           )}
-        <div ref={(el) => { scrollRef = el; }} style={{ clear: 'both' }} />
+        <div ref={(el) => { scrollRef = el; }} />
       </div>
     </div>
   );
