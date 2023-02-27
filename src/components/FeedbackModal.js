@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Star, StarFill } from 'react-bootstrap-icons';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import styled from 'styled-components';
 import breakpoints from '../utils/breakpoints';
 import { landingBackgroundImage } from '../config';
 
-function FeedbackModal({ className, onClose, closeText }) {
+function FeedbackModal({
+  className, onClose, closeText, denyFeedbackText, denyFeedback,
+}) {
   const nStars = 5;
   const [rating, setRating] = useState(-1);
   const [ratingSelected, setRatingSelected] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  const history = useHistory();
 
   // generate array of clickable stars for rating
   const stars = Array.from(Array(nStars)).map((_, i) => {
@@ -56,92 +60,107 @@ function FeedbackModal({ className, onClose, closeText }) {
         <div className="row d-flex justify-content-center">
           <div className="tutorial-icon tutorial-icon-dp mb-2" />
         </div>
-        {
-            submitted
-              ? (
-                <div>
-                  <div className="row text-center">
-                    <h2>Thank you for your feedback.</h2>
-                    <p>
-                      Want to keep chatting? If not, we can end our conversation.
-                    </p>
-                  </div>
-                  <div className="row">
-                    <div className="d-flex justify-content-center">
-                      <button onClick={onClose} type="button" className="btn btn-dark me-4">{closeText}</button>
-                      <Link to="/" className="btn btn-outline-dark" type="button">I&apos;m Done</Link>
-                    </div>
-                  </div>
+        {submitted ? (
+          <div>
+            <div className="row text-center">
+              <h2>Thank you for your feedback.</h2>
+              <p>Want to keep chatting? If not, we can end our conversation.</p>
+            </div>
+            <div className="row">
+              <div className="d-flex justify-content-center">
+                <button
+                  onClick={onClose}
+                  type="button"
+                  className="btn btn-dark me-4"
+                >
+                  {closeText}
+                </button>
+                <Link to="/" className="btn btn-outline-dark" type="button">
+                  I&apos;m Done
+                </Link>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div className="row">
+              <h2 className="text-center">
+                Can you rate your experience with Digital Persona A?
+              </h2>
+            </div>
+            <div className="row">
+              <div
+                className="justify-content-center d-flex"
+                onMouseLeave={() => {
+                  if (!ratingSelected) setRating(-1);
+                }}
+              >
+                {stars}
+              </div>
+            </div>
+            <hr />
+            <div className="row">
+              <h3>How would you describe your experience?</h3>
+              <div>(Select all that apply)</div>
+              <div className="mt-3">
+                {/* combine default tags and custom ones to display as one list */}
+                {/* user can click on default tags to deselect and custom ones to edit */}
+                {tagItems.map((t) => (
+                  <button
+                    className={`rating-tag ${
+                      selectedTags.indexOf(t) > -1 ? 'rating-tag-selected' : ''
+                    }`}
+                    type="button"
+                    onClick={() => handleSelectTag(t)}
+                    key={t}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="row">
+              <h3 style={{ marginTop: '10px' }}>Can you tell us more?</h3>
+              {/* field for custom tags, limited to 20 chars */}
+              <div
+                className="d-flex custom-items"
+                style={{ width: '100%', height: '100px', marginTop: '10px' }}
+              >
+                <textarea
+                  type="text"
+                  className="form-control me-2"
+                  onChange={(e) => {
+                    const t = e.target.value;
+                    if (t.length < 265) setCustomField(t);
+                  }}
+                  value={customField}
+                />
+              </div>
+              <div className="row mt-3">
+                <div className="justify-content-end d-flex">
+                  <button
+                    onClick={() => (denyFeedback ? denyFeedback() : history.push('/'))}
+                    type="button"
+                    className="btn btn-outline-dark me-2"
+                  >
+                    { denyFeedbackText || 'No Thanks' }
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-dark"
+                    disabled={!ratingSelected}
+                    onClick={() => {
+                      setSelectedTags([...selectedTags, customField]);
+                      setSubmitted(true);
+                    }}
+                  >
+                    Submit
+                  </button>
                 </div>
-              )
-              : (
-                <div>
-                  <div className="row">
-                    <h2 className="text-center">Can you rate your experience with Digital Persona A?</h2>
-                  </div>
-                  <div className="row">
-                    <div
-                      className="justify-content-center d-flex"
-                      onMouseLeave={() => {
-                        if (!ratingSelected) setRating(-1);
-                      }}
-                    >
-                      {stars}
-                    </div>
-                  </div>
-                  <hr />
-                  <div className="row">
-                    <h3>How would you describe your experience?</h3>
-                    <div>(Select all that apply)</div>
-                    <div className="mt-3">
-                      {/* combine default tags and custom ones to display as one list */}
-                      {/* user can click on default tags to deselect and custom ones to edit */}
-                      {tagItems.map((t) => (
-                        <button
-                          className={`rating-tag ${selectedTags.indexOf(t) > -1 ? 'rating-tag-selected' : ''}`}
-                          type="button"
-                          onClick={() => handleSelectTag(t)}
-                          key={t}
-                        >
-                          {t}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="row">
-                    <h3 style={{ marginTop: '10px' }}>Can you tell us more?</h3>
-                    {/* field for custom tags, limited to 20 chars */}
-                    <div className="d-flex custom-items" style={{ width: '100%', height: '100px', marginTop: '10px' }}>
-                      <textarea
-                        type="text"
-                        className="form-control me-2"
-                        onChange={(e) => {
-                          const t = e.target.value;
-                          if (t.length < 20) setCustomField(t);
-                        }}
-                        value={customField}
-                      />
-                    </div>
-                    <div className="row mt-3">
-                      <div className="justify-content-end d-flex">
-                        <button onClick={onClose} type="button" className="btn btn-outline-dark me-2">No Thanks</button>
-                        <button
-                          type="button"
-                          className="btn btn-dark"
-                          disabled={!ratingSelected}
-                          onClick={() => {
-                            setSelectedTags([...selectedTags, customField]);
-                            setSubmitted(true);
-                          }}
-                        >
-                          Submit
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )
-          }
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

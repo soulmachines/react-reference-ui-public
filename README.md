@@ -24,11 +24,15 @@ Starts the development server. Open [http://localhost:3000](http://localhost:300
 ### `npm run build`
 Builds the app for production to the `build` folder. The files will be bundled and minified for production.
 
+## License
+
+Soul Machines React Reference UI is available under the Apache License, Version 2.0. See the [LICENSE.txt](./LICENSE.txt) file for more info.
+
 ## Linting & Code Style
 
 This project strictly follows [AirBnB's JavaScript style guide](https://github.com/airbnb/javascript). We recommend you install [ESLint](https://eslint.org/) in your editor and adhere to its recommendations.
 
 We have also provided an `.editorconfig` file that you can use in your editor to match the indentation, whitespace, and other styling rules we used in creating this template.
 
-## Support
+## Support 
 Our team would love to hear from you. For any additional support, feedback, bugs, feature requests, please [submit a ticket](https://support.soulmachines.com) or reach out to us at [support@soulmachines.com](support@soulmachines.com).

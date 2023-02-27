@@ -1,8 +1,12 @@
 import { createGlobalStyle } from 'styled-components';
 
-export const primaryAccent = 'blue';
+export const primaryAccent = '#3C3C3C';
 
 export default createGlobalStyle`
+  body {
+    height: 100vh;
+    overflow: scroll;
+  }
   svg {
     vertical-align: -0.125em;
   }
@@ -18,5 +22,28 @@ export default createGlobalStyle`
   .btn-unstyled {
     border: none;
     background: none;
+  }
+  .error-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    min-width: 100vw;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0,0,0,0.2);
+
+    .error-modal-card {
+      background: #FFF;
+      border: 1px solid rgba(0,0,0,0.2);
+      border-radius: 10px;
+      max-width: 30rem;
+      padding: 1rem;
+    }
+    .error-modal-inner {
+      padding: 1rem;
+    }
   }
 `;
