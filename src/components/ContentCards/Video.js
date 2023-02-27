@@ -1,10 +1,10 @@
-import React, { createRef, useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import YouTube from 'react-youtube';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  setMicOn, sendTextMessage, keepAlive, clearActiveCards,
+  setMicOn, sendTextMessage, keepAlive, setShowTranscript, setActiveCards, stopSpeaking,
 } from '../../store/sm/index';
 
 function Video({
@@ -12,133 +12,161 @@ function Video({
   className,
   inTranscript,
 }) {
-  const { activeCards, micOn } = useSelector(({ sm }) => ({ ...sm }));
+  const { videoId } = data;
+  if (videoId === undefined) return <div className="alert alert-danger">no value for videoId!</div>;
+
+  const thumbnailURL = `http://img.youtube.com/vi/${videoId}/0.jpg`;
+
   const dispatch = useDispatch();
-  const { videoId, autoplay } = data;
-  const containerRef = React.createRef();
-  const [YTElem, setYTElem] = useState();
-  const [fadeOut, setFadeOut] = useState(false);
-  const [micWasOn, setMicWasOn] = useState(micOn);
-  // we display videos inline in the transcript, then when they're clicked on,
-  //  we enter lightbox mode and mute the DP
-  const [isLightbox, setIsLightbox] = useState(inTranscript ? !inTranscript : true);
 
-  useEffect(() => {
-    const thisVideoCardIsActive = data === activeCards[0]?.data;
-    if (thisVideoCardIsActive) setIsLightbox(true);
-  }, [activeCards]);
+  const { showTranscript, micOn, activeCards } = useSelector(({ sm }) => (
+    {
+      showTranscript: sm.showTranscript,
+      micOn: sm.micOn,
+      activeCards: sm.activeCards,
+    }));
+  const [playPushed, setPlayPushed] = useState(false);
+  // in order to most easily let the application pull up the video when the user wants to
+  // watch something again, we just modify activeCards.
+  // this could be a problem if we need to know if it's actually a part of the conversation,
+  // so we prevent this by checking separately if the videoID matches and if it's being rewatched
+  const isActiveCard = activeCards[0]?.data?.videoId === videoId;
+  const isRewatch = activeCards[0]?.data?.isRewatch === true;
 
-  const endVideo = () => {
-    setFadeOut(true);
-    setTimeout(() => {
-      setIsLightbox(false);
-      setFadeOut(false);
-      dispatch(clearActiveCards());
-      dispatch(sendTextMessage({ text: 'I\'m done watching' }));
-    }, 500);
+  // we need to store if the transcript is open and if the mic is on while the video plays
+  const captureStateAndPrepForPlay = (lockWrites = false) => {
+    const rawStored = sessionStorage.getItem('uiStateBeforeVideo');
+    const stored = JSON.parse(rawStored);
+    const writesLocked = 'writesLocked' in stored ? stored.writesLocked : false;
+    // store UI state data only if it wasn't recently stored by another hook call/component remount
+    if (writesLocked !== true
+      || (isActiveCard && !isRewatch && !writesLocked)) {
+      sessionStorage.setItem(
+        'uiStateBeforeVideo',
+        JSON.stringify({ showTranscript, micOn, writesLocked: lockWrites }),
+      );
+    } else setPlayPushed(true);
+    dispatch(setShowTranscript(false));
+    dispatch(setMicOn({ micOn: false }));
   };
 
   useEffect(() => {
-    if (isLightbox) setFadeOut(false);
-    const ytRef = createRef();
-    let ytTarget;
-    const handleKeyboardInput = (e) => {
-      // 1 = playing, 2 = paused
-      const playerState = ytTarget.getPlayerState();
-      switch (e.nativeEvent.data) {
-        case (' '): {
-          if (playerState === 1) ytTarget.pauseVideo();
-          else ytTarget.playVideo();
-          break;
-        }
-        default: { break; }
-      }
-    };
-    // use containerRef to size video embed to elem dimensions
-    // assume 16:9 aspect ratio for video
-    const { clientWidth: width, clientHeight: height } = containerRef.current;
-    let computedWidth = width * 0.9;
-    let computedHeight = computedWidth / (16 / 9);
-    if (computedHeight > (0.9 * height)) {
-      computedHeight = 0.8 * height;
-      computedWidth = (16 / 9) * computedHeight;
+    let prevWritesLocked = false;
+    try {
+      const stored = JSON.parse(
+        sessionStorage.getItem('uiStateBeforeVideo'),
+      );
+      prevWritesLocked = 'writesLocked' in stored ? stored.writesLocked : false;
+    } catch {
+      sessionStorage.setItem(
+        'uiStateBeforeVideo',
+        JSON.stringify({ }),
+      );
     }
-    const opts = {
-      width: computedWidth,
-      height: computedHeight,
-      playerVars: {
-        autoplay: !isLightbox ? false : !!autoplay,
-        mute: 0,
-      },
-    };
-    const elem = (
+
+    let keepAliveInterval;
+    if (isActiveCard && !isRewatch && !prevWritesLocked) {
+      captureStateAndPrepForPlay(true);
+      keepAliveInterval = setInterval(() => dispatch(keepAlive()), 30000);
+    }
+    return () => (keepAliveInterval ? clearInterval(keepAliveInterval) : null);
+  }, []);
+
+  // then, when the video ends, return to the state it was at
+  const resetState = () => {
+    const {
+      showTranscript: oldShowTranscript,
+      micOn: oldMicOn,
+    } = JSON.parse(sessionStorage.getItem('uiStateBeforeVideo'));
+    sessionStorage.setItem(
+      'uiStateBeforeVideo',
+      JSON.stringify({ }),
+    );
+    dispatch(setShowTranscript(oldShowTranscript));
+    dispatch(setMicOn({ micOn: oldMicOn }));
+    dispatch(setActiveCards({ activeCards: [] }));
+  };
+
+  const handleEnd = () => {
+    if (isRewatch === false) {
+      setPlayPushed(false);
+      dispatch(sendTextMessage({ text: 'I\'m done watching!' }));
+    } else resetState();
+  };
+
+  const activeVideo = () => (playPushed === true || isRewatch === true ? (
+    <div className="lightbox">
       <div>
-        {/* capture focus to enable play/pause functionality */}
-        <input
-          className="visually-hidden"
-          aria-label="press space to play or pause video"
-          type="text"
-          ref={ytRef}
-          onChange={handleKeyboardInput}
-          value=""
-        />
         <YouTube
           videoId={videoId}
-          opts={opts}
-          containerClassName="video-container"
-          onEnd={endVideo}
-          onStateChange={(e) => {
-            const { data: playerState } = e;
-            if (playerState === -1) setIsLightbox(true);
+          opts={{
+            playerVars: {
+              autoplay: 1,
+            },
           }}
-          onReady={(e) => {
-            ytTarget = e.target;
-            if (isLightbox) ytRef.current.focus();
+          onReady={() => {
+            captureStateAndPrepForPlay();
           }}
+          onEnd={handleEnd}
         />
+        <div className="d-flex align-items-center">
+          <small className="me-1">
+            The Digital Person is paused while you watch this video and will not
+            respond to your voice.
+          </small>
+          <button
+            className="btn btn-outline-dark float-end"
+            type="button"
+            onClick={handleEnd}
+          >
+            Exit
+          </button>
+        </div>
       </div>
-    );
-
-    setYTElem(elem);
-    if (isLightbox) setMicWasOn(micWasOn);
-    if (!micWasOn && isLightbox) {
-      dispatch(setMicOn({ micOn: false }));
-    }
-    return () => {
-      setYTElem(null);
-      if (isLightbox) {
-        dispatch(setMicOn({ micOn: micWasOn }));
-      }
-    };
-  }, [isLightbox]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (isLightbox) dispatch(keepAlive());
-    }, 10000);
-    return () => clearInterval(interval);
-  });
-
-  if (isLightbox === false) {
-    return <div ref={containerRef}>{YTElem}</div>;
-  }
+    </div>
+  ) : (
+    <div
+      className="video-thumbnail"
+      style={{ backgroundImage: `url(${thumbnailURL})` }}
+    >
+      <button
+        className="btn video-play-button"
+        type="button"
+        onClick={() => {
+          dispatch(stopSpeaking());
+          setPlayPushed(true);
+        }}
+      >
+        ▶️
+      </button>
+    </div>
+  ));
 
   return (
-    <div ref={containerRef} className={`${className} ${fadeOut === true ? 'fade' : ''}`} key={videoId}>
-      <div>
-        <div className="row">
-          {YTElem}
+    <div className={className}>
+      {inTranscript === true ? (
+        <div
+          className="video-thumbnail"
+          style={{ backgroundImage: `url(${thumbnailURL})` }}
+        >
+          <button
+            className="btn video-play-button"
+            type="button"
+            onClick={() => {
+              captureStateAndPrepForPlay(true);
+              dispatch(
+                setActiveCards({
+                  activeCards: [
+                    { type: 'video', data: { videoId, isRewatch: true } },
+                  ],
+                }),
+              );
+            }}
+          >
+            ▶️
+          </button>
         </div>
-        <div className="row d-flex align-items-center justify-content-between mt-2 video-controlblock">
-          <span className="text-white text-center text-md-start col-md-auto mb-2">
-            The Digital Person is paused while you watch this video and
-            will not respond to your voice.
-          </span>
-          <div className="d-flex col-md-auto justify-content-center mt-2 mt-md-0">
-            <button type="button" className="btn btn-outline-light" onClick={endVideo}>I&apos;m done watching</button>
-          </div>
-        </div>
-      </div>
+      ) : activeVideo()}
     </div>
   );
 }
@@ -157,38 +185,35 @@ Video.defaultProps = {
 };
 
 export default styled(Video)`
-  position: absolute;
-  z-index: 5000;
-  left: 0;
-  top: 0;
+  .video-thumbnail {
+    width: 25rem;
+    aspect-ratio: 16 / 9;
+    background-size: cover;
+    background-position: center;
 
-  width: 100%;
-  height: 100%;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  background: rgba(0,0,0,0.9);
-  backdrop-filter: blur(3px);
-
-  .sm-fade {
-    transition: opacity 0.5s;
-  }
-  .sm-fade-out {
-    opacity: 0;
-  }
-
-  span, button {
-    font-size: 1.2rem;
-  }
-
-  .video-container {
     display: flex;
     justify-content: center;
+    align-items: center;
   }
-  .video-controlblock {
-    max-width: 90%;
-    margin: 0px auto;
+  .video-play-button {
+    background-color: #f00;
+    color: #FFF;
+    height: 2.5rem;
+    aspect-ratio: 1;
+  }
+
+  .lightbox {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(3px);
   }
 `;

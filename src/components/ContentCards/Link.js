@@ -20,7 +20,7 @@ function Link({ data, className }) {
             {/* open link in new tab */}
             <a href={url} className="btn btn-primary" target="_blank" rel="noreferrer">
               Visit Link
-              <ArrowUpRightSquare />
+              <ArrowUpRightSquare className="ms-1" />
             </a>
           </div>
         </div>
@@ -44,7 +44,7 @@ export default styled(Link)`
   width: 20rem;
 
   img {
-    width: auto;
+    width: 100%;
     height: auto;
   }
 `;

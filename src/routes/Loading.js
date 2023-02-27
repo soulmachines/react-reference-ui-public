@@ -16,8 +16,21 @@ function Loading({
     loading,
     error,
     requestedMediaPerms,
+    connectionState,
   } = useSelector(({ sm }) => (sm));
   const dispatch = useDispatch();
+
+  const {
+    percentageLoaded, name, currentStep, totalSteps,
+  } = connectionState;
+
+  const stateNameMap = {
+    SearchingForDigitalPerson: 'Searching For Digital Person',
+    DownloadingAssets: 'Downloading Assets',
+    ConnectingToDigitalPerson: 'Connecting To Digital Person',
+  };
+  // map name vals to plain english if we know the state name, otherwise just display the name as is
+  const stateName = (name in stateNameMap) ? stateNameMap[name] : name;
 
   // // pull querystring to see if we are displaying an error
   // // (app can redirect to /loading on fatal err)
@@ -46,7 +59,9 @@ function Loading({
       </div>
       <div className="row">
         <div className="d-flex align-items-center justify-content-between">
-          <div style={{ width: '44px', height: '1px' }} />
+          <button className="btn-unstyled" type="button" style={{ opacity: 0, width: '44px' }}>
+            {' '}
+          </button>
           <h4>
             Before you begin.
           </h4>
@@ -106,7 +121,7 @@ function Loading({
           </button>
         </div>
         <div className="mt-0 mb-2">
-          Digital Person A will listen to whatever you say.
+          Cory will listen to whatever you say.
           Other options, like typing or choosing your responses, are also available.
         </div>
       </div>
@@ -123,11 +138,14 @@ function Loading({
           <h4>
             What you can talk about.
           </h4>
-          <div style={{ width: '44px', height: '1px' }} />
+          <button className="btn-unstyled" type="button" style={{ opacity: 0, width: '44px' }}>
+            {' '}
+          </button>
         </div>
         <div className="mt-0 mb-2">
-          You can chat about dolor sit amet, consectetur adipiscing elit.
-          Sed volutpat eu nulla ac suscipit. Sed vel rhoncus neque, et sollicitudin sem.
+          You can explore the features of my UI, see examples of the different
+          supporting content I can show, or hear about the latest updates to
+          the UI template that I&apos;m using.
         </div>
       </div>
     </div>,
@@ -147,12 +165,12 @@ function Loading({
       <Header />
       <div className="container">
         <div className="row justify-content-center align-items-center">
-          <div className="col-6 text-center">
+          <div className="col-11 col-md-6 text-center mobile">
             <div className="row">
               {pages[page]}
             </div>
             <div className="row justify-content-center">
-              <div className="d-grid col-3">
+              <div>
                 {
                   page < pages.length - 1
                     ? (
@@ -160,6 +178,7 @@ function Loading({
                         className="btn primary-accent m-2"
                         type="button"
                         onClick={() => setPage(page + 1)}
+                        style={{ backgroundColor: '#3C3C3C', border: '2px solid #3C3C3C' }}
                       >
                         Next
                       </button>
@@ -171,12 +190,12 @@ function Loading({
             <div className="row">
               <div>
                 <button
-                  className={`${connected ? 'btn btn-dark' : 'btn-unstyled'} m-2`}
+                  className={`${connected || page >= pages.length - 1 ? 'btn btn-dark connected-button' : 'btn-unstyled unconnected-button'} m-2`}
                   type="button"
                   disabled={skip}
                   onClick={redirectToVideoOnConnect}
                 >
-                  { connected ? 'Chat Now' : 'Skip' }
+                  { connected || page >= pages.length - 1 ? 'Chat Now' : 'S K I P' }
                   { !connected && skip
                     ? (
                       <div className="ms-1 spinner-border spinner-border-sm text-secondary" role="status">
@@ -193,6 +212,32 @@ function Loading({
                 {pages.map((_, i) => (<div key={`${i}-${i === page}`} className="d-inline-block p-1">{i === page ? <div className="closed-dot" /> : <div className="open-dot" />}</div>))}
               </div>
             </div>
+            {
+              percentageLoaded < 100
+                ? (
+                  <div>
+                    <div className="progress mt-1">
+                      <div
+                        className="progress-bar"
+                        role="progressbar"
+                        style={{ width: `${percentageLoaded}%` }}
+                        aria-label={`${stateName} (${currentStep} out of ${totalSteps - 1})`}
+                        aria-valuenow={percentageLoaded}
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                      />
+                    </div>
+                    { stateName !== ''
+                      ? (
+                        <pre>
+                          {`${stateName} (${currentStep} out of ${totalSteps - 1} steps)`}
+                        </pre>
+                      )
+                      : null}
+                  </div>
+                )
+                : null
+            }
           </div>
         </div>
       </div>
@@ -217,9 +262,23 @@ export default styled(Loading)`
   &>.container>.row {
     height: calc(100vh - ${headerHeight});
   }
+  .mobile {
+    @media (max-width: 400px) {
+      width: 300px;
+    }
+  .connected-button {
+    background-color: #3C3C3C;
+    border: 2px solid #3C3C3C;
+  }
+
+  .unconnected-button {
+    font-size: 14px;
+    font-family: "Helvetica Neue";
+  }
 
   .tutorial-icon {
     width: 180px;
+    height: 180px;
     aspect-ratio: 1;
     border-radius: 50%;
 
