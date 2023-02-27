@@ -59,7 +59,9 @@ function Loading({
       </div>
       <div className="row">
         <div className="d-flex align-items-center justify-content-between">
-          <div style={{ width: '44px', height: '1px' }} />
+          <button className="btn-unstyled" type="button" style={{ opacity: 0, width: '44px' }}>
+            {' '}
+          </button>
           <h4>
             Before you begin.
           </h4>
@@ -136,7 +138,9 @@ function Loading({
           <h4>
             What you can talk about.
           </h4>
-          <div style={{ width: '44px', height: '1px' }} />
+          <button className="btn-unstyled" type="button" style={{ opacity: 0, width: '44px' }}>
+            {' '}
+          </button>
         </div>
         <div className="mt-0 mb-2">
           You can explore the features of my UI, see examples of the different
@@ -161,7 +165,7 @@ function Loading({
       <Header />
       <div className="container">
         <div className="row justify-content-center align-items-center">
-          <div className="col-6 text-center mobile">
+          <div className="col-11 col-md-6 text-center mobile">
             <div className="row">
               {pages[page]}
             </div>

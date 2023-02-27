@@ -15,7 +15,12 @@ const returnCardError = (errMsg) => {
 };
 
 function ContentCardSwitch({
-  activeCards, dispatchActiveCards, card, index, inTranscript,
+  activeCards,
+  dispatchActiveCards,
+  card,
+  index,
+  inTranscript,
+  triggerScrollIntoView,
 }) {
   const componentMap = {
     options: {
@@ -44,25 +49,42 @@ function ContentCardSwitch({
     },
   };
 
-  if ('type' in card === false) return returnCardError('payload missing type key! component key has been depreciated.');
-  if (card === undefined) return returnCardError('unknown content card name! did you make a typo in @showCards()?');
+  if ('type' in card === false) {
+    return returnCardError(
+      'payload missing type key! component key has been depreciated.',
+    );
+  }
+  if (card === undefined) {
+    return returnCardError(
+      'unknown content card name! did you make a typo in @showCards()?',
+    );
+  }
   const { data, id, type: componentName } = card;
 
-  if (componentName in componentMap === false) return returnCardError(`component ${componentName} not found in componentMap!`);
+  if (componentName in componentMap === false) {
+    return returnCardError(
+      `component ${componentName} not found in componentMap!`,
+    );
+  }
   const { element: Element, removeOnClick } = componentMap[componentName];
 
   let removeElem;
   if (index) {
-  // for some cards, we want them to be hidden after the user interacts w/ them
-  // for others, we don't
+    // for some cards, we want them to be hidden after the user interacts w/ them
+    // for others, we don't
     removeElem = (e) => {
-    // we need to write our own handler, since this is not an interactive element by default
+      // we need to write our own handler, since this is not an interactive element by default
       if (e.type === 'click' || e.code === 'enter') {
-        const newActiveCards = [...activeCards.slice(0, index), ...activeCards.slice(index + 1)];
+        const newActiveCards = [
+          ...activeCards.slice(0, index),
+          ...activeCards.slice(index + 1),
+        ];
         dispatchActiveCards(newActiveCards);
       }
     };
-  } else { removeElem = null; }
+  } else {
+    removeElem = null;
+  }
   const elem = (
     // disable no static element interactions bc if removeOnClick is true,
     // elem should have interactive children
@@ -80,6 +102,7 @@ function ContentCardSwitch({
         triggerRemoval={removeElem}
         inTranscript={inTranscript}
         transcriptIndex={index}
+        triggerScrollIntoView={triggerScrollIntoView}
       />
     </div>
   );
@@ -87,20 +110,24 @@ function ContentCardSwitch({
 }
 
 ContentCardSwitch.propTypes = {
-  activeCards: PropTypes.arrayOf(PropTypes.shape({
-    type: PropTypes.string,
-    // eslint-disable-next-line react/forbid-prop-types
-    data: PropTypes.object,
-  })).isRequired,
+  activeCards: PropTypes.arrayOf(
+    PropTypes.shape({
+      type: PropTypes.string,
+      // eslint-disable-next-line react/forbid-prop-types
+      data: PropTypes.object,
+    }),
+  ).isRequired,
   dispatchActiveCards: PropTypes.func.isRequired,
   inTranscript: PropTypes.bool,
   // eslint-disable-next-line react/forbid-prop-types
   card: PropTypes.object.isRequired,
   index: PropTypes.number.isRequired,
+  triggerScrollIntoView: PropTypes.func,
 };
 
 ContentCardSwitch.defaultProps = {
   inTranscript: false,
+  triggerScrollIntoView: () => console.warn('triggerScrollIntoView is not passed in as a prop—this content card will not be able to influence transcript scrolling!'),
 };
 
 const mapStateToProps = ({ sm }) => ({

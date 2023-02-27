@@ -1,4 +1,4 @@
-import ReactGA from 'react-ga';
+import ReactGA from 'react-ga4';
 import React, { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {
@@ -18,15 +18,17 @@ import ContentCardTest from './routes/ContentCardTest';
 
 // only init google analytics if a tracking ID is defined in env
 const { REACT_APP_GA_TRACKING_ID } = process.env;
-if (REACT_APP_GA_TRACKING_ID) ReactGA.initialize(REACT_APP_GA_TRACKING_ID);
+if (REACT_APP_GA_TRACKING_ID) {
+  ReactGA.initialize(REACT_APP_GA_TRACKING_ID, { debug: true });
+  console.log(`initializing google analytics with tracking ID ${REACT_APP_GA_TRACKING_ID}`);
+} else console.warn('no google analytics tracking ID provided!');
 
 // make GA aware of what pages people navigate to in react router
 const LinkGAtoRouter = withRouter(({ history }) => {
   history.listen((location) => {
     ReactGA.set({ page: location.pathname });
-    ReactGA.pageview(location.pathname);
   });
-  return <div />;
+  return null;
 });
 
 function App() {
@@ -34,6 +36,15 @@ function App() {
   const [ignoreError, setIgnoreError] = useState(false);
   // every time error changes, set ignore error to false
   useEffect(() => setIgnoreError(false), [error]);
+
+  // send SM session ID to google analytics when we connect
+  if (REACT_APP_GA_TRACKING_ID) {
+    const sessionID = useSelector(({ sm }) => sm.sessionID);
+    useEffect(() => {
+      if (sessionID !== '') ReactGA.gtag('event', 'sm_session_id', { sm_session_id: sessionID });
+    }, [sessionID]);
+  }
+
   return (
     <Router>
       { error && !ignoreError

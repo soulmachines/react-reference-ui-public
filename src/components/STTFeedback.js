@@ -53,7 +53,7 @@ function STTFeedback({ className }) {
 
   return (
     <div className={className}>
-      {feedbackDisplay}
+      {hideInputDisplay ? null : feedbackDisplay}
     </div>
   );
 }

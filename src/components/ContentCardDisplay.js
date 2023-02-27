@@ -3,26 +3,36 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { setActiveCards, animateCamera } from '../store/sm/index';
-import { calculateCameraPosition } from '../utils/camera';
+// uncomment if using manual camera moves
+// import { calculateCameraPosition } from '../utils/camera';
 import Transcript from './ContentCards/Transcript';
 import ContentCardSwitch from './ContentCardSwitch';
 import breakpoints from '../utils/breakpoints';
 
 function ContentCardDisplay({
-  activeCards, dispatchAnimateCamera, videoWidth, videoHeight, showTranscript, className, connected,
+  activeCards,
+  // uncomment if using manual camera moves
+  // dispatchAnimateCamera,
+  // videoWidth,
+  // videoHeight,
+  showTranscript,
+  className,
+  connected,
+  inTranscript,
 }) {
   if (!activeCards) return null;
   const CardDisplay = activeCards.map((c, index) => (
     <div className="mb-2" key={JSON.stringify(c)}>
-      <ContentCardSwitch card={c} index={index} />
+      <ContentCardSwitch card={c} index={index} inTranscript={inTranscript} />
     </div>
   ));
 
   const animateCameraToFitCards = () => {
     if (connected) {
-      if ((activeCards.length > 0 || showTranscript === true) && videoWidth >= breakpoints.md) {
-        dispatchAnimateCamera(calculateCameraPosition(videoWidth, videoHeight, 0.7));
-      } else dispatchAnimateCamera(calculateCameraPosition(videoWidth, videoHeight, 0.5));
+      // uncomment if using manual camera moves
+      // if ((activeCards.length > 0 || showTranscript === true) && videoWidth >= breakpoints.md) {
+      //   dispatchAnimateCamera(calculateCameraPosition(videoWidth, videoHeight, 0.7));
+      // } else dispatchAnimateCamera(calculateCameraPosition(videoWidth, videoHeight, 0.5));
     }
   };
 
@@ -37,11 +47,13 @@ function ContentCardDisplay({
 
   return (
     <div className={className}>
-      { showTranscript ? (
+      {showTranscript ? (
         <div data-sm-content>
           <Transcript />
         </div>
-      ) : CardDisplay }
+      ) : (
+        CardDisplay
+      )}
     </div>
   );
 }
@@ -49,12 +61,18 @@ function ContentCardDisplay({
 ContentCardDisplay.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   activeCards: PropTypes.arrayOf(PropTypes.object).isRequired,
-  dispatchAnimateCamera: PropTypes.func.isRequired,
-  videoWidth: PropTypes.number.isRequired,
-  videoHeight: PropTypes.number.isRequired,
+  // uncomment if using manual camera moves
+  // dispatchAnimateCamera: PropTypes.func.isRequired,
+  // videoWidth: PropTypes.number.isRequired,
+  // videoHeight: PropTypes.number.isRequired,
   showTranscript: PropTypes.bool.isRequired,
   className: PropTypes.string.isRequired,
   connected: PropTypes.bool.isRequired,
+  inTranscript: PropTypes.bool,
+};
+
+ContentCardDisplay.defaultProps = {
+  inTranscript: false,
 };
 
 const StyledContentCardDisplay = styled(ContentCardDisplay)`
@@ -66,7 +84,7 @@ const StyledContentCardDisplay = styled(ContentCardDisplay)`
     display: none;
   }
 
-  // make this smaller 
+  // make this smaller
   max-height: 40vh;
   @media(min-width: ${breakpoints.md}px) {
     max-height: 100%;

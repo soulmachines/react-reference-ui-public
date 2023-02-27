@@ -57,8 +57,10 @@ export default styled(Header)`
     margin-top: 20px;
 
     /* height constrain logo image */
-    height: calc(0.6 * ${headerHeight});
-    width: auto;
+    // height: calc(0.4 * ${headerHeight});
+    // width: auto;
+    height: auto;
+    max-width: 30vw;
 
     // Medium devices (tablets, 768px and up)
     @media (min-width: 768px) {

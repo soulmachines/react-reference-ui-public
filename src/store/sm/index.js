@@ -33,6 +33,7 @@ const initialState = {
   tosAccepted: false,
   connected: false,
   disconnected: false,
+  sessionID: '',
   // use startedAt to measure if someone starts a session and then walks away
   startedAt: Date.now(),
   presumeTimeout: false,
@@ -142,11 +143,12 @@ export const animateCamera = createAsyncThunk('sm/animateCamera', (/* { options,
 
 // handles both manual disconnect or automatic timeout due to inactivity
 export const disconnect = createAsyncThunk('sm/disconnect', async (args, thunk) => {
-  if (scene) scene.disconnect();
+  const { loading } = thunk.getState();
+  if (scene && loading === false) scene.disconnect();
   // wait 500ms so dispatch logic has time to run and communicate w/ persona server
   setTimeout(() => {
     thunk.dispatch(actions.disconnect());
-  }, 500);
+  }, 1);
 });
 
 export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) => {
@@ -307,23 +309,34 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
             const { arguments: featureArgs } = message.body;
             const feature = featureArgs[0];
             const featureState = featureArgs[1];
+            console.log(feature, featureState);
             switch (feature) {
               case ('camera'): {
-                if (featureState === 'on') thunk.dispatch(actions.setCamera({ cameraOn: false }));
-                else if (featureState === 'off') thunk.dispatch(actions.setCamera({ cameraOn: true }));
+                console.log('camera');
+                if (featureState === 'on') thunk.dispatch(actions.setCameraOn({ cameraOn: true }));
+                else if (featureState === 'off') thunk.dispatch(actions.setCameraOn({ cameraOn: false }));
                 else console.error(`state ${featureState} not supported by @feature(microphone)!`);
                 break;
               }
               case ('microphone'): {
-                if (featureState === 'on') thunk.dispatch(actions.setMic({ micOn: true }));
-                else if (featureState === 'off') thunk.dispatch(actions.setMic({ micOn: false }));
+                console.log('mic');
+                if (featureState === 'on') thunk.dispatch(actions.setMicOn({ micOn: true }));
+                else if (featureState === 'off') thunk.dispatch(actions.setMicOn({ micOn: false }));
                 else console.error(`state ${featureState} not supported by @feature(microphone)!`);
                 break;
               }
               case ('transcript'): {
+                console.log('transcript');
                 if (featureState === 'on') thunk.dispatch(actions.setShowTranscript(true));
                 else if (featureState === 'off') thunk.dispatch(actions.setShowTranscript(false));
                 else console.error(`state ${featureState} not supported by @feature(transcript)!`);
+                break;
+              }
+              case ('audio'): {
+                console.log('audio');
+                if (featureState === 'on') thunk.dispatch(actions.setOutputMute({ isOutputMuted: false }));
+                else if (featureState === 'off') thunk.dispatch(actions.setOutputMute({ isOutputMuted: true }));
+                else console.error(`state ${featureState} not supported by @feature(audio)!`);
                 break;
               }
               default: {
@@ -473,7 +486,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
       maxRetries: 20,
       delayMs: 500,
     };
-    const [err] = await to(scene.connect(url, '', jwt, retryOptions));
+    const [err, sessionID] = await to(scene.connect(url, '', jwt, retryOptions));
     if (err) {
       switch (err.name) {
         case 'notSupported':
@@ -485,6 +498,8 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
         }
       }
     }
+    // pass session ID to state so we can coordinate analytics w/ session data
+    thunk.dispatch(actions.setSessionID({ sessionID }));
     // we can't disable logging until after the connection is established
     // logging is pretty crowded, not recommended to enable
     // unless you need to debug emotional data from webcam
@@ -533,6 +548,10 @@ const smSlice = createSlice({
   name: 'sm',
   initialState,
   reducers: {
+    setSessionID: (state, { payload }) => ({
+      ...state,
+      sessionID: payload.sessionID,
+    }),
     setConnectionState: (state, { payload }) => ({
       ...state,
       connectionState: {
@@ -545,7 +564,7 @@ const smSlice = createSlice({
     }),
     setShowTranscript: (state, { payload }) => ({
       ...state,
-      showTranscript: payload?.showTranscript || !state.showTranscript,
+      showTranscript: payload !== undefined ? payload : !state.showTranscript,
     }),
     setRequestedMediaPerms: (state, { payload }) => {
       const requestedMediaPerms = {
@@ -610,6 +629,10 @@ const smSlice = createSlice({
       ...state,
       intermediateUserUtterance: payload.text,
       userSpeaking: true,
+    }),
+    clearTranscript: (state) => ({
+      ...state,
+      transcript: [],
     }),
     addConversationResult: (state, { payload }) => {
       // we record both text and content cards in the transcript
@@ -686,9 +709,6 @@ const smSlice = createSlice({
       const timeDiff = new Date(Date.now()) - Date.parse(timestamp);
       // if over 4 minutes old (min timeout thresh. is 5), presume the user timed out
       const presumeTimeout = timeDiff > 240000;
-      console.log({
-        presumeTimeout, startedAt, timeDiff, timestamp, lastUserMessage, transcript,
-      });
       return {
         // completely reset SM state on disconnect, except for errors
         ...initialState,
@@ -699,7 +719,8 @@ const smSlice = createSlice({
       };
     },
     keepAlive: () => {
-      scene.keepAlive();
+      if (scene) scene.keepAlive();
+      else console.error('can\'t call keepAlive, scene is not initiated!');
     },
     sendEvent: (state, { payload }) => {
       const { eventName, payload: eventPayload, kind } = payload;
@@ -766,6 +787,8 @@ export const {
   keepAlive,
   sendEvent,
   clearActiveCards,
+  addConversationResult,
+  clearTranscript,
 } = smSlice.actions;
 
 export default smSlice.reducer;

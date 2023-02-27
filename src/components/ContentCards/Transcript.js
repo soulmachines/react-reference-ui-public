@@ -6,6 +6,20 @@ import ContentCardSwitch from '../ContentCardSwitch';
 import { primaryAccent } from '../../globalStyle';
 
 function Transcript({ className, transcript }) {
+  // scroll to bottom of transcript whenever it updates
+  let scrollRef;
+  const [isMounting, setIsMounting] = useState(true);
+  useEffect(() => {
+    setIsMounting(false);
+    return () => setIsMounting(true);
+  });
+  // state value is arbitrary, we just need it to change to trigger the effect hook
+  const [triggerScrollIntoView, setTriggerScroll] = useState(false);
+  useEffect(() => {
+    scrollRef.scrollIntoView({ behavior: isMounting ? 'auto' : 'smooth' });
+    setTriggerScroll(false);
+  }, [transcript, triggerScrollIntoView]);
+
   const transcriptDisplay = transcript.map(({
     source, text, card, timestamp,
   }, index) => {
@@ -16,6 +30,7 @@ function Transcript({ className, transcript }) {
           card={card}
           index={index}
           key={timestamp}
+          triggerScrollIntoView={() => setTriggerScroll(true)}
           inTranscript
         />
       );
@@ -37,17 +52,6 @@ function Transcript({ className, transcript }) {
     );
   });
 
-  let scrollRef;
-  const [isMounting, setIsMounting] = useState(true);
-  useEffect(() => {
-    setIsMounting(false);
-    return () => setIsMounting(true);
-  });
-  // scroll to bottom of transcript whenever it updates
-  useEffect(() => {
-    scrollRef.scrollIntoView({ behavior: isMounting ? 'auto' : 'smooth' });
-  }, [transcript]);
-
   return (
     <div className={className}>
       <div className="transcript-list-group">
@@ -58,7 +62,9 @@ function Transcript({ className, transcript }) {
               No items to show, say something!
             </li>
           )}
-        <div ref={(el) => { scrollRef = el; }} style={{ clear: 'both' }} />
+        {/* height added because safari doesn't display zero height elems,
+        so the scroll behavior doesn't work */}
+        <div ref={(el) => { scrollRef = el; }} style={{ clear: 'both', height: '1px' }} />
       </div>
     </div>
   );

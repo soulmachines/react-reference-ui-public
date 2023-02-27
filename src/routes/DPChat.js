@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { createRef, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
@@ -21,6 +21,7 @@ function DPChat({
 }) {
   const {
     connected,
+    loading,
     disconnected,
     error,
     showTranscript,
@@ -56,7 +57,7 @@ function DPChat({
     } else {
       console.log('cleanup function invoked!');
       window.removeEventListener('resize', handleResize);
-      dispatch(disconnect());
+      if (connected === true && loading === false) dispatch(disconnect());
     }
   };
 
@@ -74,6 +75,14 @@ function DPChat({
     console.log('cleaning up');
     cleanup();
   };
+
+  // content card display is dependent on remaining space between header and footer
+  // there might be a better way to do this w/ flexbox
+  const ccDisplaRef = createRef();
+  const [ccDisplayHeight, setCCDisplayHeight] = useState('auto');
+  useEffect(() => {
+    setCCDisplayHeight(ccDisplaRef.current.clientHeight);
+  }, [ccDisplaRef]);
 
   return (
     <div className={className}>
@@ -99,47 +108,40 @@ function DPChat({
         </div>
         {/* middle row */}
         <div
-          className="row d-flex justify-content-end align-items-end flex-grow-1 ps-3 pe-3"
+          className="row d-flex justify-content-end align-items-center flex-grow-1 ps-3 pe-3"
           style={{ overflow: 'scroll' }}
+          ref={ccDisplaRef}
         >
-          <div className="col col-md-5">
-            <ContentCardDisplay />
+          <div className="col col-md-5 d-flex align-items-end align-items-md-center" style={{ height: `${ccDisplayHeight}px` || 'auto' }}>
+            <div>
+              <ContentCardDisplay />
+            </div>
           </div>
         </div>
         {/* bottom row */}
         <div>
-          {
-            isOutputMuted
-              ? (
-                <div className="row">
-                  <div className="col text-center">
-                    <Captions />
-                  </div>
-                </div>
-              )
-              : null
-          }
+          {isOutputMuted ? (
+            <div className="row">
+              <div className="col text-center">
+                <Captions />
+              </div>
+            </div>
+          ) : null}
           <div className="row">
             <div className="d-flex justify-content-center m-2">
               <STTFeedback />
             </div>
           </div>
-          {
-          showTranscript === true || micOn === false
-            ? (
-              <div className="row justify-content-center">
-                <div className="col-md-8 col-lg-5 p-3">
-                  <TextInput />
-                </div>
+          {showTranscript === true || micOn === false ? (
+            <div className="row justify-content-center">
+              <div className="col-md-8 col-lg-5 p-3">
+                <TextInput />
               </div>
-            )
-            : null
-        }
+            </div>
+          ) : null}
         </div>
       </div>
-      {
-        connected ? <PersonaVideo /> : null
-      }
+      {connected ? <PersonaVideo /> : null}
     </div>
   );
 }
@@ -152,6 +154,7 @@ export default styled(DPChat)`
   height: 100vh;
 
   .video-overlay {
+    overflow: hidden;
     position: absolute;
     top: 0;
     right: 0;

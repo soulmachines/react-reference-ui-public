@@ -25,32 +25,36 @@ function Landing({ className }) {
             <div className="col-12 col-lg-6">
               <div className="row" style={{ marginBottom: '9px' }}>
                 <div>
-                  <h1 className="fw-bol">
-                    Meet Digital Person A.
-                  </h1>
+                  <h1 className="fw-bol">Meet Digital Person A.</h1>
                 </div>
               </div>
               <div className="row">
                 <div>
                   <h4 className="fw-light" style={{ marginBottom: '31px' }}>
-                    Aliquam dapibus malesuada dignissim. Aliquam eu tortor
-                    eu arcu tincidunt vulputate.
+                    Briefly describe how your Digital Person can help users.
                   </h4>
                 </div>
               </div>
               <div className="row" style={{ marginBottom: '36px' }}>
                 <div>
                   <div className="form-check form-switch">
-                    <label className="form-check-label d-flex align-items-center" htmlFor="micPermSwitch">
+                    <label
+                      className="form-check-label d-flex align-items-center"
+                      htmlFor="micPermSwitch"
+                    >
                       <input
-                        className={`shadow form-check-input mic-switch switch ${mic ? 'status-checked' : 'status-unchecked'}`}
+                        className={`shadow form-check-input mic-switch switch ${
+                          mic ? 'status-checked' : 'status-unchecked'
+                        }`}
                         type="checkbox"
                         role="switch"
                         id="micPermSwitch"
                         onChange={() => dispatch(setRequestedMediaPerms({ mic: !mic }))}
                         checked={mic}
                       />
-                      <div className="d-block ms-2">Use your microphone so I can hear you.</div>
+                      <div className="d-block ms-2">
+                        Use your microphone so I can hear you.
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -58,36 +62,43 @@ function Landing({ className }) {
               <div className="row" style={{ marginBottom: '52px' }}>
                 <div>
                   <div className="form-check form-switch">
-                    <label className="form-check-label d-flex align-items-center" htmlFor="cameraPermSwitch">
+                    <label
+                      className="form-check-label d-flex align-items-center"
+                      htmlFor="cameraPermSwitch"
+                    >
                       <input
-                        className={`shadow form-check-input video-switch switch ${camera ? 'status-checked' : 'status-unchecked'}`}
+                        className={`shadow form-check-input video-switch switch ${
+                          camera ? 'status-checked' : 'status-unchecked'
+                        }`}
                         type="checkbox"
                         role="switch"
                         id="micPermSwitch"
                         onChange={() => dispatch(setRequestedMediaPerms({ camera: !camera }))}
                         checked={camera}
                       />
-                      <div className="d-block ms-2">Use your camera so we can chat face-to-face.</div>
+                      <div className="d-block ms-2">
+                        Use your camera so we can chat face-to-face.
+                      </div>
                     </label>
                   </div>
                 </div>
               </div>
               <div className="row" style={{ marginBottom: '60px' }}>
                 <div>
-                  <Link to="/loading" className="shadow btn primary-accent fs-3" type="button">
+                  <Link
+                    to="/loading"
+                    className="shadow btn primary-accent fs-3"
+                    type="button"
+                  >
                     Chat with Digital Person A
                   </Link>
                 </div>
               </div>
               <div className="row">
                 <div>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  Sed volutpat eu nulla ac suscipit. Sed vel rhoncus neque, et sollicitudin sem.
-                  Suspendisse eget enim arcu. Morbi lacinia tempus tempus. Integer eget justo velit.
+                  Link terms & conditions or company website here:
                   {' '}
-                  <a href="https://example.com">
-                    www.linkgoeshere.com
-                  </a>
+                  <a href="https://example.com">www.example.com</a>
                   .
                 </div>
               </div>
@@ -102,13 +113,9 @@ function Landing({ className }) {
               right: '20px',
             }}
           >
-            <div
-              className="d-flex align-items-center justify-content-center fs-4"
-            >
+            <div className="d-flex align-items-center justify-content-center fs-4">
               <CameraVideoFill size={26} />
-              <span className="ps-1">
-                +
-              </span>
+              <span className="ps-1">+</span>
               <MicFill size={26} />
             </div>
             <div className="text-center fst-italic">
@@ -130,9 +137,9 @@ export default styled(Landing)`
     min-height: 100vh;
 
     background: ${landingBackgroundImage ? `url(${landingBackgroundImage})` : ''} ${landingBackgroundColor ? `${landingBackgroundColor};` : ''};
-    background-size: auto 50%;
+    background-size: auto 60%;
     background-repeat: no-repeat;
-    background-position: center bottom;
+    background-position: bottom center;
 
     @media (min-width: ${breakpoints.lg}px) {
       background-size: 60% auto;
@@ -144,8 +151,9 @@ export default styled(Landing)`
     display: flex;
 
     &>div {
-      background-color: ${Color(landingBackgroundColor).alpha(0.8)};
-      border: 1px solid ${Color(landingBackgroundColor).darken(0.12)};
+      background-color: ${Color(landingBackgroundColor).alpha(0.5)};
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0,0,0,0.1);
       padding: 1rem;
       border-radius: 5px;
 
