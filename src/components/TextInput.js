@@ -30,6 +30,8 @@ function TextInput({ className }) {
           <button
             className="btn send-button"
             type="submit"
+            aria-label="Submit"
+            data-tip="Submit"
           >
             <Send />
           </button>
