@@ -106,6 +106,13 @@ const initialState = {
   config: {
     autoClearCards: true,
   },
+  closeMarker: false,
+  highlightMic: false,
+  highlightMute: false,
+  highlightChat: false,
+  highlightMenu: false,
+  highlightCamera: false,
+  highlightSkip: false,
 };
 
 // host actions object since we need the types to be available for
@@ -199,6 +206,7 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
         // send url updates for react app as PAGE_METADATA intents to NLP
         pageUrl: true,
       },
+      stopSpeakingWhenNotVisible: false,
     };
     if (AUTH_MODE === 0) sceneOpts.apiKey = API_KEY;
     scene = new Scene(sceneOpts);
@@ -357,6 +365,48 @@ export const createScene = createAsyncThunk('sm/createScene', async (_, thunk) =
                 // "easter egg" speech marker, prints ASCII "summoned meatball" to console
                 case ('triggerMeatball'): {
                   console.log(meatballString);
+                  break;
+                }
+                case ('highlightMic'): {
+                  thunk.dispatch(actions.setHighlightMic({ highlightMic: true }));
+                  setTimeout(() => {
+                    thunk.dispatch(actions.setHighlightMic({ highlightMic: false }));
+                  }, 3000);
+                  break;
+                }
+                case ('highlightMute'): {
+                  thunk.dispatch(actions.setHighlightMute({ highlightMute: true }));
+                  setTimeout(() => {
+                    thunk.dispatch(actions.setHighlightMute({ highlightMute: false }));
+                  }, 3000);
+                  break;
+                }
+                case ('highlightChat'): {
+                  thunk.dispatch(actions.setHighlightChat({ highlightChat: true }));
+                  setTimeout(() => {
+                    thunk.dispatch(actions.setHighlightChat({ highlightChat: false }));
+                  }, 3000);
+                  break;
+                }
+                case ('highlightCamera'): {
+                  thunk.dispatch(actions.setHighlightCamera({ highlightCamera: true }));
+                  setTimeout(() => {
+                    thunk.dispatch(actions.setHighlightCamera({ highlightCamera: false }));
+                  }, 3000);
+                  break;
+                }
+                case ('highlightSkip'): {
+                  thunk.dispatch(actions.setHighlightSkip({ highlightSkip: true }));
+                  setTimeout(() => {
+                    thunk.dispatch(actions.setHighlightSkip({ highlightSkip: false }));
+                  }, 3000);
+                  break;
+                }
+                case ('highlightMenu'): {
+                  thunk.dispatch(actions.setHighlightMenu({ highlightMenu: true }));
+                  setTimeout(() => {
+                    thunk.dispatch(actions.setHighlightMenu({ highlightMenu: false }));
+                  }, 3000);
                   break;
                 }
                 default: {
@@ -548,6 +598,15 @@ const smSlice = createSlice({
   name: 'sm',
   initialState,
   reducers: {
+    setHighlightMic: (state, { payload }) => ({ ...state, highlightMic: payload.highlightMic }),
+    setHighlightMute: (state, { payload }) => ({ ...state, highlightMute: payload.highlightMute }),
+    setHighlightChat: (state, { payload }) => ({ ...state, highlightChat: payload.highlightChat }),
+    setHighlightMenu: (state, { payload }) => ({ ...state, highlightMenu: payload.highlightMenu }),
+    setHighlightSkip: (state, { payload }) => ({ ...state, highlightSkip: payload.highlightSkip }),
+    setHighlightCamera: (state, { payload }) => ({
+      ...state,
+      highlightCamera: payload.highlightCamera,
+    }),
     setSessionID: (state, { payload }) => ({
       ...state,
       sessionID: payload.sessionID,
@@ -726,7 +785,6 @@ const smSlice = createSlice({
       const { eventName, payload: eventPayload, kind } = payload;
       if (scene && persona) {
         persona.conversationSend(eventName, eventPayload || {}, { kind: kind || 'event' });
-        console.log(`dispatched ${eventName}`, eventPayload);
       }
     },
     clearActiveCards: () => {
@@ -789,6 +847,12 @@ export const {
   clearActiveCards,
   addConversationResult,
   clearTranscript,
+  setHighlightMic,
+  setHighlightMute,
+  setHighlightChat,
+  setHighlightMenu,
+  setHighlightCamera,
+  setHighlightSkip,
 } = smSlice.actions;
 
 export default smSlice.reducer;

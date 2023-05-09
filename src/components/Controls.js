@@ -49,6 +49,12 @@ function Controls({
     showTranscript,
     transcript,
     requestedMediaPerms,
+    highlightMic,
+    highlightMute,
+    highlightChat,
+    highlightCamera,
+    highlightSkip,
+    highlightMenu,
   } = useSelector((state) => ({ ...state.sm }));
 
   const dispatch = useDispatch();
@@ -169,12 +175,14 @@ function Controls({
           <button
             type="button"
             className="control-icon"
+            aria-label="Toggle DP Audio"
+            data-tip="Toggle DP Audio"
             onClick={() => dispatch(setOutputMute({ isOutputMuted: !isOutputMuted }))}
           >
             {isOutputMuted ? (
-              <VolumeMuteFill size={iconSize} />
+              <VolumeMuteFill size={iconSize} style={{ border: highlightMute ? 'red 2px solid' : '' }} />
             ) : (
-              <VolumeUpFill size={iconSize} color={primaryAccent} />
+              <VolumeUpFill size={iconSize} color={primaryAccent} style={{ border: highlightMute ? 'red 2px solid' : '' }} />
             )}
           </button>
         </div>
@@ -185,9 +193,10 @@ function Controls({
             className="control-icon"
             disabled={speechState !== 'speaking'}
             onClick={() => dispatch(stopSpeaking())}
-            data-tip="Stop Speaking"
+            data-tip="Skip Speech"
+            aria-label="Skip Speech"
           >
-            <SkipEndFill size={iconSize} />
+            <SkipEndFill size={iconSize} style={{ border: highlightSkip ? 'red 2px solid' : '' }} />
           </button>
         </div>
         <div>
@@ -203,6 +212,7 @@ function Controls({
             <ChatSquareTextFill
               size={iconSize}
               color={showTranscript ? primaryAccent : '#B3B3B3'}
+              style={{ border: highlightChat ? 'red 2px solid' : '' }}
             />
           </button>
         </div>
@@ -211,13 +221,15 @@ function Controls({
           <button
             type="button"
             className="control-icon"
+            aria-label="Toggle Microphone"
+            data-tip="Toggle Microphone"
             disabled={requestedMediaPerms.micDenied === true}
             onClick={() => dispatch(setMicOn({ micOn: !micOn }))}
           >
             {micOn ? (
-              <MicFill size={iconSize} color={primaryAccent} />
+              <MicFill size={iconSize} color={primaryAccent} style={{ border: highlightMic ? 'red 2px solid' : '' }} />
             ) : (
-              <MicMuteFill size={iconSize} />
+              <MicMuteFill size={iconSize} style={{ border: highlightMic ? 'red 2px solid' : '' }} />
             )}
           </button>
         </div>
@@ -226,13 +238,19 @@ function Controls({
           <button
             type="button"
             className="control-icon"
+            aria-label="Toggle Camera"
+            data-tip="Toggle Camera"
             disabled={requestedMediaPerms.cameraDenied === true}
             onClick={() => dispatch(setCameraOn({ cameraOn: !cameraOn }))}
           >
             {cameraOn ? (
-              <CameraVideoFill size={iconSize} color={primaryAccent} />
+              <CameraVideoFill
+                size={iconSize}
+                color={primaryAccent}
+                style={{ border: highlightCamera ? 'red 2px solid' : '' }}
+              />
             ) : (
-              <CameraVideoOffFill size={iconSize} />
+              <CameraVideoOffFill size={iconSize} style={{ border: highlightCamera ? 'red 2px solid' : '' }} />
             )}
           </button>
         </div>
@@ -240,13 +258,15 @@ function Controls({
           <button
             className="control-icon context-controls-trigger"
             type="button"
+            aria-label="More Options"
+            data-tip="More Options"
             id="dpChatDropdown"
             onClick={() => setShowContextMenu(!showContextMenu)}
           >
             {showContextMenu ? (
               <X size={iconSize} color="#fff" />
             ) : (
-              <ThreeDotsVertical size={iconSize} />
+              <ThreeDotsVertical size={iconSize} style={{ border: highlightMenu ? 'red 2px solid' : '' }} />
             )}
           </button>
           {showContextMenu ? (
