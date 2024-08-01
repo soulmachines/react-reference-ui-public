@@ -11,7 +11,7 @@ In order to run this application, you'll either need an API key or a token serve
 ### Copy `.env.example` contents into `.env`
 Create an empty text file called `.env` and copy the contents of `.env.example` into it. These environment variables are required for the UI to run.
 
-If using an API key, set `REACT_APP_PERSONA_AUTH_MODE` to `0` and populate `REACT_APP_TOKEN_URL` with your key.
+If using an API key, set `REACT_APP_PERSONA_AUTH_MODE` to `0` and populate `REACT_APP_API_KEY` with your key.
 
 If using an orchestration server, set `REACT_APP_PERSONA_AUTH_MODE` to `1` and populate `REACT_APP_TOKEN_URL` with your token server endpoint and set `REACT_APP_TOKEN_URL` to `true`.
 
